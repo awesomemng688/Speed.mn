@@ -15,7 +15,7 @@
         $cs16Servers = $servers->where('game', 'cs16');
     @endphp
 
-    <section class="hero" style="--hero-map-image: url('{{ asset('img/hero/backgorund.jpg') }}')">
+    <section class="hero" style="--hero-map-image: url('{{ asset('img/hero/background.jpg') }}')">
         <div class="hero-backdrop"></div>
         <div class="shell hero-grid">
             <div class="hero-copy-block">
