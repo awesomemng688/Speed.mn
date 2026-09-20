@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Server extends Model
 {
     protected $fillable = [
-        'name', 'game', 'ip', 'port', 'region', 'country', 'max_players', 'query_type', 'enabled',
+        'name', 'game', 'category', 'ip', 'port', 'region', 'country', 'max_players', 'query_type', 'enabled',
     ];
 
     protected $casts = ['enabled' => 'boolean'];
