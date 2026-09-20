@@ -20,7 +20,14 @@ class ServerController extends Controller
             ->orderBy('name')
             ->paginate(20);
 
-        return view('admin.servers.index', compact('servers'));
+        $summary = [
+            'total' => Server::count(),
+            'enabled' => Server::where('enabled', true)->count(),
+            'online' => Server::where('enabled', true)->whereHas('latestStatus', fn ($query) => $query->where('online', true))->count(),
+            'players' => Server::where('enabled', true)->with('latestStatus')->get()->sum(fn (Server $server) => $server->latestStatus?->players ?? 0),
+        ];
+
+        return view('admin.servers.index', compact('servers', 'summary'));
     }
 
     public function create(): View

@@ -33,9 +33,13 @@ class ServerController extends Controller
             ->oldest()
             ->get(['created_at', 'online', 'players', 'response_time']);
         $checks = $history->count();
+        $onlineHistory = $history->where('online', true);
 
         return response()->json([
             'uptime_percentage' => $checks ? round($history->where('online', true)->count() / $checks * 100, 2) : null,
+            'average_response_time' => $onlineHistory->whereNotNull('response_time')->avg('response_time'),
+            'peak_players' => $history->max('players') ?? 0,
+            'checks' => $checks,
             'history' => $history,
             'offline_history' => $history->where('online', false)->values(),
         ]);

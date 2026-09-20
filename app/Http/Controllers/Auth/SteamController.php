@@ -33,6 +33,7 @@ class SteamController extends Controller
                 ],
             );
 
+            $request->session()->regenerate();
             Auth::login($user, true);
             return redirect()->intended(route('profile'));
         } catch (Throwable $exception) {
