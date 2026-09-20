@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Speed.mn — Gaming Network')
+@section('body_class', 'home-page')
 
 @section('content')
     @php
