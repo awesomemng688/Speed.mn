@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -35,7 +36,7 @@ class RankController extends Controller
         ],
     ];
 
-    public function index(string $category = 'public-1'): View
+    public function index(Request $request, string $category = 'public-1'): View
     {
         abort_unless(isset(self::SOURCES[$category]), 404);
 
@@ -47,11 +48,20 @@ class RankController extends Controller
         $query = $connection->table($source['table']);
         $orderColumn = $source['type'] === 'public'
             ? ($column('XP') ?: ($column('points') ?: 'id'))
-            : ($column('kills') ?: 'id');
+            : ($column('Knife') ?: ($column('kills') ?: 'id'));
+
+        $search = trim((string) $request->query('search', ''));
+        if ($source['type'] === 'knife') {
+            $query->where($column('Knife') ?: 'kills', '>', 0);
+        }
+        $query->when($search !== '', function ($query) use ($search, $column): void {
+            $query->where($column('Nick') ?: ($column('name') ?: 'id'), 'like', '%'.$search.'%');
+        });
 
         $players = $query
             ->orderByDesc($orderColumn)
-            ->paginate(25)
+            ->orderByDesc('id')
+            ->paginate(50)
             ->withQueryString();
 
         return view('ranks.index', [

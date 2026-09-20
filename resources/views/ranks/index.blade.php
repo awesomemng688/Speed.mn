@@ -6,8 +6,9 @@
 @section('content')
     @php
         $rankValue = fn ($player, string $name, $fallback = 0) => isset($player->{$name}) ? $player->{$name} : $fallback;
-        $nameValue = fn ($player) => $player->name ?: ($player->Nick ?? ($player->Player ?? 'Unknown player'));
+        $nameValue = fn ($player) => ($player->Nick ?? null) ?: ($player->name ?: ($player->Player ?? 'Unknown player'));
         $avatarValue = fn ($player) => $player->Avatar ?? null;
+        $weaponColumns = ['Knife', 'Glock', 'USP', 'Deagle', 'P228', 'Elite', 'Fiveseven', 'AWP', 'AK47', 'M4A1', 'AUG', 'SG552', 'Scout', 'G3SG1', 'SG550', 'Galil', 'Famas', 'MP5', 'M249', 'Grenade', 'Glock18', 'M3', 'XM1014', 'MAC10', 'UMP45', 'P90', 'TMP', 'MP5 Navy', 'HE Grenade', 'Flashbang', 'Smoke Grenade', 'C4'];
     @endphp
 
     <section class="page-head rank-head">
@@ -20,6 +21,13 @@
                     <a class="{{ $category === $value ? 'active' : '' }}" href="{{ route('ranks.index', $value) }}">{{ $label }}</a>
                 @endforeach
             </div>
+            <form class="rank-search" method="GET" action="{{ route('ranks.index', $category) }}">
+                <input type="search" name="search" value="{{ request('search') }}" placeholder="Тоглогч хайх..." autocomplete="off">
+                <button class="button button-primary" type="submit">Хайх</button>
+                @if (request('search'))
+                    <a class="text-link" href="{{ route('ranks.index', $category) }}">Цэвэрлэх</a>
+                @endif
+            </form>
         </div>
     </section>
 
@@ -56,11 +64,16 @@
                                 <td>{{ number_format((int) $rankValue($player, 'deaths')) }}</td>
                                 <td>{{ number_format((int) $rankValue($player, 'headshots')) }}</td>
                                 <td>{{ $rankValue($player, 'Skill Range', $rankValue($player, 'points', '—')) }}</td>
-                                <td>{{ $rankValue($player, 'Rank', '—') }}</td>
+                                <td>{{ (int) $rankValue($player, 'Rank') > 0 ? $rankValue($player, 'Rank') : $position }}</td>
                             @else
                                 <td class="rank-xp">{{ number_format((int) $rankValue($player, 'Knife')) }}</td>
-                                <td>{{ number_format((int) $rankValue($player, 'kills')) }}</td>
-                                <td>{{ $player->weapon ?: '—' }}</td>
+                                @php
+                                    $weaponKills = collect($weaponColumns)->sum(fn ($weapon) => (int) $rankValue($player, $weapon));
+                                    $weaponValues = collect($weaponColumns)->mapWithKeys(fn ($weapon) => [$weapon => (int) $rankValue($player, $weapon)])->sortDesc();
+                                    $topWeapon = $weaponValues->keys()->first(fn ($weapon) => $weaponValues[$weapon] > 0);
+                                @endphp
+                                <td>{{ number_format($weaponKills ?: (int) $rankValue($player, 'kills')) }}</td>
+                                <td>{{ $topWeapon ?: ($player->weapon ?: '—') }}</td>
                                 <td>{{ number_format((int) $rankValue($player, 'Played Time', $rankValue($player, 'playtime'))) }} min</td>
                             @endif
                         </tr>
