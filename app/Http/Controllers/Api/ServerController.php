@@ -23,7 +23,14 @@ class ServerController extends Controller
 
     public function show(Server $server): ServerResource
     {
-        return new ServerResource($server->load('latestStatus'));
+        $server->load([
+            'latestStatus',
+            'statuses' => fn ($query) => $query
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->oldest(),
+        ]);
+
+        return new ServerResource($server);
     }
 
     public function monitoring(Server $server): \Illuminate\Http\JsonResponse
