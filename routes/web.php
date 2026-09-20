@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\SteamController;
 use App\Http\Controllers\ServerController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Models\Server;
 use Illuminate\Support\Facades\Route;
@@ -22,7 +23,7 @@ Route::get('/auth/steam', [SteamController::class, 'redirect'])->name('steam.log
 Route::get('/login', [SteamController::class, 'redirect'])->name('login');
 Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->name('steam.callback');
 Route::get('/auth/logout', [SteamController::class, 'logout'])->middleware('auth')->name('steam.logout');
-Route::get('/profile', fn () => view('profile'))->middleware('auth')->name('profile');
+Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth')->name('profile');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('servers', AdminServerController::class)->except(['show']);
