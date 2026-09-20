@@ -19,6 +19,7 @@ Route::get('/servers', [ServerController::class, 'index'])->name('servers.index'
 Route::get('/servers/{game}', [ServerController::class, 'index'])->where('game', 'cs2|cs16')->name('servers.game');
 Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');
 Route::get('/auth/steam', [SteamController::class, 'redirect'])->name('steam.login');
+Route::get('/login', [SteamController::class, 'redirect'])->name('login');
 Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->name('steam.callback');
 Route::get('/auth/logout', [SteamController::class, 'logout'])->middleware('auth')->name('steam.logout');
 Route::get('/profile', fn () => view('profile'))->middleware('auth')->name('profile');
