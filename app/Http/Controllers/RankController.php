@@ -45,24 +45,35 @@ class RankController extends Controller
         $columns = Schema::connection($source['connection'])->getColumnListing($source['table']);
         $column = static fn (string $name): ?string => in_array($name, $columns, true) ? $name : null;
 
-        $query = $connection->table($source['table']);
-        $orderColumn = $source['type'] === 'public'
-            ? ($column('XP') ?: ($column('points') ?: 'id'))
-            : ($column('Knife') ?: ($column('kills') ?: 'id'));
-
         $search = trim((string) $request->query('search', ''));
         if ($source['type'] === 'knife') {
-            $query->where($column('Knife') ?: 'kills', '>', 0);
-        }
-        $query->when($search !== '', function ($query) use ($search, $column): void {
-            $query->where($column('Nick') ?: ($column('name') ?: 'id'), 'like', '%'.$search.'%');
-        });
+            $query = $connection
+                ->table($source['table'])
+                ->where('Knife', '>', 0);
 
-        $players = $query
-            ->orderByDesc($orderColumn)
-            ->orderByDesc('id')
-            ->paginate(50)
-            ->withQueryString();
+            if ($search !== '') {
+                $query->where('Nick', 'like', '%'.$search.'%');
+            }
+
+            $players = $query
+                ->orderByDesc('Knife')
+                ->orderByDesc('id')
+                ->paginate(50)
+                ->withQueryString();
+        } else {
+            $orderColumn = $column('XP') ?: ($column('points') ?: 'id');
+            $query = $connection->table($source['table']);
+
+            $query->when($search !== '', function ($query) use ($search, $column): void {
+                $query->where($column('Nick') ?: ($column('name') ?: 'id'), 'like', '%'.$search.'%');
+            });
+
+            $players = $query
+                ->orderByDesc($orderColumn)
+                ->orderByDesc('id')
+                ->paginate(50)
+                ->withQueryString();
+        }
 
         return view('ranks.index', [
             'category' => $category,
