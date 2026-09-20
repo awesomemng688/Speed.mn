@@ -30,6 +30,6 @@
 </header>
 <main>@yield('content')</main>
 <footer id="community"><div class="shell footer"><div><a class="brand" href="{{ url('/') }}"><span>SPEED</span><b>.MN</b></a><p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p></div><div><strong>EXPLORE</strong><a href="{{ route('servers.index') }}">All servers</a><a href="{{ route('servers.game', 'cs2') }}">CS2 servers</a><a href="{{ route('servers.game', 'cs16') }}">CS 1.6 servers</a></div></div><div class="shell copyright">© {{ date('Y') }} Speed.mn Gaming Network</div></footer>
-<script src="{{ asset('js/speed.js') }}" defer></script>
+<script src="{{ asset('js/speed.js').'?v=2' }}" defer></script>
 </body>
 </html>
