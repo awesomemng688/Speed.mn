@@ -31,4 +31,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateResultCount(visible);
     });
+
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('[data-player-toggle]');
+        const close = event.target.closest('[data-player-close]');
+        if (toggle) {
+            const modal = toggle.parentElement.querySelector('[data-player-modal]');
+            if (modal) {
+                modal.hidden = false;
+                document.body.classList.add('modal-open');
+                modal.querySelector('.player-modal-close')?.focus();
+            }
+        }
+        if (close) {
+            const modal = close.closest('[data-player-modal]');
+            if (modal) {
+                modal.hidden = true;
+                document.body.classList.remove('modal-open');
+            }
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('[data-player-modal]:not([hidden])').forEach((modal) => {
+                modal.hidden = true;
+            });
+            document.body.classList.remove('modal-open');
+        }
+    });
 });
