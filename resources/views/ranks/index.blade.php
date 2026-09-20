@@ -7,7 +7,15 @@
     @php
         $rankValue = fn ($player, string $name, $fallback = 0) => isset($player->{$name}) ? $player->{$name} : $fallback;
         $nameValue = fn ($player) => ($player->Nick ?? null) ?: ($player->name ?: ($player->Player ?? 'Unknown player'));
-        $avatarValue = fn ($player) => $player->Avatar ?? null;
+        $avatarValue = function ($player) use ($avatars) {
+            $storedAvatar = trim((string) ($player->Avatar ?? ''));
+            if ($storedAvatar !== '') {
+                return $storedAvatar;
+            }
+
+            $steamId = (string) ($player->steamid ?? $player->{'Steam ID'} ?? $player->Steam ?? '');
+            return $avatars[$steamId] ?? $avatars[strtolower(trim((string) ($player->Nick ?? $player->name ?? $player->Player ?? '')))] ?? null;
+        };
         $weaponColumns = ['Knife', 'Glock', 'USP', 'Deagle', 'P228', 'Elite', 'Fiveseven', 'AWP', 'AK47', 'M4A1', 'AUG', 'SG552', 'Scout', 'G3SG1', 'SG550', 'Galil', 'Famas', 'MP5', 'M249', 'Grenade', 'Glock18', 'M3', 'XM1014', 'MAC10', 'UMP45', 'P90', 'TMP', 'MP5 Navy', 'HE Grenade', 'Flashbang', 'Smoke Grenade', 'C4'];
     @endphp
 
