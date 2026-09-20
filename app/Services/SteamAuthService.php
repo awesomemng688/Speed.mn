@@ -21,7 +21,8 @@ class SteamAuthService
 
     public function authenticate(array $input): string
     {
-        $claimedId = $input['openid_claimed_id'] ?? '';
+        $input = $this->normalizeOpenIdInput($input);
+        $claimedId = $input['openid.claimed_id'] ?? '';
         if (!preg_match('#^https://steamcommunity\.com/openid/id/(\d{17})$#', $claimedId, $matches)) {
             throw new RuntimeException('Invalid Steam identity response.');
         }
@@ -32,10 +33,21 @@ class SteamAuthService
         ]);
 
         if (!$verification->ok() || !str_contains($verification->body(), 'is_valid:true')) {
-            throw new RuntimeException('Steam identity could not be verified.');
+            throw new RuntimeException('Steam identity could not be verified (HTTP '.$verification->status().').');
         }
 
         return $matches[1];
+    }
+
+    private function normalizeOpenIdInput(array $input): array
+    {
+        $normalized = [];
+
+        foreach ($input as $key => $value) {
+            $normalized[str_starts_with($key, 'openid_') ? 'openid.'.substr($key, 7) : $key] = $value;
+        }
+
+        return $normalized;
     }
 
     public function profile(string $steamId): array
