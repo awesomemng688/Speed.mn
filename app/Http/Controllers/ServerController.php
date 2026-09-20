@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Server;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Carbon;
 
 class ServerController extends Controller
 {
-    public function index(Request $request): View
+    public function index(?string $game = null): View
     {
-        $game = $request->string('game')->toString();
         $servers = Server::query()
             ->where('enabled', true)
             ->when(in_array($game, ['cs2', 'cs16'], true), fn ($query) => $query->where('game', $game))
