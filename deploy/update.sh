@@ -14,6 +14,8 @@ if [[ ! -d .git ]]; then
     exit 1
 fi
 
+git config --global --add safe.directory "$APP_DIR" >/dev/null 2>&1 || true
+
 echo "Updating $APP_DIR from origin/$BRANCH"
 git fetch --prune origin "$BRANCH"
 if [[ -n "$(git status --porcelain)" ]]; then

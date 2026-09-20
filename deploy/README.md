@@ -50,6 +50,26 @@ Add the scheduler to `crontab -e`:
 * * * * * cd /var/www/speed.mn && php artisan schedule:run >> /dev/null 2>&1
 ```
 
+### Keep queue monitoring running
+
+Install Supervisor once:
+
+```bash
+sudo apt install -y supervisor
+sudo cp deploy/supervisor/speedmn-worker.conf /etc/supervisor/conf.d/speedmn-worker.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart speedmn-worker:*
+sudo supervisorctl status speedmn-worker:*
+```
+
+The worker runs as `www-data`, processes the database queue, and restarts
+automatically after a crash or reboot. Check its output with:
+
+```bash
+sudo tail -f /var/www/speed.mn/storage/logs/worker.log
+```
+
 Build assets on a machine with Node.js using `npm ci && npm run build`; deploy `public/build`. Node.js is not required at runtime. For HTTPS:
 
 ```bash
