@@ -47,7 +47,9 @@
                 </thead>
                 <tbody>
                     @forelse ($players as $player)
-                        @php($position = $players->firstItem() + $loop->index)
+                        @php
+                            $position = $players->firstItem() + $loop->index;
+                        @endphp
                         <tr>
                             <td class="rank-position">{{ $position }}</td>
                             <td class="rank-player">
