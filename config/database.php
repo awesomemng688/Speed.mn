@@ -64,6 +64,58 @@ return [
             ], fn ($value) => $value !== null) : [],
         ],
 
+        'rank_public_1' => [
+            'driver' => 'mysql',
+            'host' => env('RANK_PUBLIC_1_DB_HOST'),
+            'port' => env('RANK_PUBLIC_1_DB_PORT', 3306),
+            'database' => env('RANK_PUBLIC_1_DB_DATABASE'),
+            'username' => env('RANK_PUBLIC_1_DB_USERNAME'),
+            'password' => env('RANK_PUBLIC_1_DB_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
+        'rank_public_2' => [
+            'driver' => 'mysql',
+            'host' => env('RANK_PUBLIC_2_DB_HOST'),
+            'port' => env('RANK_PUBLIC_2_DB_PORT', 3306),
+            'database' => env('RANK_PUBLIC_2_DB_DATABASE'),
+            'username' => env('RANK_PUBLIC_2_DB_USERNAME'),
+            'password' => env('RANK_PUBLIC_2_DB_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
+        'rank_knife_1' => [
+            'driver' => 'mysql',
+            'host' => env('RANK_KNIFE_1_DB_HOST'),
+            'port' => env('RANK_KNIFE_1_DB_PORT', 3306),
+            'database' => env('RANK_KNIFE_1_DB_DATABASE'),
+            'username' => env('RANK_KNIFE_1_DB_USERNAME'),
+            'password' => env('RANK_KNIFE_1_DB_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
+        'rank_knife_2' => [
+            'driver' => 'mysql',
+            'host' => env('RANK_KNIFE_2_DB_HOST'),
+            'port' => env('RANK_KNIFE_2_DB_PORT', 3306),
+            'database' => env('RANK_KNIFE_2_DB_DATABASE'),
+            'username' => env('RANK_KNIFE_2_DB_USERNAME'),
+            'password' => env('RANK_KNIFE_2_DB_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

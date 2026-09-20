@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Models\Server;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RankController;
 
 Route::get('/', function () {
     $servers = Server::where('enabled', true)->with('latestStatus')->orderBy('game')->get();
@@ -19,6 +20,9 @@ Route::get('/', function () {
 Route::get('/servers', [ServerController::class, 'index'])->name('servers.index');
 Route::get('/servers/{game}', [ServerController::class, 'index'])->where('game', 'cs2|cs16')->name('servers.game');
 Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');
+Route::get('/rank/{category?}', [RankController::class, 'index'])
+    ->where('category', 'public-1|public-2|knife-1|knife-2')
+    ->name('ranks.index');
 Route::get('/auth/steam', [SteamController::class, 'redirect'])->name('steam.login');
 Route::get('/login', [SteamController::class, 'redirect'])->name('login');
 Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->name('steam.callback');

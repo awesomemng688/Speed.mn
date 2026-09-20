@@ -17,6 +17,7 @@
             <a href="{{ route('servers.index') }}">Servers</a>
             <a href="{{ route('servers.game', 'cs2') }}">CS2</a>
             <a href="{{ route('servers.game', 'cs16') }}">CS 1.6</a>
+            <a href="{{ route('ranks.index') }}">Ranks</a>
             <a href="#community">Community</a>
         </nav>
         @auth
