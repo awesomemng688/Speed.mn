@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\SteamController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Models\Server;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RankController;
@@ -68,4 +69,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('servers', AdminServerController::class)->except(['show']);
     Route::patch('servers/{server}/toggle', [AdminServerController::class, 'toggle'])->name('servers.toggle');
     Route::post('servers/{server}/test', [AdminServerController::class, 'test'])->name('servers.test');
+    Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
 });

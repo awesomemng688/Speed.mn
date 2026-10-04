@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Manage servers — Speed.mn')
 @section('content')
-<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Servers</h1><a class="button button-primary" href="{{ route('admin.servers.create') }}">Add server</a></div><p class="muted">Manage the public server directory and connectivity.</p></div></section>
+<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Servers</h1><div class="admin-actions"><a class="button button-ghost" href="{{ route('admin.users.index') }}">Administrators</a><a class="button button-primary" href="{{ route('admin.servers.create') }}">Add server</a></div></div><p class="muted">Manage the public server directory and connectivity.</p></div></section>
 <section class="shell section admin-section">
     @if(session('status'))<div class="admin-alert success">{{ session('status') }}</div>@endif
     @if(session('connection_success'))<div class="admin-alert success">{{ session('connection_success') }}</div>@endif
