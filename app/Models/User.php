@@ -35,6 +35,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'admin_totp_secret',
+        'admin_totp_recovery_codes',
     ];
 
     /**
@@ -48,6 +50,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'admin_totp_secret' => 'encrypted',
+            'admin_totp_confirmed_at' => 'datetime',
+            'admin_totp_recovery_codes' => 'encrypted:array',
         ];
     }
 }

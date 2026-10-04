@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreServerRequest;
 use App\Http\Requests\UpdateServerRequest;
+use App\Jobs\PollServer;
 use App\Models\Server;
 use App\Models\ServerStatus;
 use App\Services\AdminAuditLogger;
@@ -28,6 +29,7 @@ class ServerController extends Controller
             'status' => ['nullable', 'in:online,offline,stale,unknown'],
             'poll' => ['nullable', 'in:fresh,stale,never'],
             'error' => ['nullable', 'in:yes,no'],
+            'sort' => ['nullable', 'in:poll_newest,poll_oldest'],
         ]);
         $freshSince = ServerStatus::freshSince();
 
@@ -54,8 +56,9 @@ class ServerController extends Controller
             ->when(($filters['poll'] ?? null) === 'never', fn ($query) => $query->whereNull('last_polled_at'))
             ->when(($filters['error'] ?? null) === 'yes', fn ($query) => $query->whereNotNull('last_query_error')->where('last_query_error', '<>', ''))
             ->when(($filters['error'] ?? null) === 'no', fn ($query) => $query->where(fn ($query) => $query->whereNull('last_query_error')->orWhere('last_query_error', '')))
-            ->orderBy('game')
-            ->orderBy('name')
+            ->when(($filters['sort'] ?? null) === 'poll_newest', fn ($query) => $query->orderByRaw('(last_polled_at IS NULL) ASC')->orderByDesc('last_polled_at'))
+            ->when(($filters['sort'] ?? null) === 'poll_oldest', fn ($query) => $query->orderByRaw('(last_polled_at IS NOT NULL) ASC')->orderBy('last_polled_at'))
+            ->when(! in_array($filters['sort'] ?? null, ['poll_newest', 'poll_oldest'], true), fn ($query) => $query->orderBy('game')->orderBy('name'))
             ->paginate(20)
             ->withQueryString();
 
@@ -143,6 +146,16 @@ class ServerController extends Controller
             : ($result['query_error'] ?? 'Connection failed or the server did not respond.');
 
         return back()->with($result['online'] ? 'connection_success' : 'connection_error', $message);
+    }
+
+    public function pollNow(Server $server, Request $request, AdminAuditLogger $audit): RedirectResponse
+    {
+        abort_unless($server->enabled, 422, 'Enable the server before polling it.');
+
+        PollServer::dispatch($server->id);
+        $audit->record($request, 'server.poll_dispatched', $server);
+
+        return back()->with('status', "A poll was queued for {$server->name}.");
     }
 
     private function cacheTimestamp(string $key): ?Carbon

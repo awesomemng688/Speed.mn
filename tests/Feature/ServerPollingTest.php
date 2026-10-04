@@ -120,7 +120,7 @@ class ServerPollingTest extends TestCase
         Cache::put('speedmn.poll.last_completed_at', now()->toIso8601String());
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index'))
             ->assertOk()
             ->assertSee('Queue worker:')
@@ -134,7 +134,7 @@ class ServerPollingTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         Cache::shouldReceive('get')->times(3)->andThrow(new \RuntimeException('cache unavailable'));
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index'))
             ->assertOk()
             ->assertSee('no recent jobs');

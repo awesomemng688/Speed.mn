@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
 use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
+use App\Http\Controllers\Admin\TwoFactorController as AdminTwoFactorController;
 use App\Models\Server;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RankController;
@@ -60,17 +61,23 @@ Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers
 Route::get('/rank/{category?}', [RankController::class, 'index'])
     ->where('category', 'public-1|public-2|knife-1|knife-2')
     ->name('ranks.index');
-Route::get('/auth/steam', [SteamController::class, 'redirect'])->name('steam.login');
-Route::get('/login', [SteamController::class, 'redirect'])->name('login');
-Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->name('steam.callback');
+Route::get('/auth/steam', [SteamController::class, 'redirect'])->middleware('throttle:10,1')->name('steam.login');
+Route::get('/login', [SteamController::class, 'redirect'])->middleware('throttle:10,1')->name('login');
+Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->middleware('throttle:20,1')->name('steam.callback');
 Route::get('/auth/logout', [SteamController::class, 'logout'])->middleware('auth')->name('steam.logout');
 Route::get('/skins/bridge', SkinBridgeController::class)->middleware('auth')->name('skins.bridge');
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth')->name('profile');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('two-factor.setup');
+    Route::post('two-factor/setup', [AdminTwoFactorController::class, 'confirmSetup'])->name('two-factor.confirm');
+    Route::get('two-factor/challenge', [AdminTwoFactorController::class, 'challenge'])->name('two-factor.challenge');
+    Route::post('two-factor/challenge', [AdminTwoFactorController::class, 'verifyChallenge'])->name('two-factor.verify');
+    Route::delete('two-factor', [AdminTwoFactorController::class, 'disable'])->name('two-factor.disable');
     Route::resource('servers', AdminServerController::class)->except(['show']);
     Route::patch('servers/{server}/toggle', [AdminServerController::class, 'toggle'])->name('servers.toggle');
     Route::post('servers/{server}/test', [AdminServerController::class, 'test'])->name('servers.test');
+    Route::post('servers/{server}/poll', [AdminServerController::class, 'pollNow'])->name('servers.poll');
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
     Route::get('failed-jobs', [AdminFailedJobController::class, 'index'])->name('failed-jobs.index');

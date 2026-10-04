@@ -20,7 +20,7 @@
             <td>{{ \Illuminate\Support\Carbon::parse($job->failed_at)->diffForHumans() }}</td>
             <td><small>{{ $job->exception_summary }}</small></td>
             <td><div class="admin-actions">
-                <form method="POST" action="{{ route('admin.failed-jobs.retry', $job->uuid) }}" onsubmit="return confirm('Retry this failed job?')">@csrf<button class="text-button" type="submit">Retry</button></form>
+                @if($job->job_class === \App\Jobs\PollServer::class)<form method="POST" action="{{ route('admin.failed-jobs.retry', $job->uuid) }}" onsubmit="return confirm('Retry this server poll?')">@csrf<button class="text-button" type="submit">Retry poll</button></form>@else<small class="muted">Retry restricted to server polls</small>@endif
                 <form method="POST" action="{{ route('admin.failed-jobs.destroy', $job->uuid) }}" onsubmit="return confirm('Remove this failed job record?')">@csrf @method('DELETE')<button class="text-button danger" type="submit">Forget</button></form>
             </div></td>
         </tr>

@@ -3,11 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\AdminAuditLog;
+use App\Jobs\PollServer;
 use App\Models\Server;
 use App\Models\ServerStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -29,18 +34,143 @@ class AdminOperationsTest extends TestCase
         $onlineServer->forceFill(['last_polled_at' => now()])->save();
         $this->createStatus($onlineServer, true, now());
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index', ['status' => 'offline', 'error' => 'yes']))
             ->assertOk()
             ->assertSee('Failed CS2 server')
             ->assertDontSee('Online CS2 server');
     }
 
+    public function test_admin_can_queue_a_poll_for_an_enabled_server(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $server = $this->createServer('Poll now server');
+        Queue::fake();
+
+        $this->actingAsAdmin($admin)
+            ->post(route('admin.servers.poll', $server))
+            ->assertRedirect()
+            ->assertSessionHas('status');
+
+        Queue::assertPushed(PollServer::class, fn (PollServer $job) => $job->serverId === $server->id);
+        $this->assertDatabaseHas('admin_audit_logs', [
+            'actor_user_id' => $admin->id,
+            'event' => 'server.poll_dispatched',
+            'subject_id' => $server->id,
+        ]);
+    }
+
+    public function test_admin_server_sort_orders_by_poll_freshness(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $neverPolled = $this->createServer('Never polled server');
+        $oldPoll = $this->createServer('Old poll server');
+        $oldPoll->forceFill(['last_polled_at' => now()->subHour()])->save();
+        $recentPoll = $this->createServer('Recent poll server');
+        $recentPoll->forceFill(['last_polled_at' => now()])->save();
+
+        $this->actingAsAdmin($admin)
+            ->get(route('admin.servers.index', ['sort' => 'poll_newest']))
+            ->assertOk()
+            ->assertSeeInOrder(['Recent poll server', 'Old poll server', 'Never polled server']);
+
+        $this->actingAsAdmin($admin)
+            ->get(route('admin.servers.index', ['sort' => 'poll_oldest']))
+            ->assertOk()
+            ->assertSeeInOrder(['Never polled server', 'Old poll server', 'Recent poll server']);
+    }
+
+    public function test_monitor_alerts_only_on_state_changes_and_sends_recovery(): void
+    {
+        $server = $this->createServer('Stale monitor server');
+        config(['services.discord.admin_webhook' => 'https://discord.com/api/webhooks/test']);
+        Cache::forget('speedmn.monitor.alert_state');
+        Http::fake();
+
+        Artisan::call('speedmn:monitor');
+        Artisan::call('speedmn:monitor');
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => str_contains($request['content'], 'monitoring alert'));
+
+        $server->forceFill(['last_polled_at' => now()])->save();
+        Artisan::call('speedmn:monitor');
+        Http::assertSentCount(2);
+        Http::assertSent(fn ($request) => str_contains($request['content'], 'monitoring recovered'));
+    }
+
+    public function test_monitor_test_option_sends_without_changing_alert_state(): void
+    {
+        config(['services.discord.admin_webhook' => 'https://discord.com/api/webhooks/test']);
+        Cache::put('speedmn.monitor.alert_state', 'stale');
+        Http::fake();
+
+        Artisan::call('speedmn:monitor', ['--test' => true]);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => str_contains($request['content'], 'Discord delivery test')
+            && str_contains($request['content'], 'stale-server and failed-job'));
+        $this->assertSame('stale', Cache::get('speedmn.monitor.alert_state'));
+    }
+
+    public function test_monitor_test_option_returns_failure_when_discord_rejects_delivery(): void
+    {
+        config(['services.discord.admin_webhook' => 'https://discord.com/api/webhooks/test']);
+        Http::fake(['discord.com/*' => Http::response([], 500)]);
+
+        $exitCode = Artisan::call('speedmn:monitor', ['--test' => true]);
+
+        $this->assertSame(1, $exitCode);
+    }
+
+    public function test_monitor_alerts_for_recent_failed_jobs_and_sends_recovery(): void
+    {
+        config(['services.discord.admin_webhook' => 'https://discord.com/api/webhooks/test']);
+        Cache::forget('speedmn.monitor.alert_state');
+        Http::fake();
+        $uuid = (string) Str::uuid();
+        DB::table('failed_jobs')->insert($this->failedJob($uuid));
+
+        Artisan::call('speedmn:monitor');
+        Artisan::call('speedmn:monitor');
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request) => str_contains($request['content'], '1 queue job(s) failed in the last 5 minutes'));
+
+        DB::table('failed_jobs')->where('uuid', $uuid)->update(['failed_at' => now()->subMinutes(6)]);
+        Artisan::call('speedmn:monitor');
+
+        Http::assertSentCount(2);
+        Http::assertSent(fn ($request) => str_contains($request['content'], 'monitoring recovered'));
+    }
+
+    public function test_audit_prune_removes_only_entries_past_configured_retention(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $expired = AdminAuditLog::create([
+            'actor_user_id' => $admin->id,
+            'event' => 'expired.event',
+        ]);
+        $expired->forceFill([
+            'created_at' => now()->subDays(366),
+            'updated_at' => now()->subDays(366),
+        ])->save();
+        $recent = AdminAuditLog::create([
+            'actor_user_id' => $admin->id,
+            'event' => 'recent.event',
+        ]);
+
+        config(['speedmn.audit_retention_days' => 365]);
+        Artisan::call('speedmn:audit-prune');
+
+        $this->assertDatabaseMissing('admin_audit_logs', ['id' => $expired->id]);
+        $this->assertDatabaseHas('admin_audit_logs', ['id' => $recent->id]);
+    }
+
     public function test_server_creation_writes_audit_event_without_field_values(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->post(route('admin.servers.store'), [
                 'name' => 'Audited server',
                 'game' => 'cs2',
@@ -59,7 +189,7 @@ class AdminOperationsTest extends TestCase
         $this->assertStringNotContainsString('192.0.2.45', json_encode($audit->details));
 
         $server = Server::where('name', 'Audited server')->firstOrFail();
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->put(route('admin.servers.update', $server), [
                 'name' => 'Renamed audited server',
                 'game' => 'cs2',
@@ -81,14 +211,14 @@ class AdminOperationsTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         $target = User::factory()->create(['is_admin' => false]);
 
-        $this->actingAs($admin)->patch(route('admin.users.toggle', $target))->assertRedirect();
+        $this->actingAsAdmin($admin)->patch(route('admin.users.toggle', $target))->assertRedirect();
         $this->assertDatabaseHas('admin_audit_logs', [
             'actor_user_id' => $admin->id,
             'event' => 'admin.access_granted',
             'subject_id' => $target->id,
         ]);
 
-        $this->actingAs($admin)->patch(route('admin.users.toggle', $target))->assertRedirect();
+        $this->actingAsAdmin($admin)->patch(route('admin.users.toggle', $target))->assertRedirect();
         $this->assertDatabaseHas('admin_audit_logs', [
             'actor_user_id' => $admin->id,
             'event' => 'admin.access_revoked',
@@ -102,7 +232,7 @@ class AdminOperationsTest extends TestCase
         $uuid = (string) Str::uuid();
         DB::table('failed_jobs')->insert($this->failedJob($uuid));
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->post(route('admin.failed-jobs.retry', $uuid))
             ->assertRedirect(route('admin.failed-jobs.index'))
             ->assertSessionHas('status');
@@ -112,7 +242,7 @@ class AdminOperationsTest extends TestCase
         $this->assertDatabaseHas('admin_audit_logs', [
             'actor_user_id' => $admin->id,
             'event' => 'queue.failed_job_retried',
-            'subject_label' => 'Example queued job',
+            'subject_label' => 'Server status poll',
         ]);
     }
 
@@ -122,7 +252,7 @@ class AdminOperationsTest extends TestCase
         $uuid = (string) Str::uuid();
         DB::table('failed_jobs')->insert($this->failedJob($uuid));
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->delete(route('admin.failed-jobs.destroy', $uuid))
             ->assertRedirect(route('admin.failed-jobs.index'))
             ->assertSessionHas('status');
@@ -131,8 +261,24 @@ class AdminOperationsTest extends TestCase
         $this->assertDatabaseHas('admin_audit_logs', [
             'actor_user_id' => $admin->id,
             'event' => 'queue.failed_job_forgotten',
-            'subject_label' => 'Example queued job',
+            'subject_label' => 'Server status poll',
         ]);
+    }
+
+    public function test_non_poll_failed_jobs_cannot_be_retried_from_admin_panel(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $uuid = (string) Str::uuid();
+        DB::table('failed_jobs')->insert($this->failedJob($uuid, 'App\\Jobs\\UnrelatedJob'));
+
+        $this->actingAsAdmin($admin)
+            ->from(route('admin.failed-jobs.index'))
+            ->post(route('admin.failed-jobs.retry', $uuid))
+            ->assertRedirect(route('admin.failed-jobs.index'))
+            ->assertSessionHas('error', 'Only server-poll jobs can be retried here.');
+
+        $this->assertDatabaseHas('failed_jobs', ['uuid' => $uuid]);
+        $this->assertSame(0, AdminAuditLog::where('event', 'queue.failed_job_retried')->count());
     }
 
     public function test_audit_log_lists_actor_and_recorded_event(): void
@@ -148,7 +294,7 @@ class AdminOperationsTest extends TestCase
             'ip_address' => '192.0.2.10',
         ]);
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->get(route('admin.audit.index', ['event' => 'server.enabled']))
             ->assertOk()
             ->assertSee($admin->name)
@@ -179,7 +325,7 @@ class AdminOperationsTest extends TestCase
         ]);
     }
 
-    private function failedJob(string $uuid): array
+    private function failedJob(string $uuid, string $jobClass = PollServer::class): array
     {
         return [
             'uuid' => $uuid,
@@ -187,9 +333,9 @@ class AdminOperationsTest extends TestCase
             'queue' => 'default',
             'payload' => json_encode([
                 'uuid' => $uuid,
-                'displayName' => 'Example queued job',
+                'displayName' => $jobClass === PollServer::class ? 'Server status poll' : 'Unrelated job',
                 'job' => 'Illuminate\\Queue\\CallQueuedHandler@call',
-                'data' => [],
+                'data' => ['commandName' => $jobClass],
             ]),
             'exception' => "Example failure\nStack trace hidden in summary",
             'failed_at' => now(),

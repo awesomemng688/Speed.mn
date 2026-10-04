@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\PollServer;
 use App\Services\AdminAuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class FailedJobController extends Controller
             ->through(function (object $job): object {
                 $payload = json_decode($job->payload, true) ?: [];
                 $job->job_name = $payload['displayName'] ?? $payload['data']['commandName'] ?? 'Unknown job';
+                $job->job_class = $payload['data']['commandName'] ?? null;
                 $job->exception_summary = Str::limit(Str::before($job->exception, "\n"), 240);
 
                 return $job;
@@ -49,6 +51,10 @@ class FailedJobController extends Controller
     {
         $job = DB::table('failed_jobs')->where('uuid', $uuid)->first();
         abort_unless($job, 404);
+        $payload = json_decode($job->payload, true) ?: [];
+        if (($payload['data']['commandName'] ?? null) !== PollServer::class) {
+            return back()->with('error', 'Only server-poll jobs can be retried here.');
+        }
 
         try {
             $exitCode = Artisan::call('queue:retry', ['id' => [$uuid]]);

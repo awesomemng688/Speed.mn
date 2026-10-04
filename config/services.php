@@ -44,4 +44,8 @@ return [
         'bridge_secret' => env('SKINS_BRIDGE_SECRET'),
     ],
 
+    'discord' => [
+        'admin_webhook' => env('DISCORD_ADMIN_WEBHOOK'),
+    ],
+
 ];

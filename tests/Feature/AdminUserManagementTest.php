@@ -22,14 +22,14 @@ class AdminUserManagementTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
         $user = User::factory()->create(['is_admin' => false]);
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->patch(route('admin.users.toggle', $user))
             ->assertRedirect(route('admin.users.index'))
             ->assertSessionHas('status');
 
         $this->assertTrue($user->fresh()->is_admin);
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->patch(route('admin.users.toggle', $user))
             ->assertRedirect(route('admin.users.index'))
             ->assertSessionHas('status');
@@ -41,7 +41,7 @@ class AdminUserManagementTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)
+        $this->actingAsAdmin($admin)
             ->from(route('admin.users.index'))
             ->patch(route('admin.users.toggle', $admin))
             ->assertRedirect(route('admin.users.index'))
