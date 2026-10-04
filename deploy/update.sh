@@ -181,3 +181,4 @@ if [[ ! "$app_url" =~ ^https?:// ]]; then
     exit 1
 fi
 curl --fail --silent --show-error --location --max-time 20 --output /dev/null "$app_url"
+"$PHP_BIN" "$CURRENT_LINK/artisan" speedmn:deploy-smoke-record

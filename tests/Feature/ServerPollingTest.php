@@ -70,6 +70,45 @@ class ServerPollingTest extends TestCase
         $this->assertFalse($server->latestStatus->online);
     }
 
+    public function test_favorites_receive_one_notification_for_confirmed_outage_and_recovery(): void
+    {
+        $server = $this->createServer();
+        $favorite = User::factory()->create();
+        $unrelated = User::factory()->create();
+        $favorite->favoriteServers()->attach($server);
+        ServerStatus::create([
+            'server_id' => $server->id,
+            'online' => true,
+            'players' => 4,
+            'max_players' => 20,
+            'created_at' => now()->subMinute(),
+        ]);
+
+        $query = \Mockery::mock(ServerQueryService::class);
+        $query->shouldReceive('query')->times(4)->andReturn(
+            $this->offlineResult(),
+            $this->offlineResult(),
+            $this->offlineResult(),
+            $this->successfulResult(),
+        );
+
+        (new PollServer($server->id))->handle($query);
+        $this->assertDatabaseCount('notifications', 0);
+
+        (new PollServer($server->id))->handle($query);
+        $this->assertDatabaseCount('notifications', 1);
+        (new PollServer($server->id))->handle($query);
+        $this->assertDatabaseCount('notifications', 1);
+
+        (new PollServer($server->id))->handle($query);
+        $this->assertDatabaseCount('notifications', 2);
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $favorite->id,
+            'type' => \App\Notifications\ServerStatusChanged::class,
+        ]);
+        $this->assertDatabaseMissing('notifications', ['notifiable_id' => $unrelated->id]);
+    }
+
     public function test_poll_command_records_scheduler_heartbeat_and_queues_enabled_servers(): void
     {
         $server = $this->createServer();
@@ -79,6 +118,13 @@ class ServerPollingTest extends TestCase
 
         $this->assertNotNull(Cache::get('speedmn.poll.last_dispatched_at'));
         Queue::assertPushed(PollServer::class, fn (PollServer $job) => $job->serverId === $server->id);
+    }
+
+    public function test_deploy_smoke_command_records_the_success_timestamp(): void
+    {
+        Artisan::call('speedmn:deploy-smoke-record');
+
+        $this->assertNotNull(Cache::get('speedmn.deploy.last_smoke_at'));
     }
 
     public function test_poll_command_still_queues_jobs_when_heartbeat_cache_fails(): void
@@ -118,12 +164,16 @@ class ServerPollingTest extends TestCase
         ])->save();
         Cache::put('speedmn.poll.last_dispatched_at', now()->toIso8601String());
         Cache::put('speedmn.poll.last_completed_at', now()->toIso8601String());
+        Cache::put('speedmn.backup.last_success_at', now()->toIso8601String());
+        Cache::put('speedmn.deploy.last_smoke_at', now()->toIso8601String());
         $admin = User::factory()->create(['is_admin' => true]);
 
         $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index'))
             ->assertOk()
             ->assertSee('Queue worker:')
+            ->assertSee('Daily backup:')
+            ->assertSee('HTTP smoke test:')
             ->assertSee('A2S query timed out')
             ->assertSee('Last success');
     }
@@ -132,7 +182,7 @@ class ServerPollingTest extends TestCase
     {
         $this->createServer();
         $admin = User::factory()->create(['is_admin' => true]);
-        Cache::shouldReceive('get')->times(3)->andThrow(new \RuntimeException('cache unavailable'));
+        Cache::shouldReceive('get')->times(5)->andThrow(new \RuntimeException('cache unavailable'));
 
         $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index'))
@@ -178,6 +228,23 @@ class ServerPollingTest extends TestCase
             'version' => 'test',
             'query_succeeded' => true,
             'query_error' => null,
+        ];
+    }
+
+    private function offlineResult(): array
+    {
+        return [
+            'online' => false,
+            'players' => 0,
+            'max_players' => 20,
+            'bots' => null,
+            'vac' => null,
+            'map' => null,
+            'response_time' => 2000,
+            'player_list' => [],
+            'version' => null,
+            'query_succeeded' => false,
+            'query_error' => 'A2S query timed out',
         ];
     }
 }

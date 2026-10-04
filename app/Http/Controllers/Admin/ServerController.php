@@ -73,12 +73,18 @@ class ServerController extends Controller
         $lastDispatchedAt = $this->cacheTimestamp('speedmn.poll.last_dispatched_at');
         $lastCompletedAt = $this->cacheTimestamp('speedmn.poll.last_completed_at');
         $lastFailedAt = $this->cacheTimestamp('speedmn.poll.last_failed_at');
+        $lastBackupAt = $this->cacheTimestamp('speedmn.backup.last_success_at');
+        $lastSmokeAt = $this->cacheTimestamp('speedmn.deploy.last_smoke_at');
         $pollMonitor = [
             'last_dispatched_at' => $lastDispatchedAt,
             'last_completed_at' => $lastCompletedAt,
             'last_failed_at' => $lastFailedAt,
+            'last_backup_at' => $lastBackupAt,
+            'last_smoke_at' => $lastSmokeAt,
             'scheduler_healthy' => $summary['enabled'] === 0 || ($lastDispatchedAt?->gte(now()->subSeconds(75)) ?? false),
             'worker_healthy' => $summary['enabled'] === 0 || ($lastCompletedAt?->gte(now()->subSeconds(120)) ?? false),
+            'backup_healthy' => $lastBackupAt?->gte(now()->subHours(26)) ?? false,
+            'smoke_passed' => $lastSmokeAt !== null,
             'stale_servers' => Server::where('enabled', true)
                 ->where(fn ($query) => $query->whereNull('last_polled_at')->orWhere('last_polled_at', '<', now()->subMinutes(2)))
                 ->count(),

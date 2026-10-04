@@ -58,12 +58,22 @@
         </div>
     </div>
     <div class="panel profile-activity">
-        <div class="panel-heading"><div><p class="eyebrow">ТАНЫ СОНГОЛТ</p><h3>Дуртай серверүүд</h3></div><a class="text-link" href="{{ route('servers.index') }}">Сервер нэмэх →</a></div>
+        <div class="panel-heading"><div><p class="eyebrow">ТАНЫ СОНГОЛТ</p><h3>Дуртай серверүүд</h3></div><form method="GET" action="{{ route('profile') }}"><label class="filter-field"><span>Эрэмбэлэх</span><select name="favorites_sort" onchange="this.form.submit()"><option value="recent" @selected($favoriteSort === 'recent')>Шинээр хадгалсан</option><option value="name" @selected($favoriteSort === 'name')>Нэрээр</option><option value="players" @selected($favoriteSort === 'players')>Онлайн тоглогчоор</option></select></label></form><a class="text-link" href="{{ route('servers.index') }}">Сервер нэмэх →</a></div>
         <div class="profile-server-list">
             @forelse($favorites as $server)
                 <div class="profile-server-row"><span class="game-pill {{ $server->game }}">{{ strtoupper($server->game) }}</span><a class="profile-server-name" href="{{ route('servers.show', $server) }}"><strong>{{ $server->name }}</strong><small>{{ $server->address }}</small></a><a class="button button-ghost" href="steam://connect/{{ $server->address }}">Холбогдох</a><form method="POST" action="{{ route('servers.unfavorite', $server) }}">@csrf @method('DELETE')<button class="favorite-remove" type="submit" aria-label="{{ $server->name }} дуртайгаас хасах">×</button></form></div>
             @empty
                 <p class="muted">Одоогоор хадгалсан сервер алга.</p>
+            @endforelse
+        </div>
+    </div>
+    <div class="panel profile-activity">
+        <div class="panel-heading"><div><p class="eyebrow">МЭДЭГДЭЛ</p><h3>Серверийн төлөв @if($unreadNotifications)<span class="profile-status">({{ $unreadNotifications }} уншаагүй)</span>@endif</h3></div></div>
+        <div class="profile-server-list">
+            @forelse($notifications as $notification)
+                <div class="profile-server-row"><a class="profile-server-name" href="{{ route('servers.show', ['server' => $notification->data['server_id']]) }}"><strong>{{ $notification->data['server_name'] ?? 'Сервер' }} · {{ ($notification->data['status'] ?? '') === 'online' ? 'онлайн боллоо' : 'офлайн боллоо' }}</strong><small>{{ $notification->data['address'] ?? '' }} · {{ $notification->created_at?->diffForHumans() }}</small></a>@if(!$notification->read_at)<form method="POST" action="{{ route('notifications.read', $notification->id) }}">@csrf<button class="text-button" type="submit">Уншсан</button></form>@endif</div>
+            @empty
+                <p class="muted">Серверийн төлөвийн мэдэгдэл алга.</p>
             @endforelse
         </div>
     </div>

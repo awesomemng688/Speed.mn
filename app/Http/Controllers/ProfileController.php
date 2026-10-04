@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Server;
+use App\Models\ServerStatus;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -11,9 +13,10 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function show(): View
+    public function show(Request $request): View
     {
         $user = Auth::user();
+        $favoriteSort = $request->validate(['favorites_sort' => ['nullable', 'in:recent,name,players']])['favorites_sort'] ?? 'recent';
         $servers = Server::query()
             ->where('enabled', true)
             ->with('latestStatus')
@@ -23,9 +26,21 @@ class ProfileController extends Controller
         $favorites = $user->favoriteServers()
             ->where('servers.enabled', true)
             ->with('latestStatus')
-            ->orderBy('servers.name')
+            ->when($favoriteSort === 'name', fn ($query) => $query->orderBy('servers.name'))
+            ->when($favoriteSort === 'players', fn ($query) => $query
+                ->orderByDesc(ServerStatus::query()
+                    ->select('players')
+                    ->whereColumn('server_id', 'servers.id')
+                    ->where('online', true)
+                    ->where('created_at', '>=', ServerStatus::freshSince())
+                    ->orderByDesc('created_at')
+                    ->limit(1))
+                ->orderBy('servers.name'))
+            ->when($favoriteSort === 'recent', fn ($query) => $query->orderByDesc('server_favorites.created_at'))
             ->get();
         $favorites->each(fn (Server $server) => $server->setAttribute('is_favorited', true));
+        $notifications = $user->notifications()->latest()->limit(8)->get();
+        $unreadNotifications = $user->unreadNotifications()->count();
 
         $onlineServers = $servers->filter(fn (Server $server) => $server->latestStatus?->online)->count();
         $playersOnline = $servers->sum(fn (Server $server) => $server->latestStatus?->players ?? 0);
@@ -35,6 +50,9 @@ class ProfileController extends Controller
             'user' => $user,
             'servers' => $servers,
             'favorites' => $favorites,
+            'favoriteSort' => $favoriteSort,
+            'notifications' => $notifications,
+            'unreadNotifications' => $unreadNotifications,
             'progress' => $progress,
             'networkSnapshot' => [
                 'online_servers' => $onlineServers,

@@ -104,6 +104,10 @@ The deploy script verifies Laravel route boot and requests the configured
 `APP_URL` before reporting success. Install `curl` on the VPS for this HTTP
 smoke test.
 
+Server status history is pruned daily at 03:30. `SERVER_STATUS_RETENTION_DAYS`
+is clamped to 30–90 days and defaults to 90; a timestamp index and batched
+deletes limit cleanup work.
+
 Audit entries are pruned daily after 365 days by default. Set
 `ADMIN_AUDIT_RETENTION_DAYS` in `.env` to change that period. After environment
 changes, refresh cached config and restart workers:

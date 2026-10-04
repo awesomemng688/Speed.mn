@@ -6,12 +6,14 @@
     @if(session('status'))<div class="admin-alert success">{{ session('status') }}</div>@endif
     @if(session('connection_success'))<div class="admin-alert success">{{ session('connection_success') }}</div>@endif
     @if(session('connection_error'))<div class="admin-alert error">{{ session('connection_error') }}</div>@endif
-    <div class="admin-alert {{ $pollMonitor['scheduler_healthy'] && $pollMonitor['worker_healthy'] && $pollMonitor['failed_jobs'] === 0 ? 'success' : 'error' }}" role="status">
+    <div class="admin-alert {{ $pollMonitor['scheduler_healthy'] && $pollMonitor['worker_healthy'] && $pollMonitor['backup_healthy'] && $pollMonitor['smoke_passed'] && $pollMonitor['failed_jobs'] === 0 ? 'success' : 'error' }}" role="status">
         Poll scheduler: <strong>{{ $pollMonitor['scheduler_healthy'] ? 'running' : 'not detected' }}</strong>
         · Queue worker: <strong>{{ $pollMonitor['worker_healthy'] ? 'processing' : 'no recent jobs' }}</strong>
+        · Daily backup: <strong>{{ $pollMonitor['backup_healthy'] ? 'recent' : 'missing or stale' }}</strong>
+        · HTTP smoke test: <strong>{{ $pollMonitor['smoke_passed'] ? 'passed' : 'not recorded' }}</strong>
         · Stale servers: <strong>{{ $pollMonitor['stale_servers'] }}</strong>
         · Failed jobs (1h): <strong>{{ $pollMonitor['failed_jobs'] }}</strong>
-        <small>Last dispatch: {{ $pollMonitor['last_dispatched_at']?->diffForHumans() ?? 'never' }} · Last completed: {{ $pollMonitor['last_completed_at']?->diffForHumans() ?? 'never' }}</small>
+        <small>Last dispatch: {{ $pollMonitor['last_dispatched_at']?->diffForHumans() ?? 'never' }} · Last completed: {{ $pollMonitor['last_completed_at']?->diffForHumans() ?? 'never' }} · Last backup: {{ $pollMonitor['last_backup_at']?->diffForHumans() ?? 'never' }} · Last HTTP smoke: {{ $pollMonitor['last_smoke_at']?->diffForHumans() ?? 'never' }}</small>
     </div>
     @if($pollMonitor['last_failed_at'])<div class="admin-alert error" role="alert">Last poll job failure: {{ $pollMonitor['last_failed_at']->diffForHumans() }}</div>@endif
     <div class="admin-summary">

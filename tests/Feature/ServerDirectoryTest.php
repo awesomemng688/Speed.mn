@@ -116,6 +116,27 @@ class ServerDirectoryTest extends TestCase
             ->assertSee('Шүүлтэд тохирох сервер олдсонгүй.');
     }
 
+    public function test_server_detail_shows_seven_and_thirty_day_statistics(): void
+    {
+        $server = $this->createServer('History server', '198.51.100.45');
+        $this->createStatus($server, 10, 20, 'de_dust2', true, now()->subDays(2));
+        $this->createStatus($server, 0, 20, 'de_dust2', false, now()->subDays(2)->subMinutes(30));
+        $this->createStatus($server, 4, 20, 'de_mirage', true, now()->subDays(12));
+        $this->createStatus($server, 20, 20, 'de_inferno', true, now()->subDays(40));
+
+        $this->get(route('servers.show', ['server' => $server, 'period' => '7d']))
+            ->assertOk()
+            ->assertSee('50.00%')
+            ->assertSee('7 хоног')
+            ->assertSee('10.0');
+
+        $this->get(route('servers.show', ['server' => $server, 'period' => '30d']))
+            ->assertOk()
+            ->assertSee('66.67%')
+            ->assertSee('7.0')
+            ->assertSee('10');
+    }
+
     public function test_freshness_uses_a_single_three_minute_boundary(): void
     {
         $referenceTime = now()->startOfSecond();

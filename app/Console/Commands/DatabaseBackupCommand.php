@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -71,6 +73,7 @@ class DatabaseBackupCommand extends Command
                 '--triggers',
                 '--events',
                 '--hex-blob',
+                '--no-tablespaces',
                 $database,
                 '--result-file='.$dumpPath,
             ]);
@@ -85,6 +88,11 @@ class DatabaseBackupCommand extends Command
             $verify->setTimeout(60);
             $verify->mustRun();
             chmod($backupPath, 0600);
+            try {
+                Cache::forever('speedmn.backup.last_success_at', now()->toIso8601String());
+            } catch (Throwable $exception) {
+                Log::warning('Could not store database backup heartbeat', ['error' => $exception->getMessage()]);
+            }
 
             $this->pruneOldBackups($directory);
             $this->info('Database backup created and gzip-verified: '.$backupPath);

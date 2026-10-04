@@ -92,7 +92,13 @@ Artisan::command('speedmn:audit-prune', function () {
     $this->info("Removed {$deleted} audit log(s) older than {$retentionDays} days.");
 })->purpose('Remove administrator audit logs past the configured retention period');
 
+Artisan::command('speedmn:deploy-smoke-record', function () {
+    Cache::forever('speedmn.deploy.last_smoke_at', now()->toIso8601String());
+    $this->info('Successful deploy smoke test recorded.');
+})->purpose('Record a successful post-deploy HTTP smoke test');
+
 Schedule::command('speedmn:poll')->everyThirtySeconds()->withoutOverlapping();
 Schedule::command('speedmn:monitor')->everyMinute()->withoutOverlapping();
 Schedule::command('speedmn:audit-prune')->dailyAt('02:15')->withoutOverlapping();
 Schedule::command('speedmn:backup')->dailyAt('03:00')->withoutOverlapping();
+Schedule::command('speedmn:status-prune')->dailyAt('03:30')->withoutOverlapping();

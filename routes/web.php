@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RankController;
 use App\Http\Controllers\SkinBridgeController;
 use App\Http\Controllers\ServerFavoriteController;
+use App\Http\Controllers\UserNotificationController;
 use App\Models\ServerStatus;
 use Illuminate\Support\Facades\DB;
 
@@ -73,6 +74,7 @@ Route::get('/skins/bridge', SkinBridgeController::class)->middleware('auth')->na
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth')->name('profile');
 Route::post('/servers/{server}/favorite', [ServerFavoriteController::class, 'store'])->middleware('auth')->name('servers.favorite');
 Route::delete('/servers/{server}/favorite', [ServerFavoriteController::class, 'destroy'])->middleware('auth')->name('servers.unfavorite');
+Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'read'])->middleware('auth')->name('notifications.read');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('two-factor.setup');

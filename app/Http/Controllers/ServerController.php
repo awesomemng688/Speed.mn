@@ -89,22 +89,59 @@ class ServerController extends Controller
         return view('servers.index', compact('servers', 'game', 'filters'));
     }
 
-    public function show(Server $server): View
+    public function show(Request $request, Server $server): View
     {
         abort_unless($server->enabled, 404);
+        $period = $request->validate(['period' => ['nullable', 'in:24h,7d,30d']])['period'] ?? '24h';
         $server->load('latestStatus');
-        $history = $server->statuses()
-            ->where('created_at', '>=', Carbon::now()->subDay())
-            ->oldest()
-            ->get();
-        $checks = $history->count();
-        $uptime = $checks ? round($history->where('online', true)->count() / $checks * 100, 2) : null;
-        $offlineHistory = $history->where('online', false)->values();
+        $periodDays = match ($period) {
+            '7d' => 7,
+            '30d' => 30,
+            default => 1,
+        };
+        $periodStart = Carbon::now()->subDays($periodDays);
 
-        if (request()->user()) {
-            $server->loadExists(['favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', request()->user()->id)]);
+        if ($period === '24h') {
+            $history = $server->statuses()
+                ->where('created_at', '>=', $periodStart)
+                ->oldest()
+                ->get();
+            $totalChecks = $history->count();
+            $onlineHistory = $history->where('online', true);
+            $uptime = $totalChecks ? round($onlineHistory->count() / $totalChecks * 100, 2) : null;
+            $averagePlayers = $onlineHistory->isNotEmpty() ? round($onlineHistory->avg('players'), 1) : null;
+            $peakPlayers = $onlineHistory->max('players');
+            $offlineHistory = $history->where('online', false)->values();
+        } else {
+            $history = $server->statuses()
+                ->where('created_at', '>=', $periodStart)
+                ->selectRaw('DATE(created_at) AS bucket')
+                ->selectRaw('COUNT(*) AS checks')
+                ->selectRaw('SUM(CASE WHEN online = 1 THEN 1 ELSE 0 END) AS online_checks')
+                ->selectRaw('AVG(CASE WHEN online = 1 THEN players END) AS average_players')
+                ->selectRaw('MAX(CASE WHEN online = 1 THEN players END) AS peak_players')
+                ->groupByRaw('DATE(created_at)')
+                ->orderBy('bucket')
+                ->get();
+            $totalChecks = (int) $history->sum('checks');
+            $onlineChecks = (int) $history->sum('online_checks');
+            $uptime = $totalChecks ? round($onlineChecks / $totalChecks * 100, 2) : null;
+            $averagePlayers = $onlineChecks
+                ? round($history->sum(fn ($point) => (float) $point->average_players * (int) $point->online_checks) / $onlineChecks, 1)
+                : null;
+            $peakPlayers = $history->max('peak_players');
+            $offlineHistory = $server->statuses()
+                ->where('created_at', '>=', $periodStart)
+                ->where('online', false)
+                ->latest('created_at')
+                ->limit(10)
+                ->get();
         }
 
-        return view('servers.show', compact('server', 'history', 'uptime', 'offlineHistory'));
+        if ($request->user()) {
+            $server->loadExists(['favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', $request->user()->id)]);
+        }
+
+        return view('servers.show', compact('server', 'history', 'uptime', 'averagePlayers', 'peakPlayers', 'totalChecks', 'offlineHistory', 'period', 'periodDays'));
     }
 }
