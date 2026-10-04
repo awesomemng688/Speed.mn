@@ -46,6 +46,7 @@ return [
 
     'discord' => [
         'admin_webhook' => env('DISCORD_ADMIN_WEBHOOK'),
+        'players_webhook' => env('DISCORD_SERVER_PLAYERS_WEBHOOK'),
     ],
 
 ];

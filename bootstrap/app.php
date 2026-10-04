@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         \App\Console\Commands\DatabaseBackupCommand::class,
+        \App\Console\Commands\DiscordPlayersReportCommand::class,
         \App\Console\Commands\PruneServerStatusesCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
