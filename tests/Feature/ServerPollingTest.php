@@ -81,6 +81,33 @@ class ServerPollingTest extends TestCase
         Queue::assertPushed(PollServer::class, fn (PollServer $job) => $job->serverId === $server->id);
     }
 
+    public function test_poll_command_still_queues_jobs_when_heartbeat_cache_fails(): void
+    {
+        $server = $this->createServer();
+        Queue::fake();
+        Cache::shouldReceive('put')->once()->andThrow(new \RuntimeException('cache unavailable'));
+
+        Artisan::call('speedmn:poll');
+
+        Queue::assertPushed(PollServer::class, fn (PollServer $job) => $job->serverId === $server->id);
+    }
+
+    public function test_successful_poll_is_not_failed_when_worker_heartbeat_cache_fails(): void
+    {
+        $server = $this->createServer();
+        $query = \Mockery::mock(ServerQueryService::class);
+        $query->shouldReceive('query')->once()
+            ->with(\Mockery::on(fn (Server $candidate) => $candidate->is($server)))
+            ->andReturn($this->successfulResult());
+        Cache::shouldReceive('put')->once()->andThrow(new \RuntimeException('cache unavailable'));
+
+        (new PollServer($server->id))->handle($query);
+
+        $server->refresh();
+        $this->assertNotNull($server->last_successful_poll_at);
+        $this->assertTrue($server->latestStatus->online);
+    }
+
     public function test_admin_server_page_shows_queue_and_query_diagnostics(): void
     {
         $server = $this->createServer();
@@ -99,6 +126,18 @@ class ServerPollingTest extends TestCase
             ->assertSee('Queue worker:')
             ->assertSee('A2S query timed out')
             ->assertSee('Last success');
+    }
+
+    public function test_admin_server_page_survives_unavailable_heartbeat_cache(): void
+    {
+        $this->createServer();
+        $admin = User::factory()->create(['is_admin' => true]);
+        Cache::shouldReceive('get')->times(3)->andThrow(new \RuntimeException('cache unavailable'));
+
+        $this->actingAs($admin)
+            ->get(route('admin.servers.index'))
+            ->assertOk()
+            ->assertSee('no recent jobs');
     }
 
     public function test_permanently_failed_job_records_the_reason_for_admin(): void

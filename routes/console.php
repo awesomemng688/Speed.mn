@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Jobs\PollServer;
 use App\Models\Server;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -13,8 +14,12 @@ Artisan::command('inspire', function () {
 
 Artisan::command('speedmn:poll', function () {
     $serverIds = Server::where('enabled', true)->pluck('id');
-    Cache::put('speedmn.poll.last_dispatched_at', now()->toIso8601String(), now()->addDay());
     $serverIds->each(fn (int $id) => PollServer::dispatch($id));
+    try {
+        Cache::put('speedmn.poll.last_dispatched_at', now()->toIso8601String(), now()->addDay());
+    } catch (\Throwable $exception) {
+        Log::warning('Could not store poll scheduler heartbeat', ['error' => $exception->getMessage()]);
+    }
     $this->info("Queued {$serverIds->count()} server polling jobs.");
 })->purpose('Queue status checks for enabled Speed.mn servers');
 

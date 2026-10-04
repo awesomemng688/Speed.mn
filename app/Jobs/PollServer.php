@@ -8,6 +8,7 @@ use App\Services\ServerQueryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -42,7 +43,7 @@ class PollServer implements ShouldQueue
             'last_query_error' => $querySucceeded ? null : Str::limit($queryError ?: 'Server query failed without an error message.', 2000),
         ])->save();
 
-        Cache::put('speedmn.poll.last_completed_at', $polledAt->toIso8601String(), now()->addDay());
+        $this->storeHeartbeat('speedmn.poll.last_completed_at', $polledAt);
     }
 
     public function failed(Throwable $exception): void
@@ -55,6 +56,19 @@ class PollServer implements ShouldQueue
             'last_query_error' => Str::limit('Polling job failed: '.$exception->getMessage(), 2000),
         ])->save();
 
-        Cache::put('speedmn.poll.last_failed_at', $failedAt->toIso8601String(), now()->addDay());
+        $this->storeHeartbeat('speedmn.poll.last_failed_at', $failedAt);
+    }
+
+    private function storeHeartbeat(string $key, $timestamp): void
+    {
+        try {
+            Cache::put($key, $timestamp->toIso8601String(), now()->addDay());
+        } catch (Throwable $exception) {
+            Log::warning('Could not store poll worker heartbeat', [
+                'server_id' => $this->serverId,
+                'key' => $key,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }

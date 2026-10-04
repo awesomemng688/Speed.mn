@@ -12,7 +12,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class ServerController extends Controller
 {
@@ -102,7 +104,16 @@ class ServerController extends Controller
 
     private function cacheTimestamp(string $key): ?Carbon
     {
-        $value = Cache::get($key);
+        try {
+            $value = Cache::get($key);
+        } catch (Throwable $exception) {
+            Log::warning('Could not read poll heartbeat', [
+                'key' => $key,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
 
         return $value ? Carbon::parse($value) : null;
     }
