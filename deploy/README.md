@@ -88,9 +88,11 @@ failed-job payloads, de-duplication, and recovery without sending to Discord.
 
 To post online CS2 and CS 1.6 player lists to a separate Discord channel, set
 `DISCORD_SERVER_PLAYERS_WEBHOOK` in `.env`. The report runs every 10 minutes,
-includes only fresh online server status, limits each server to 20 player names,
-and disables Discord mentions. Apply the config with `php artisan config:cache`.
-Run `php artisan speedmn:discord-players` to test it immediately.
+includes only fresh online server status, groups servers by game, and shows map
+thumbnails and player counts without player names, scores, or play durations.
+It updates its existing Discord embeds and disables mentions. Apply the config
+with `php artisan config:cache`. Run `php artisan speedmn:discord-players` to
+test it immediately.
 
 Daily compressed MySQL/MariaDB backups run at 03:00 through Laravel's scheduler.
 They are stored in `storage/app/private/backups` with owner-only permissions;

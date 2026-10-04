@@ -45,8 +45,10 @@ class DiscordPlayersReportCommand extends Command
         $reportHeader = now()->timezone(config('app.timezone'))->format('Y-m-d H:i')
             .' · '.$onlineServers->count().' сервер · '.$totalPlayers." тоглогч\n"
             .'CS2: '.$cs2Servers.' · CS 1.6: '.$cs16Servers;
-        $serverBlocks = $this->serverBlocks($onlineServers);
-        $messages = $serverBlocks ? $this->chunkMessages($reportHeader, $serverBlocks) : [$reportHeader."\nОдоогоор шинэ төлөвтэй онлайн сервер алга."];
+        if ($onlineServers->isEmpty()) {
+            $reportHeader .= "\nОдоогоор шинэ төлөвтэй онлайн сервер алга.";
+        }
+        $messages = $this->embedMessages($reportHeader, $onlineServers);
 
         try {
             $previousMessageIds = Cache::get('speedmn.discord.players.message_ids', []);
@@ -55,15 +57,9 @@ class DiscordPlayersReportCommand extends Command
             }
 
             $messageIds = [];
-            foreach ($messages as $index => $message) {
+            foreach ($messages as $index => $embeds) {
                 $payload = [
-                    'embeds' => [[
-                        'title' => 'Speed.mn · Онлайн тоглогчид',
-                        'description' => $message,
-                        'color' => 0xE84D6A,
-                        'timestamp' => now()->toIso8601String(),
-                        'footer' => ['text' => '10 минут тутам шинэчлэгдэнэ'],
-                    ]],
+                    'embeds' => $embeds,
                     'allowed_mentions' => ['parse' => []],
                 ];
                 $messageId = $previousMessageIds[$index] ?? null;
@@ -109,62 +105,50 @@ class DiscordPlayersReportCommand extends Command
         return self::SUCCESS;
     }
 
-    private function serverBlocks(Collection $servers): array
+    private function embedMessages(string $summary, Collection $servers): array
     {
-        $blocks = [];
-        $previousGame = null;
+        $summaryEmbed = [
+            'title' => 'Speed.mn · Онлайн серверүүд',
+            'description' => $summary,
+            'color' => 0xE84D6A,
+            'timestamp' => now()->toIso8601String(),
+            'footer' => ['text' => '10 минут тутам шинэчлэгдэнэ · Тоглогчийн нэр харуулахгүй'],
+        ];
+        $messages = [];
+        $embeds = [$summaryEmbed];
+
         foreach ($servers as $server) {
+            if (count($embeds) === 10) {
+                $messages[] = $embeds;
+                $embeds = [$summaryEmbed];
+            }
+
             $status = $server->latestStatus;
             $game = $server->game === 'cs2' ? 'CS2' : 'CS 1.6';
             $capacity = $status->max_players ?: $server->max_players ?: '—';
             $serverName = Str::limit(str_replace(['`', '*', '_', '~', '|'], ' ', Str::squish($server->name)), 80, '…');
-            $map = Str::limit(str_replace('`', ' ', (string) ($status->map ?: 'map тодорхойгүй')), 40, '…');
-            $groupHeading = $server->game !== $previousGame ? "### {$game}\n" : '';
-            $previousGame = $server->game;
-            $block = $groupHeading."**{$serverName}**\n`{$server->address}` · `{$map}` · **{$status->players}/{$capacity}**";
-            $players = collect($status->player_list ?? []);
+            $map = Str::limit(str_replace('`', ' ', (string) ($status->map ?: 'тодорхойгүй')), 40, '…');
+            $embed = [
+                'title' => $game.' · '.$serverName,
+                'color' => $game === 'CS2' ? 0x53A6FF : 0xF0A04B,
+                'fields' => [
+                    ['name' => 'Тоглогч', 'value' => $status->players.'/'.$capacity, 'inline' => true],
+                    ['name' => 'Map', 'value' => $map, 'inline' => true],
+                    ['name' => 'Хаяг', 'value' => $server->address, 'inline' => true],
+                ],
+            ];
 
-            if ($players->isEmpty()) {
-                $block .= "\nТоглогчдын нэрийн жагсаалт ирээгүй.";
-            } else {
-                foreach ($players->take(20) as $player) {
-                    $name = Str::squish(preg_replace('/[\x00-\x1F\x7F]/u', ' ', (string) ($player['name'] ?? 'Тоглогч')) ?? 'Тоглогч');
-                    $name = Str::limit(str_replace(['`', '*', '_', '~', '|'], ' ', $name), 48, '…');
-                    $duration = max(0, (int) ($player['duration'] ?? 0));
-                    $block .= "\n• {$name} · ".(int) ($player['score'] ?? 0)." оноо · ".gmdate('H:i:s', $duration);
-                }
-
-                if ($players->count() > 20) {
-                    $block .= "\n… мөн ".($players->count() - 20).' тоглогч';
-                }
+            if ($status->map) {
+                $mapGame = $server->game === 'cs2' ? 'csgo' : 'css';
+                $embed['thumbnail'] = [
+                    'url' => 'https://image.gametracker.com/images/maps/160x120/'.$mapGame.'/'.rawurlencode($status->map).'.jpg',
+                ];
             }
 
-            $blocks[] = $block;
+            $embeds[] = $embed;
         }
 
-        return $blocks;
-    }
-
-    private function chunkMessages(string $header, array $blocks): array
-    {
-        $messages = [];
-        $message = $header;
-        foreach ($blocks as $block) {
-            if (mb_strlen($message."\n\n".$block) > 3500 && $message !== $header) {
-                $messages[] = $message;
-                $message = $header;
-            }
-
-            if (mb_strlen($message."\n\n".$block) > 3800) {
-                $block = mb_substr($block, 0, 3800 - mb_strlen($header) - 2).'…';
-            }
-
-            $message .= "\n\n".$block;
-        }
-
-        if ($message !== $header || $blocks === []) {
-            $messages[] = $message;
-        }
+        $messages[] = $embeds;
 
         return $messages;
     }
