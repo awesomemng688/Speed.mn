@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Server;
 use App\Models\ServerStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -15,7 +17,8 @@ class DiscordPlayersReportTest extends TestCase
     public function test_report_sends_fresh_online_players_from_both_games_without_mentions(): void
     {
         config(['services.discord.players_webhook' => 'https://discord.com/api/webhooks/players-test']);
-        Http::fake();
+        Cache::forget('speedmn.discord.players.message_ids');
+        Http::fake(fn (Request $request) => Http::response(['id' => 'report-message-1'], 200));
 
         $cs2 = $this->createServer('CS2 report server', 'cs2');
         $this->createStatus($cs2, true, now()->subMinute(), [
@@ -32,23 +35,41 @@ class DiscordPlayersReportTest extends TestCase
         $this->createStatus($disabled, true, now()->subMinute());
 
         $this->artisan('speedmn:discord-players')
-            ->expectsOutput('Sent player reports for 2 online server(s).')
+            ->expectsOutput('Updated Discord player report for 2 online server(s).')
             ->assertExitCode(0);
 
         Http::assertSentCount(1);
-        Http::assertSent(fn ($request) => str_contains($request['content'], 'CS2 report server')
-            && str_contains($request['content'], 'CS 1.6 report server')
-            && str_contains($request['content'], 'Player One')
-            && str_contains($request['content'], '01:01:01')
-            && ! str_contains($request['content'], 'Offline server')
-            && ! str_contains($request['content'], 'Stale server')
-            && ! str_contains($request['content'], 'Disabled server')
-            && $request['allowed_mentions'] === ['parse' => []]);
+        $firstRequest = Http::recorded()->first()[0];
+        $payload = $firstRequest->data();
+        $description = $payload['embeds'][0]['description'];
+
+        $this->assertSame('POST', $firstRequest->method());
+        $this->assertStringContainsString('wait=true', $firstRequest->url());
+        $this->assertSame('Speed.mn · Онлайн тоглогчид', $payload['embeds'][0]['title']);
+        $this->assertStringContainsString('CS2 report server', $description);
+        $this->assertStringContainsString('CS 1.6 report server', $description);
+        $this->assertStringContainsString('### CS2', $description);
+        $this->assertStringContainsString('### CS 1.6', $description);
+        $this->assertStringContainsString('`de_dust2`', $description);
+        $this->assertStringContainsString('1/32', $description);
+        $this->assertStringContainsString('Player One', $description);
+        $this->assertStringContainsString('01:01:01', $description);
+        $this->assertStringNotContainsString('Offline server', $description);
+        $this->assertStringNotContainsString('Stale server', $description);
+        $this->assertStringNotContainsString('Disabled server', $description);
+        $this->assertSame(['parse' => []], $payload['allowed_mentions']);
+
+        $this->artisan('speedmn:discord-players')->assertExitCode(0);
+        Http::assertSentCount(2);
+        Http::assertSent(fn (Request $request) => $request->method() === 'PATCH'
+            && str_ends_with($request->url(), '/messages/report-message-1'));
+        $this->assertSame(['report-message-1'], Cache::get('speedmn.discord.players.message_ids'));
     }
 
     public function test_report_skips_safely_without_a_player_webhook(): void
     {
         config(['services.discord.players_webhook' => null]);
+        Cache::forget('speedmn.discord.players.message_ids');
         Http::fake();
 
         $this->artisan('speedmn:discord-players')
