@@ -1,4 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-map-image]').forEach((image) => {
+        image.addEventListener('error', () => {
+            if (image.dataset.fallbackSrc && image.src !== image.dataset.fallbackSrc) {
+                image.src = image.dataset.fallbackSrc;
+                return;
+            }
+
+            image.hidden = true;
+            const fallback = image.nextElementSibling;
+            if (fallback?.classList.contains('server-card-cover-fallback')) fallback.hidden = false;
+        });
+
+        if (image.complete && image.naturalWidth === 0) image.dispatchEvent(new Event('error'));
+    });
+
+    document.querySelectorAll('[data-copy-address]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const address = button.dataset.copyAddress;
+            try {
+                await navigator.clipboard.writeText(address);
+            } catch {
+                const input = document.createElement('textarea');
+                input.value = address;
+                input.setAttribute('readonly', '');
+                input.style.position = 'fixed';
+                input.style.opacity = '0';
+                document.body.append(input);
+                input.select();
+                document.execCommand('copy');
+                input.remove();
+            }
+
+            const originalText = button.textContent;
+            button.textContent = 'Хуулагдлаа';
+            button.setAttribute('aria-live', 'polite');
+            window.setTimeout(() => { button.textContent = originalText; }, 1800);
+        });
+    });
+
     const menu = document.querySelector('.menu-toggle');
     const nav = document.querySelector('#site-menu');
 
@@ -7,29 +46,23 @@ document.addEventListener('DOMContentLoaded', () => {
         menu.setAttribute('aria-expanded', String(open));
     });
 
-    const search = document.querySelector('[data-server-search]');
-    const cards = [...document.querySelectorAll('[data-server-card]')];
-    const count = document.querySelector('[data-result-count]');
-    const empty = document.querySelector('[data-no-results]');
+    const accountTrigger = document.querySelector('.account-trigger');
+    const accountDropdown = document.querySelector('#account-dropdown');
+    accountTrigger?.addEventListener('click', () => {
+        const open = accountDropdown.hasAttribute('hidden');
+        accountDropdown.toggleAttribute('hidden', !open);
+        accountTrigger.setAttribute('aria-expanded', String(open));
+    });
 
-    const updateResultCount = (visible) => {
-        if (count) count.textContent = `${visible} server${visible === 1 ? '' : 's'}`;
-        empty?.classList.toggle('is-hidden', visible > 0);
-    };
-
-    updateResultCount(cards.length);
-
-    search?.addEventListener('input', () => {
-        const term = search.value.trim().toLowerCase();
-        let visible = 0;
-
-        cards.forEach((card) => {
-            const matches = !term || card.dataset.name.includes(term);
-            card.hidden = !matches;
-            if (matches) visible += 1;
-        });
-
-        updateResultCount(visible);
+    document.addEventListener('click', (event) => {
+        if (nav?.classList.contains('is-open') && !event.target.closest('.nav, .menu-toggle')) {
+            nav.classList.remove('is-open');
+            menu?.setAttribute('aria-expanded', 'false');
+        }
+        if (accountDropdown && accountTrigger && !event.target.closest('.account-menu')) {
+            accountDropdown.setAttribute('hidden', '');
+            accountTrigger.setAttribute('aria-expanded', 'false');
+        }
     });
 
     const closePlayerModal = (modal) => {

@@ -10,6 +10,7 @@ class ServerResource extends JsonResource
     public function toArray(Request $request): array
     {
         $status = $this->latestStatus;
+        $statusState = ServerStatus::stateOf($status);
         $data = [
             'id' => $this->id,
             'name' => $this->name,
@@ -17,7 +18,9 @@ class ServerResource extends JsonResource
             'address' => $this->address,
             'region' => $this->region,
             'country' => $this->country,
-            'online' => (bool) ($status?->online ?? false),
+            'online' => $statusState === 'online',
+            'status_fresh' => in_array($statusState, ['online', 'offline'], true),
+            'status_state' => $statusState,
             'players' => $status?->players ?? 0,
             'max_players' => $status?->max_players ?: $this->max_players,
             'map' => $status?->map,

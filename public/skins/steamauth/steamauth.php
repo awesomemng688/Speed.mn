@@ -1,6 +1,8 @@
 <?php
 ob_start();
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+	session_start();
+}
 
 function logoutbutton() {
 	echo "<form action='' method='get'><button class='btn btn-secondary' name='logout' type='submit'>Logout</button></form>"; //logout button

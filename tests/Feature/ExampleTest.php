@@ -32,7 +32,7 @@ class ExampleTest extends TestCase
             'enabled' => true,
         ]);
 
-        ServerStatus::createMany([
+        $server->statuses()->createMany([
             [
                 'server_id' => $server->id,
                 'online' => true,

@@ -13,8 +13,15 @@ use Throwable;
 
 class SteamController extends Controller
 {
-    public function redirect(SteamAuthService $steam): RedirectResponse
+    public function redirect(Request $request, SteamAuthService $steam): RedirectResponse
     {
+        if ($request->filled('redirect')) {
+            $redirect = (string) $request->query('redirect');
+            if (str_starts_with($redirect, '/') && !str_starts_with($redirect, '//')) {
+                $request->session()->put('url.intended', url($redirect));
+            }
+        }
+
         return redirect()->away($steam->loginUrl(route('steam.callback')));
     }
 
@@ -38,7 +45,7 @@ class SteamController extends Controller
             return redirect()->intended(route('profile'));
         } catch (Throwable $exception) {
             report($exception);
-            return redirect()->route('servers.index')->with('error', 'Steam login could not be verified.');
+            return redirect()->route('servers.index')->with('error', 'Steam нэвтрэлтийг баталгаажуулж чадсангүй. Дахин оролдоно уу.');
         }
     }
 

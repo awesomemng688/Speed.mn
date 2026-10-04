@@ -1,3 +1,4 @@
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 # Speed.mn deployment (Debian 13/Ubuntu 24.04 + Apache2)
 
 ## First-time VPS setup
@@ -70,7 +71,11 @@ automatically after a crash or reboot. Check its output with:
 sudo tail -f /var/www/speed.mn/storage/logs/worker.log
 ```
 
-Build assets on a machine with Node.js using `npm ci && npm run build`; deploy `public/build`. Node.js is not required at runtime. For HTTPS:
+Normal deployment does not need Node.js or a Vite build: the main Speed.mn pages
+serve CSS and JavaScript directly from `public/`. The Laravel welcome view uses
+Vite; build assets only if that view is used or its Vite-managed files change.
+
+For HTTPS:
 
 ```bash
 sudo apt install -y certbot python3-certbot-apache

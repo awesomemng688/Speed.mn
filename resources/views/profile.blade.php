@@ -1,63 +1,66 @@
 @extends('layouts.app')
-@section('title', 'My profile — Speed.mn')
+@section('title', 'Миний профайл — Speed.mn')
+@section('description', 'Speed.mn Steam профайлаа удирдаж, тоглолтын явц болон Монголын CS2 серверийн төлөвийг хараарай.')
 @section('content')
-<section class="page-head profile-head"><div class="shell"><a class="back" href="{{ route('home') }}">← Back to network</a><p class="eyebrow">PLAYER PROFILE</p><h1>{{ $user->name }}</h1><p class="muted">Your Speed.mn gaming identity</p></div></section>
+<section class="page-head profile-head"><div class="shell"><a class="back" href="{{ route('home') }}">← Нүүр хуудас</a><p class="eyebrow">ТОГЛОГЧИЙН ПРОФАЙЛ</p><h1>{{ $user->name }}</h1><p class="muted">Таны Speed.mn тоглоомын бүртгэл</p></div></section>
 <section class="shell section profile-section">
     <div class="profile-layout">
         <div class="panel profile-card">
             <div class="profile-cover"></div>
             <div class="profile-main">
                 @if($user->steam_avatar)
-                    <img class="profile-avatar" src="{{ $user->steam_avatar }}" alt="{{ $user->name }} avatar">
+                    <img class="profile-avatar" src="{{ $user->steam_avatar }}" alt="{{ $user->name }} профайлын зураг">
                 @else
                     <div class="profile-avatar profile-avatar-fallback">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
                 @endif
                 <div class="profile-identity">
-                    <div class="profile-name-row"><h2>{{ $user->name }}</h2><span class="profile-verified">STEAM CONNECTED</span></div>
-                    <p class="muted">Member since {{ $user->created_at?->format('M Y') ?? 'recently' }}</p>
+                    <div class="profile-name-row"><h2>{{ $user->name }}</h2><span class="profile-verified">STEAM ХОЛБОГДСОН</span></div>
+                    <p class="muted">{{ $user->created_at?->format('Y-m') ?? 'Шинэ хэрэглэгч' }}-ээс гишүүн</p>
                 </div>
-                <a class="button button-ghost profile-signout" href="{{ route('steam.logout') }}">Sign out</a>
+                <a class="button button-ghost profile-signout" href="{{ route('steam.logout') }}">Гарах</a>
             </div>
             <div class="profile-details">
                 <div><small>STEAM ID</small><strong>{{ $user->steam_id }}</strong></div>
-                <div><small>ACCOUNT STATUS</small><strong class="profile-status">Verified</strong></div>
-                <div><small>ROLE</small><strong>{{ $user->is_admin ? 'Administrator' : 'Player' }}</strong></div>
+                <div><small>БҮРТГЭЛИЙН ТӨЛӨВ</small><strong class="profile-status">Баталгаажсан</strong></div>
+                <div><small>ЭРХ</small><strong>{{ $user->is_admin ? 'Админ' : 'Тоглогч' }}</strong></div>
             </div>
         </div>
         <aside class="panel profile-side">
-            <p class="eyebrow">STEAM PROFILE</p>
-            <h3>Ready to play?</h3>
-            <p class="muted">Connect to a live server and your player statistics will appear here as monitoring data is collected.</p>
-            <a class="button button-primary" href="{{ route('servers.index') }}">Browse servers <span>→</span></a>
-            <a class="profile-steam-link" href="https://steamcommunity.com/profiles/{{ $user->steam_id }}" target="_blank" rel="noreferrer">Open Steam profile ↗</a>
+            <p class="eyebrow">STEAM ПРОФАЙЛ</p>
+            <h3>Тоглоход бэлэн үү?</h3>
+            <p class="muted">Серверт холбогдоорой. Хяналтын мэдээлэл цуглахын хэрээр тоглолтын үзүүлэлтүүд энд харагдана.</p>
+            <a class="button button-primary" href="{{ route('servers.index') }}">Сервер сонгох <span>→</span></a>
+            <a class="profile-steam-link" href="https://steamcommunity.com/profiles/{{ $user->steam_id }}" target="_blank" rel="noreferrer">Steam профайл нээх ↗</a>
         </aside>
     </div>
     <div class="profile-dashboard-grid">
         <div class="panel profile-progress">
-            <div class="panel-heading"><div><p class="eyebrow">PLAYER PROGRESS</p><h3>Level 01 <span>Rookie</span></h3></div><strong>0 XP</strong></div>
-            <div class="progress-track"><span style="width: 4%"></span></div>
-            <p class="muted">Your verified profile is ready. Player XP will be enabled when match history is collected.</p>
+            <div class="panel-heading"><div><p class="eyebrow">ТОГЛОЛТЫН ЯВЦ</p><h3>{{ str_pad((string) $progress['level'], 2, '0', STR_PAD_LEFT) }} түвшин <span>{{ $progress['title'] }}</span></h3></div><strong>{{ number_format($progress['xp']) }} XP</strong></div>
+            <div class="progress-track"><span style="width: {{ $progress['progress_percent'] }}%"></span></div>
+            <p class="muted">@if($progress['has_data']) {{ number_format($progress['playtime']) }} минут тоглосон @if($progress['next_level_xp']) · дараагийн түвшинд {{ number_format($progress['next_level_xp'] - $progress['xp']) }} XP үлдсэн @endif @else Тоглолтын мэдээлэл алга. Public серверт тоглож явцаа эхлүүлээрэй. @endif</p>
         </div>
         <div class="panel profile-network">
-            <div class="panel-heading"><div><p class="eyebrow">NETWORK SNAPSHOT</p><h3>Live right now</h3></div><span class="pulse online"></span></div>
-            <div class="profile-network-stats"><div><strong>{{ $networkSnapshot['online_servers'] }}</strong><small>ONLINE SERVERS</small></div><div><strong>{{ $networkSnapshot['players_online'] }}</strong><small>PLAYERS ONLINE</small></div></div>
+            <div class="panel-heading"><div><p class="eyebrow">СҮЛЖЭЭНИЙ ТӨЛӨВ</p><h3>Одоогийн байдал</h3></div><span class="pulse online"></span></div>
+            <div class="profile-network-stats"><div><strong>{{ $networkSnapshot['online_servers'] }}</strong><small>ОНЛАЙН СЕРВЕР</small></div><div><strong>{{ $networkSnapshot['players_online'] }}</strong><small>ТОГЛОГЧ</small></div></div>
         </div>
     </div>
     <div class="panel profile-activity">
-        <div class="panel-heading"><div><p class="eyebrow">LIVE ACTIVITY</p><h3>Featured servers</h3></div><a class="text-link" href="{{ route('servers.index') }}">View all →</a></div>
+        <div class="panel-heading"><div><p class="eyebrow">ОДООГИЙН ИДЭВХ</p><h3>Серверүүд</h3></div><a class="text-link" href="{{ route('servers.index') }}">Бүгдийг харах →</a></div>
         <div class="profile-server-list">
             @forelse($servers as $server)
                 @php($status = $server->latestStatus)
-                <a class="profile-server-row" href="{{ route('servers.show', $server) }}"><span class="game-pill {{ $server->game }}">{{ strtoupper($server->game) }}</span><span class="profile-server-name"><strong>{{ $server->name }}</strong><small>{{ $server->address }}</small></span><span class="profile-server-players {{ $status?->online ? 'profile-status' : '' }}">{{ $status?->online ? ($status->players ?? 0).' players' : 'Offline' }}</span><span>→</span></a>
+                @php($statusState = \App\Models\ServerStatus::stateOf($status))
+                @php($serverOnline = $statusState === 'online')
+                <a class="profile-server-row" href="{{ route('servers.show', $server) }}"><span class="game-pill {{ $server->game }}">{{ strtoupper($server->game) }}</span><span class="profile-server-name"><strong>{{ $server->name }}</strong><small>{{ $server->address }}</small></span><span class="profile-server-players {{ $serverOnline ? 'profile-status' : '' }}">{{ $serverOnline ? ($status->players ?? 0).' тоглогч' : ['unknown' => 'Мэдээлэл алга', 'offline' => 'Офлайн', 'stale' => 'Мэдээлэл хуучирсан'][$statusState] }}</span><span>→</span></a>
             @empty
-                <p class="muted">No live servers are available yet.</p>
+                <p class="muted">Серверийн мэдээлэл одоогоор алга.</p>
             @endforelse
         </div>
     </div>
     <div class="profile-achievements">
-        <div><span>◈</span><strong>Steam verified</strong><small>Account connected</small></div>
-        <div><span>⌁</span><strong>Network member</strong><small>Joined {{ $user->created_at?->format('M Y') ?? 'recently' }}</small></div>
-        <div class="profile-achievement-locked"><span>✦</span><strong>First match</strong><small>Play to unlock</small></div>
+        <div><span>◈</span><strong>Steam баталгаажсан</strong><small>Бүртгэл холбогдсон</small></div>
+        <div><span>⌁</span><strong>Сүлжээний гишүүн</strong><small>{{ $user->created_at?->format('Y-m') ?? 'Шинэ' }}-ээс</small></div>
+        <div class="profile-achievement-locked"><span>✦</span><strong>Эхний тоглолт</strong><small>Тоглож нээгээрэй</small></div>
     </div>
 </section>
 @endsection

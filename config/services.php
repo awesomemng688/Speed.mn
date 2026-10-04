@@ -40,4 +40,8 @@ return [
         'domain' => env('STEAM_DOMAIN'),
     ],
 
+    'skins' => [
+        'bridge_secret' => env('SKINS_BRIDGE_SECRET'),
+    ],
+
 ];
