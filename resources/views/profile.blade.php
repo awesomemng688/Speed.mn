@@ -57,6 +57,16 @@
             @endforelse
         </div>
     </div>
+    <div class="panel profile-activity">
+        <div class="panel-heading"><div><p class="eyebrow">ТАНЫ СОНГОЛТ</p><h3>Дуртай серверүүд</h3></div><a class="text-link" href="{{ route('servers.index') }}">Сервер нэмэх →</a></div>
+        <div class="profile-server-list">
+            @forelse($favorites as $server)
+                <div class="profile-server-row"><span class="game-pill {{ $server->game }}">{{ strtoupper($server->game) }}</span><a class="profile-server-name" href="{{ route('servers.show', $server) }}"><strong>{{ $server->name }}</strong><small>{{ $server->address }}</small></a><a class="button button-ghost" href="steam://connect/{{ $server->address }}">Холбогдох</a><form method="POST" action="{{ route('servers.unfavorite', $server) }}">@csrf @method('DELETE')<button class="favorite-remove" type="submit" aria-label="{{ $server->name }} дуртайгаас хасах">×</button></form></div>
+            @empty
+                <p class="muted">Одоогоор хадгалсан сервер алга.</p>
+            @endforelse
+        </div>
+    </div>
     <div class="profile-achievements">
         <div><span>◈</span><strong>Steam баталгаажсан</strong><small>Бүртгэл холбогдсон</small></div>
         <div><span>⌁</span><strong>Сүлжээний гишүүн</strong><small>{{ $user->created_at?->format('Y-m') ?? 'Шинэ' }}-ээс</small></div>

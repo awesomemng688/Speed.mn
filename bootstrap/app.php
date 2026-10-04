@@ -11,6 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([\App\Console\Commands\DatabaseBackupCommand::class])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['admin' => \App\Http\Middleware\AdminMiddleware::class]);
         $middleware->redirectGuestsTo(fn () => route('steam.login'));

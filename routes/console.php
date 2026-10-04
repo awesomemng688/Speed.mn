@@ -95,3 +95,4 @@ Artisan::command('speedmn:audit-prune', function () {
 Schedule::command('speedmn:poll')->everyThirtySeconds()->withoutOverlapping();
 Schedule::command('speedmn:monitor')->everyMinute()->withoutOverlapping();
 Schedule::command('speedmn:audit-prune')->dailyAt('02:15')->withoutOverlapping();
+Schedule::command('speedmn:backup')->dailyAt('03:00')->withoutOverlapping();

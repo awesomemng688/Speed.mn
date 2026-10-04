@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -54,5 +55,10 @@ class User extends Authenticatable
             'admin_totp_confirmed_at' => 'datetime',
             'admin_totp_recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    public function favoriteServers(): BelongsToMany
+    {
+        return $this->belongsToMany(Server::class, 'server_favorites')->withTimestamps();
     }
 }

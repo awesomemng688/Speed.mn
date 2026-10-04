@@ -15,6 +15,7 @@ class ServerController extends Controller
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:80'],
             'map' => ['nullable', 'string', 'max:80'],
+            'status' => ['nullable', 'in:any,online,offline'],
             'players' => ['nullable', 'in:any,available,full'],
             'sort' => ['nullable', 'in:recommended,players,name'],
         ]);
@@ -36,6 +37,11 @@ class ServerController extends Controller
                 });
             })
             ->when($filters['map'] ?? null, fn ($query, string $map) => $query->whereHas('latestStatus', fn ($status) => $status->where('map', 'like', "%{$map}%")))
+            ->when(($filters['status'] ?? 'any') !== 'any', function ($query) use ($filters, $freshSince): void {
+                $query->whereHas('latestStatus', fn ($status) => $status
+                    ->where('created_at', '>=', $freshSince)
+                    ->where('online', $filters['status'] === 'online'));
+            })
             ->when(($filters['players'] ?? 'any') !== 'any', function ($query) use ($filters, $freshSince): void {
                 $query->whereHas('latestStatus', function ($status) use ($filters, $freshSince): void {
                     $status->where('online', true)->where('created_at', '>=', $freshSince);
@@ -46,6 +52,9 @@ class ServerController extends Controller
                 });
             })
             ->with('latestStatus')
+            ->when($request->user(), fn ($query, $user) => $query->withExists([
+                'favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', $user->id),
+            ]))
             ->when(($filters['sort'] ?? 'recommended') === 'players', function ($query) use ($freshSince): void {
                 $query->orderByDesc(ServerStatus::query()
                     ->select('players')
@@ -91,6 +100,10 @@ class ServerController extends Controller
         $checks = $history->count();
         $uptime = $checks ? round($history->where('online', true)->count() / $checks * 100, 2) : null;
         $offlineHistory = $history->where('online', false)->values();
+
+        if (request()->user()) {
+            $server->loadExists(['favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', request()->user()->id)]);
+        }
 
         return view('servers.show', compact('server', 'history', 'uptime', 'offlineHistory'));
     }

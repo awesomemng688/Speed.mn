@@ -20,6 +20,12 @@ class ProfileController extends Controller
             ->orderByDesc('updated_at')
             ->take(3)
             ->get();
+        $favorites = $user->favoriteServers()
+            ->where('servers.enabled', true)
+            ->with('latestStatus')
+            ->orderBy('servers.name')
+            ->get();
+        $favorites->each(fn (Server $server) => $server->setAttribute('is_favorited', true));
 
         $onlineServers = $servers->filter(fn (Server $server) => $server->latestStatus?->online)->count();
         $playersOnline = $servers->sum(fn (Server $server) => $server->latestStatus?->players ?? 0);
@@ -28,6 +34,7 @@ class ProfileController extends Controller
         return view('profile', [
             'user' => $user,
             'servers' => $servers,
+            'favorites' => $favorites,
             'progress' => $progress,
             'networkSnapshot' => [
                 'online_servers' => $onlineServers,

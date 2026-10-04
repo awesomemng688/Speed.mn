@@ -17,6 +17,15 @@
         <p class="muted">{{ $server->region ?: 'Монгол' }} · {{ $server->address }}</p>
         <div class="server-metrics"><div><strong>{{ $isOnline ? $status->players : 0 }}/{{ $isOnline ? ($status->max_players ?: $server->max_players) : $server->max_players }}</strong><small>ТОГЛОГЧ</small></div><div><strong>{{ $isOnline ? $map : '—' }}</strong><small>ГАЗРЫН ЗУРАГ</small></div><div><strong>{{ $isOnline && $status->response_time ? $status->response_time.'мс' : '—' }}</strong><small>ХОЦРОЛТ</small></div></div>
         <div class="card-actions"><a class="button button-primary" href="steam://connect/{{ $server->address }}" aria-label="{{ $server->name }} серверт холбогдох">Холбогдох</a><button class="button button-ghost copy-address" type="button" data-copy-address="{{ $server->address }}" aria-label="{{ $server->address }} IP хуулах">IP хуулах</button><a class="button button-ghost" href="{{ route('servers.show', $server) }}">Дэлгэрэнгүй</a></div>
+        @auth
+            <form class="favorite-form" method="POST" action="{{ route(($server->is_favorited ?? false) ? 'servers.unfavorite' : 'servers.favorite', $server) }}">
+                @csrf
+                @if($server->is_favorited ?? false) @method('DELETE') @endif
+                <button class="favorite-button" type="submit" aria-pressed="{{ ($server->is_favorited ?? false) ? 'true' : 'false' }}">{{ ($server->is_favorited ?? false) ? '★ Дуртайгаас хасах' : '☆ Дуртайд хадгалах' }}</button>
+            </form>
+        @else
+            <a class="favorite-button" href="{{ route('steam.login', ['redirect' => url()->current()]) }}">☆ Дуртайд хадгалахын тулд нэвтрэх</a>
+        @endauth
         @if($isOnline)
             <button class="players-button" type="button" data-player-toggle aria-label="{{ $server->name }} дээрх тоглогчдыг харах">Тоглогч харах ({{ count($status->player_list ?? []) }})</button>
             <div class="player-modal" data-player-modal hidden>

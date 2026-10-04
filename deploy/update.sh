@@ -171,3 +171,13 @@ for php_fpm_service in php8.4-fpm php8.3-fpm php8.2-fpm; do
         break
     fi
 done
+
+"$PHP_BIN" "$CURRENT_LINK/artisan" up
+maintenance_enabled=0
+"$PHP_BIN" "$CURRENT_LINK/artisan" route:list --except-vendor >/dev/null
+app_url="$(cd "$CURRENT_LINK" && "$PHP_BIN" -r 'require "vendor/autoload.php"; Dotenv\Dotenv::createImmutable(getcwd())->safeLoad(); echo $_ENV["APP_URL"] ?? "";')"
+if [[ ! "$app_url" =~ ^https?:// ]]; then
+    echo "ERROR: APP_URL is missing or invalid; deployment smoke test failed." >&2
+    exit 1
+fi
+curl --fail --silent --show-error --location --max-time 20 --output /dev/null "$app_url"

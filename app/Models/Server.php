@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Server extends Model
@@ -25,6 +26,11 @@ class Server extends Model
     public function latestStatus(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(ServerStatus::class)->latestOfMany();
+    }
+
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'server_favorites')->withTimestamps();
     }
 
     public function getAddressAttribute(): string

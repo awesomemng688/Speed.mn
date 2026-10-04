@@ -29,6 +29,30 @@ class ServerDirectoryTest extends TestCase
             ->assertDontSee('Available Mirage');
     }
 
+    public function test_online_and_offline_filters_only_include_fresh_statuses(): void
+    {
+        $online = $this->createServer('Online server', '198.51.100.30');
+        $this->createStatus($online, 4, 20);
+
+        $offline = $this->createServer('Offline server', '198.51.100.31');
+        $this->createStatus($offline, 0, 20, 'de_dust2', false);
+
+        $stale = $this->createServer('Stale server', '198.51.100.32');
+        $this->createStatus($stale, 3, 20, 'de_dust2', true, now()->subMinutes(5));
+
+        $this->get('/servers?status=online')
+            ->assertOk()
+            ->assertSee('Online server')
+            ->assertDontSee('Offline server')
+            ->assertDontSee('Stale server');
+
+        $this->get('/servers?status=offline')
+            ->assertOk()
+            ->assertSee('Offline server')
+            ->assertDontSee('Online server')
+            ->assertDontSee('Stale server');
+    }
+
     public function test_recommended_order_places_full_servers_first(): void
     {
         $availableServer = $this->createServer('Available server', '198.51.100.3');

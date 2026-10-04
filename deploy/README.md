@@ -86,6 +86,24 @@ message without changing incident state or touching server/job data. Run it on
 the VPS to verify the real webhook. Automated tests also verify stale and
 failed-job payloads, de-duplication, and recovery without sending to Discord.
 
+Daily compressed MySQL/MariaDB backups run at 03:00 through Laravel's scheduler.
+They are stored in `storage/app/private/backups` with owner-only permissions;
+`DB_BACKUP_RETENTION_DAYS` controls retention (14 days by default). The command
+requires `mysqldump` or `mariadb-dump` and `gzip`, and checks each archive with
+`gzip -t`. Periodically test a restore into a disposable database, never the
+live database:
+
+```bash
+sudo mariadb -e 'CREATE DATABASE speedmn_restore_test'
+gzip -t /var/www/awe/current/storage/app/private/backups/CHOOSE_BACKUP.sql.gz
+gzip -dc /var/www/awe/current/storage/app/private/backups/CHOOSE_BACKUP.sql.gz | sudo mariadb speedmn_restore_test
+sudo mariadb -e 'DROP DATABASE speedmn_restore_test'
+```
+
+The deploy script verifies Laravel route boot and requests the configured
+`APP_URL` before reporting success. Install `curl` on the VPS for this HTTP
+smoke test.
+
 Audit entries are pruned daily after 365 days by default. Set
 `ADMIN_AUDIT_RETENTION_DAYS` in `.env` to change that period. After environment
 changes, refresh cached config and restart workers:
