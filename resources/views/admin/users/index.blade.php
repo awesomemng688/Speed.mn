@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Manage administrators — Speed.mn')
 @section('content')
-<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Administrators</h1><a class="button button-ghost" href="{{ route('admin.servers.index') }}">Server management</a></div><p class="muted">Only grant access to people you trust with server controls.</p></div></section>
+<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Administrators</h1></div><p class="muted">Only grant access to people you trust with server controls.</p><x-admin-nav /></div></section>
 <section class="shell section admin-section">
     @if(session('status'))<div class="admin-alert success" role="status">{{ session('status') }}</div>@endif
     @if(session('error'))<div class="admin-alert error" role="alert">{{ session('error') }}</div>@endif

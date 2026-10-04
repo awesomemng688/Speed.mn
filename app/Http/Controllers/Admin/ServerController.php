@@ -7,8 +7,10 @@ use App\Http\Requests\StoreServerRequest;
 use App\Http\Requests\UpdateServerRequest;
 use App\Models\Server;
 use App\Models\ServerStatus;
+use App\Services\AdminAuditLogger;
 use App\Services\ServerQueryService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +20,44 @@ use Throwable;
 
 class ServerController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'game' => ['nullable', 'in:cs2,cs16'],
+            'status' => ['nullable', 'in:online,offline,stale,unknown'],
+            'poll' => ['nullable', 'in:fresh,stale,never'],
+            'error' => ['nullable', 'in:yes,no'],
+        ]);
+        $freshSince = ServerStatus::freshSince();
+
         $servers = Server::query()
             ->with('latestStatus')
+            ->when($filters['search'] ?? null, function ($query, string $term): void {
+                $query->where(function ($query) use ($term): void {
+                    $query->where('name', 'like', "%{$term}%")
+                        ->orWhere('ip', 'like', "%{$term}%")
+                        ->orWhere('port', 'like', "%{$term}%");
+                });
+            })
+            ->when($filters['game'] ?? null, fn ($query, string $game) => $query->where('game', $game))
+            ->when($filters['status'] ?? null, function ($query, string $status) use ($freshSince): void {
+                match ($status) {
+                    'online' => $query->whereHas('latestStatus', fn ($latest) => $latest->where('created_at', '>=', $freshSince)->where('online', true)),
+                    'offline' => $query->whereHas('latestStatus', fn ($latest) => $latest->where('created_at', '>=', $freshSince)->where('online', false)),
+                    'stale' => $query->whereHas('latestStatus', fn ($latest) => $latest->where('created_at', '<', $freshSince)),
+                    'unknown' => $query->whereDoesntHave('latestStatus'),
+                };
+            })
+            ->when(($filters['poll'] ?? null) === 'fresh', fn ($query) => $query->where('last_polled_at', '>=', now()->subMinutes(2)))
+            ->when(($filters['poll'] ?? null) === 'stale', fn ($query) => $query->where(fn ($query) => $query->whereNull('last_polled_at')->orWhere('last_polled_at', '<', now()->subMinutes(2))))
+            ->when(($filters['poll'] ?? null) === 'never', fn ($query) => $query->whereNull('last_polled_at'))
+            ->when(($filters['error'] ?? null) === 'yes', fn ($query) => $query->whereNotNull('last_query_error')->where('last_query_error', '<>', ''))
+            ->when(($filters['error'] ?? null) === 'no', fn ($query) => $query->where(fn ($query) => $query->whereNull('last_query_error')->orWhere('last_query_error', '')))
             ->orderBy('game')
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         $enabledServers = Server::where('enabled', true)->with('latestStatus')->get();
         $summary = [
@@ -49,7 +82,7 @@ class ServerController extends Controller
             'failed_jobs' => DB::table('failed_jobs')->where('failed_at', '>=', now()->subHour())->count(),
         ];
 
-        return view('admin.servers.index', compact('servers', 'summary', 'pollMonitor'));
+        return view('admin.servers.index', compact('servers', 'summary', 'pollMonitor', 'filters'));
     }
 
     public function create(): View
@@ -57,9 +90,12 @@ class ServerController extends Controller
         return view('admin.servers.create', ['server' => new Server(['enabled' => true, 'max_players' => 0, 'query_type' => 'a2s'])]);
     }
 
-    public function store(StoreServerRequest $request): RedirectResponse
+    public function store(StoreServerRequest $request, AdminAuditLogger $audit): RedirectResponse
     {
         $server = Server::create($request->validated());
+        $audit->record($request, 'server.created', $server, [
+            'fields' => array_keys($request->validated()),
+        ]);
 
         return redirect()->route('admin.servers.index')->with('status', "Server {$server->name} was created.");
     }
@@ -69,25 +105,32 @@ class ServerController extends Controller
         return view('admin.servers.edit', compact('server'));
     }
 
-    public function update(UpdateServerRequest $request, Server $server): RedirectResponse
+    public function update(UpdateServerRequest $request, Server $server, AdminAuditLogger $audit): RedirectResponse
     {
-        $server->update($request->validated());
+        $server->fill($request->validated());
+        $changedFields = array_keys($server->getDirty());
+        $server->save();
+        $audit->record($request, 'server.updated', $server, [
+            'changed_fields' => $changedFields,
+        ]);
 
         return redirect()->route('admin.servers.index')->with('status', "Server {$server->name} was updated.");
     }
 
-    public function destroy(Server $server): RedirectResponse
+    public function destroy(Server $server, Request $request, AdminAuditLogger $audit): RedirectResponse
     {
         $name = $server->name;
+        $audit->record($request, 'server.deleted', $server);
         $server->delete();
 
         return redirect()->route('admin.servers.index')->with('status', "Server {$name} was deleted.");
     }
 
-    public function toggle(Server $server): RedirectResponse
+    public function toggle(Server $server, Request $request, AdminAuditLogger $audit): RedirectResponse
     {
         $server->update(['enabled' => ! $server->enabled]);
         $state = $server->enabled ? 'enabled' : 'disabled';
+        $audit->record($request, $server->enabled ? 'server.enabled' : 'server.disabled', $server);
 
         return back()->with('status', "Server {$server->name} is now {$state}.");
     }

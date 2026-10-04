@@ -5,6 +5,8 @@ use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
+use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Models\Server;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RankController;
@@ -71,4 +73,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('servers/{server}/test', [AdminServerController::class, 'test'])->name('servers.test');
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
+    Route::get('failed-jobs', [AdminFailedJobController::class, 'index'])->name('failed-jobs.index');
+    Route::post('failed-jobs/{uuid}/retry', [AdminFailedJobController::class, 'retry'])->name('failed-jobs.retry');
+    Route::delete('failed-jobs/{uuid}', [AdminFailedJobController::class, 'destroy'])->name('failed-jobs.destroy');
+    Route::get('audit', [AdminAuditLogController::class, 'index'])->name('audit.index');
 });

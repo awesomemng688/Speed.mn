@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AdminAuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,9 +38,9 @@ class UserController extends Controller
         ]);
     }
 
-    public function toggle(Request $request, User $user): RedirectResponse
+    public function toggle(Request $request, User $user, AdminAuditLogger $audit): RedirectResponse
     {
-        $message = DB::transaction(function () use ($request, $user): string {
+        $message = DB::transaction(function () use ($request, $user, $audit): string {
             $target = User::query()->lockForUpdate()->findOrFail($user->id);
 
             if ($target->is_admin) {
@@ -59,6 +60,12 @@ class UserController extends Controller
             }
 
             $target->forceFill(['is_admin' => ! $target->is_admin])->save();
+            $audit->record(
+                $request,
+                $target->is_admin ? 'admin.access_granted' : 'admin.access_revoked',
+                $target,
+                ['is_admin' => $target->is_admin],
+            );
 
             return $target->is_admin
                 ? "{$target->name} is now an administrator."

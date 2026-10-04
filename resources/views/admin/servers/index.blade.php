@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Manage servers — Speed.mn')
 @section('content')
-<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Servers</h1><div class="admin-actions"><a class="button button-ghost" href="{{ route('admin.users.index') }}">Administrators</a><a class="button button-primary" href="{{ route('admin.servers.create') }}">Add server</a></div></div><p class="muted">Manage the public server directory and connectivity.</p></div></section>
+<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Servers</h1><a class="button button-primary" href="{{ route('admin.servers.create') }}">Add server</a></div><p class="muted">Manage the public server directory and connectivity.</p><x-admin-nav /></div></section>
 <section class="shell section admin-section">
     @if(session('status'))<div class="admin-alert success">{{ session('status') }}</div>@endif
     @if(session('connection_success'))<div class="admin-alert success">{{ session('connection_success') }}</div>@endif
@@ -20,6 +20,15 @@
         <div class="panel"><small>Online now</small><strong class="admin-online">{{ $summary['online'] }}</strong></div>
         <div class="panel"><small>Players online</small><strong>{{ $summary['players'] }}</strong></div>
     </div>
+    <form class="server-filters" method="GET" action="{{ route('admin.servers.index') }}">
+        <label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search server, IP, or port" aria-label="Search servers"></label>
+        <label class="filter-field"><span>Game</span><select name="game"><option value="">All games</option><option value="cs2" @selected(($filters['game'] ?? '') === 'cs2')>CS2</option><option value="cs16" @selected(($filters['game'] ?? '') === 'cs16')>CS 1.6</option></select></label>
+        <label class="filter-field"><span>Status</span><select name="status"><option value="">All statuses</option>@foreach(['online' => 'Online', 'offline' => 'Offline', 'stale' => 'Stale', 'unknown' => 'No status'] as $value => $label)<option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>@endforeach</select></label>
+        <label class="filter-field"><span>Last poll</span><select name="poll"><option value="">Any poll time</option><option value="fresh" @selected(($filters['poll'] ?? '') === 'fresh')>Recent</option><option value="stale" @selected(($filters['poll'] ?? '') === 'stale')>Stale</option><option value="never" @selected(($filters['poll'] ?? '') === 'never')>Never polled</option></select></label>
+        <label class="filter-field"><span>Query error</span><select name="error"><option value="">Any</option><option value="yes" @selected(($filters['error'] ?? '') === 'yes')>Has error</option><option value="no" @selected(($filters['error'] ?? '') === 'no')>No error</option></select></label>
+        <button class="button button-primary" type="submit">Filter</button>
+        @if(request()->query())<a class="text-link" href="{{ route('admin.servers.index') }}">Clear</a>@endif
+    </form>
     <div class="panel admin-table-wrap"><table class="admin-table"><thead><tr><th>Server</th><th>Game</th><th>Address</th><th>Status</th><th>Last poll</th><th>Last success</th><th>Latest query error</th><th>Visibility</th><th>Actions</th></tr></thead><tbody>
     @forelse($servers as $server)
         @php($statusState = \App\Models\ServerStatus::stateOf($server->latestStatus))
