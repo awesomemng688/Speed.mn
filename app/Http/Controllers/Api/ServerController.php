@@ -13,10 +13,11 @@ class ServerController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $perPage = min(max($request->integer('per_page', 24), 1), 100);
         $servers = Server::where('enabled', true)
             ->when($request->game, fn ($query, $game) => $query->where('game', $game))
             ->with('latestStatus')
-            ->paginate(24);
+            ->paginate($perPage);
 
         return ServerResource::collection($servers);
     }

@@ -4,6 +4,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Jobs\PollServer;
 use App\Models\Server;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -11,8 +12,10 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('speedmn:poll', function () {
-    Server::where('enabled', true)->pluck('id')->each(fn (int $id) => PollServer::dispatch($id));
-    $this->info('Queued server polling jobs.');
+    $serverIds = Server::where('enabled', true)->pluck('id');
+    Cache::put('speedmn.poll.last_dispatched_at', now()->toIso8601String(), now()->addDay());
+    $serverIds->each(fn (int $id) => PollServer::dispatch($id));
+    $this->info("Queued {$serverIds->count()} server polling jobs.");
 })->purpose('Queue status checks for enabled Speed.mn servers');
 
-Schedule::command('speedmn:poll')->everyMinute()->withoutOverlapping();
+Schedule::command('speedmn:poll')->everyThirtySeconds()->withoutOverlapping();

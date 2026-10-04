@@ -11,7 +11,11 @@ class Server extends Model
         'name', 'game', 'category', 'ip', 'port', 'region', 'country', 'max_players', 'query_type', 'enabled',
     ];
 
-    protected $casts = ['enabled' => 'boolean'];
+    protected $casts = [
+        'enabled' => 'boolean',
+        'last_polled_at' => 'datetime',
+        'last_successful_poll_at' => 'datetime',
+    ];
 
     public function statuses(): HasMany
     {

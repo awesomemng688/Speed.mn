@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreServerRequest;
 use App\Http\Requests\UpdateServerRequest;
 use App\Models\Server;
+use App\Models\ServerStatus;
 use App\Services\ServerQueryService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ServerController extends Controller
@@ -20,14 +24,30 @@ class ServerController extends Controller
             ->orderBy('name')
             ->paginate(20);
 
+        $enabledServers = Server::where('enabled', true)->with('latestStatus')->get();
         $summary = [
             'total' => Server::count(),
-            'enabled' => Server::where('enabled', true)->count(),
-            'online' => Server::where('enabled', true)->whereHas('latestStatus', fn ($query) => $query->where('online', true))->count(),
-            'players' => Server::where('enabled', true)->with('latestStatus')->get()->sum(fn (Server $server) => $server->latestStatus?->players ?? 0),
+            'enabled' => $enabledServers->count(),
+            'online' => $enabledServers->filter(fn (Server $server) => ServerStatus::stateOf($server->latestStatus) === 'online')->count(),
+            'players' => $enabledServers->sum(fn (Server $server) => ServerStatus::stateOf($server->latestStatus) === 'online' ? ($server->latestStatus->players ?? 0) : 0),
         ];
 
-        return view('admin.servers.index', compact('servers', 'summary'));
+        $lastDispatchedAt = $this->cacheTimestamp('speedmn.poll.last_dispatched_at');
+        $lastCompletedAt = $this->cacheTimestamp('speedmn.poll.last_completed_at');
+        $lastFailedAt = $this->cacheTimestamp('speedmn.poll.last_failed_at');
+        $pollMonitor = [
+            'last_dispatched_at' => $lastDispatchedAt,
+            'last_completed_at' => $lastCompletedAt,
+            'last_failed_at' => $lastFailedAt,
+            'scheduler_healthy' => $summary['enabled'] === 0 || ($lastDispatchedAt?->gte(now()->subSeconds(75)) ?? false),
+            'worker_healthy' => $summary['enabled'] === 0 || ($lastCompletedAt?->gte(now()->subSeconds(120)) ?? false),
+            'stale_servers' => Server::where('enabled', true)
+                ->where(fn ($query) => $query->whereNull('last_polled_at')->orWhere('last_polled_at', '<', now()->subMinutes(2)))
+                ->count(),
+            'failed_jobs' => DB::table('failed_jobs')->where('failed_at', '>=', now()->subHour())->count(),
+        ];
+
+        return view('admin.servers.index', compact('servers', 'summary', 'pollMonitor'));
     }
 
     public function create(): View
@@ -75,8 +95,15 @@ class ServerController extends Controller
         $result = $queryService->query($server);
         $message = $result['online']
             ? "Connection successful ({$result['response_time']} ms)."
-            : 'Connection failed or the server did not respond.';
+            : ($result['query_error'] ?? 'Connection failed or the server did not respond.');
 
         return back()->with($result['online'] ? 'connection_success' : 'connection_error', $message);
+    }
+
+    private function cacheTimestamp(string $key): ?Carbon
+    {
+        $value = Cache::get($key);
+
+        return $value ? Carbon::parse($value) : null;
     }
 }

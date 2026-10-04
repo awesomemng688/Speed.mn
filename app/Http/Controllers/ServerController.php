@@ -84,7 +84,6 @@ class ServerController extends Controller
     {
         abort_unless($server->enabled, 404);
         $server->load('latestStatus');
-        $statusIsFresh = $server->latestStatus?->isFresh() ?? false;
         $history = $server->statuses()
             ->where('created_at', '>=', Carbon::now()->subDay())
             ->oldest()
@@ -93,6 +92,6 @@ class ServerController extends Controller
         $uptime = $checks ? round($history->where('online', true)->count() / $checks * 100, 2) : null;
         $offlineHistory = $history->where('online', false)->values();
 
-        return view('servers.show', compact('server', 'history', 'uptime', 'offlineHistory', 'statusIsFresh'));
+        return view('servers.show', compact('server', 'history', 'uptime', 'offlineHistory'));
     }
 }

@@ -28,12 +28,16 @@
         .home-page .server-category-heading{margin-bottom:20px}
         .home-page .community-panel{margin-top:18px;box-shadow:0 25px 65px #0005}
         @media(max-width:800px){.home-page .hero{min-height:0;padding:70px 0 52px}.home-page .hero-grid{grid-template-columns:1fr}.home-page .hero-visual{min-height:360px;margin-top:10px}.home-page .hero-stack{transform:scale(.9);margin-top:28px}.home-page .hero-status{right:4%;top:-6px}.home-page .stats-row{margin-top:-18px}.home-page .server-category{padding:15px}.home-page .server-category-heading{align-items:flex-start;flex-direction:column;gap:8px}}
+        @media(max-width:480px){.home-page .hero h1{font-size:42px;letter-spacing:0}}
+        @media(max-width:360px){.home-page .hero h1{font-size:36px}}
     </style>
     @php
         $networkState = match (true) {
             $stats['servers'] === 0 => ['label' => 'Сервер бүртгэгдээгүй', 'class' => 'offline'],
             $stats['online'] === $stats['servers'] => ['label' => 'Бүх сервер хэвийн', 'class' => 'online'],
+            $stats['stale'] > 0 && $stats['unknown'] > 0 => ['label' => 'Зарим серверийн мэдээлэл хуучирсан эсвэл алга', 'class' => 'degraded'],
             $stats['stale'] > 0 => ['label' => 'Зарим серверийн мэдээлэл хуучирсан', 'class' => 'degraded'],
+            $stats['unknown'] > 0 => ['label' => 'Зарим серверийн төлөв ирээгүй', 'class' => 'degraded'],
             $stats['online'] > 0 => ['label' => 'Зарим сервер холболтгүй', 'class' => 'degraded'],
             default => ['label' => 'Бүх сервер холболтгүй', 'class' => 'offline'],
         };
@@ -104,7 +108,7 @@
                             $heroMap = $heroStatus?->map ?: 'unknown';
                             $heroGame = $server->game === 'cs2' ? 'csgo' : 'css';
                         @endphp
-                        <a class="hero-server-card hero-server-{{ $loop->index }}" href="{{ route('servers.show', $server) }}">
+                        <a class="hero-server-card hero-server-{{ $loop->index }}" data-live-server-id="{{ $server->id }}" href="{{ route('servers.show', $server) }}">
                             <img src="https://image.gametracker.com/images/maps/160x120/{{ $heroGame }}/{{ rawurlencode($heroMap) }}.jpg" data-map-image data-fallback-src="{{ asset($server->game === 'cs2' ? 'img/hero/cs2.jfif' : 'img/hero/cs16.jpg') }}" alt="" loading="lazy">
                             <div class="hero-server-content">
                                 <span class="game-pill {{ $server->game }}">{{ $server->game === 'cs2' ? 'CS2' : 'CS 1.6' }}</span>
@@ -128,7 +132,7 @@
         <strong>{{ $stats['online'] }} сервер онлайн</strong>
         <span>·</span>
         <strong>{{ $stats['players'] }} хүн тоглож байна</strong>
-        <small>{{ $networkState['label'] }} · {{ $stats['stale'] }} серверийн мэдээлэл хуучирсан</small>
+        <small>{{ $networkState['label'] }} · {{ $stats['stale'] }} серверийн мэдээлэл хуучирсан, {{ $stats['unknown'] }} серверийн төлөв ирээгүй</small>
     </section>
 
     <section id="servers" class="shell section home-server-sections">

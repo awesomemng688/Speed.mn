@@ -72,10 +72,10 @@ class ServerDirectoryTest extends TestCase
 
         $response = $this->get('/')->assertOk();
 
-        $response->assertSee('9</strong>')
+        $response->assertSee('<strong>9</strong>', false)
             ->assertSee('3 сервер онлайн')
-            ->assertSee('10</strong>')
-            ->assertSee('5 серверийн мэдээлэл хуучирсан');
+            ->assertSee('<strong>10</strong>', false)
+            ->assertSee('1 серверийн мэдээлэл хуучирсан, 4 серверийн төлөв ирээгүй');
         $this->assertSame(6, substr_count($response->getContent(), '<article class="server-card"'));
     }
 

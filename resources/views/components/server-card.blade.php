@@ -1,11 +1,11 @@
 @php($status = $server->latestStatus)
 @php($statusState = \App\Models\ServerStatus::stateOf($status))
-@php($statusIsFresh = $status?->isFresh() ?? false)
+@php($statusIsFresh = in_array($statusState, ['online', 'offline'], true))
 @php($isOnline = $statusState === 'online')
 @php($map = $status?->map ?: 'unknown')
 @php($mapImage = 'https://image.gametracker.com/images/maps/160x120/'.($server->game === 'cs2' ? 'csgo' : 'css').'/'.rawurlencode($map).'.jpg')
 @php($fallbackImage = asset($server->game === 'cs2' ? 'img/hero/cs2.jfif' : 'img/hero/cs16.jpg'))
-<article class="server-card" data-server-card data-name="{{ strtolower($server->name.' '.$server->address) }}" data-game="{{ $server->game }}">
+<article class="server-card" data-server-card data-server-id="{{ $server->id }}" data-name="{{ strtolower($server->name.' '.$server->address) }}" data-game="{{ $server->game }}">
     <div class="server-card-cover">
         <img src="{{ $mapImage }}" data-map-image data-fallback-src="{{ $fallbackImage }}" alt="{{ $map }} газрын зургийн зураг" loading="lazy">
         <div class="server-card-cover-fallback" hidden><span>{{ $server->game === 'cs2' ? 'CS2' : 'CS 1.6' }}</span><strong>{{ $map }}</strong></div>

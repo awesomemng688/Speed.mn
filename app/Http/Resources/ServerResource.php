@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ServerStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,6 +31,8 @@ class ServerResource extends JsonResource
             'players_list' => $status?->player_list,
             'ping' => $status?->response_time,
             'last_update' => $status?->created_at,
+            'last_polled_at' => $this->last_polled_at,
+            'last_successful_poll_at' => $this->last_successful_poll_at,
         ];
 
         // The relationship is loaded only for detail responses so collection

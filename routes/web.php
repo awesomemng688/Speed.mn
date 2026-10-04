@@ -24,13 +24,15 @@ Route::get('/', function () {
         ->selectRaw('COUNT(servers.id) AS servers')
         ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.created_at >= ? AND latest_statuses.online = 1 THEN 1 ELSE 0 END), 0) AS online', [$freshSince])
         ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.created_at >= ? AND latest_statuses.online = 1 THEN latest_statuses.players ELSE 0 END), 0) AS players', [$freshSince])
-        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NULL OR latest_statuses.created_at < ? THEN 1 ELSE 0 END), 0) AS stale', [$freshSince])
+        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NOT NULL AND latest_statuses.created_at < ? THEN 1 ELSE 0 END), 0) AS stale', [$freshSince])
+        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NULL THEN 1 ELSE 0 END), 0) AS unknown')
         ->first();
     $stats = [
         'servers' => (int) $totals->servers,
         'online' => (int) $totals->online,
         'players' => (int) $totals->players,
         'stale' => (int) $totals->stale,
+        'unknown' => (int) $totals->unknown,
     ];
 
     $featuredForGame = static fn (string $game) => Server::query()

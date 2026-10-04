@@ -15,7 +15,7 @@ class ServerQueryService
         try {
             $socket = @fsockopen('udp://'.$server->ip, $server->port, $errorCode, $errorMessage, 2);
             if (!is_resource($socket)) {
-                return $this->offline($started);
+                return $this->offline($started, "UDP connection failed ({$errorCode}): {$errorMessage}");
             }
 
             stream_set_timeout($socket, 2);
@@ -24,20 +24,19 @@ class ServerQueryService
             $response = fread($socket, 4096);
 
             if ($response === false || strlen($response) < 6 || substr($response, 0, 4) !== "\xFF\xFF\xFF\xFF") {
-                fclose($socket);
-                return $this->offline($started);
+                $timedOut = stream_get_meta_data($socket)['timed_out'] ?? false;
+                return $this->offline($started, $timedOut ? 'A2S query timed out' : 'No valid A2S response received', $socket);
             }
             if (ord($response[4]) === 0x41) {
                 $challenge = substr($response, 5, 4);
                 if (strlen($challenge) !== 4) {
-                    fclose($socket);
-                    return $this->offline($started);
+                    return $this->offline($started, 'A2S challenge packet was incomplete', $socket);
                 }
                 fwrite($socket, $payload.$challenge);
                 $response = fread($socket, 4096);
                 if (!is_string($response) || strlen($response) < 6 || substr($response, 0, 4) !== "\xFF\xFF\xFF\xFF") {
-                    fclose($socket);
-                    return $this->offline($started);
+                    $timedOut = stream_get_meta_data($socket)['timed_out'] ?? false;
+                    return $this->offline($started, $timedOut ? 'A2S challenge response timed out' : 'A2S challenge response was invalid', $socket);
                 }
             }
 
@@ -69,6 +68,8 @@ class ServerQueryService
                 'response_time' => (int) round((hrtime(true) - $started) / 1_000_000),
                 'player_list' => $playerList,
                 'version' => $version ?: null,
+                'query_succeeded' => true,
+                'query_error' => null,
             ];
         } catch (Throwable $exception) {
             if (is_resource($socket)) {
@@ -80,7 +81,7 @@ class ServerQueryService
                 'error' => $exception->getMessage(),
             ]);
 
-            return $this->offline($started);
+            return $this->offline($started, 'A2S query exception: '.$exception->getMessage());
         }
 
     }
@@ -180,8 +181,12 @@ class ServerQueryService
         return $value;
     }
 
-    private function offline(int $started): array
+    private function offline(int $started, string $error, $socket = null): array
     {
+        if (is_resource($socket)) {
+            fclose($socket);
+        }
+
         return [
             'online' => false,
             'players' => 0,
@@ -192,6 +197,8 @@ class ServerQueryService
             'response_time' => (int) round((hrtime(true) - $started) / 1_000_000),
             'player_list' => [],
             'version' => null,
+            'query_succeeded' => false,
+            'query_error' => $error,
         ];
     }
 }

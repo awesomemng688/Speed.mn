@@ -7,6 +7,9 @@ use App\Models\ServerStatus;
 use App\Services\ServerQueryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+use Throwable;
 
 class PollServer implements ShouldQueue
 {
@@ -21,6 +24,37 @@ class PollServer implements ShouldQueue
             return;
         }
 
-        ServerStatus::create(array_merge(['server_id' => $server->id], $query->query($server)));
+        $polledAt = now();
+        $result = $query->query($server);
+        $querySucceeded = (bool) ($result['query_succeeded'] ?? ($result['online'] ?? false));
+        $queryError = $result['query_error'] ?? null;
+        unset($result['query_succeeded'], $result['query_error']);
+        $result['max_players'] ??= $server->max_players;
+
+        ServerStatus::create(array_merge(
+            ['server_id' => $server->id, 'created_at' => $polledAt],
+            $result,
+        ));
+
+        $server->forceFill([
+            'last_polled_at' => $polledAt,
+            'last_successful_poll_at' => $querySucceeded ? $polledAt : $server->last_successful_poll_at,
+            'last_query_error' => $querySucceeded ? null : Str::limit($queryError ?: 'Server query failed without an error message.', 2000),
+        ])->save();
+
+        Cache::put('speedmn.poll.last_completed_at', $polledAt->toIso8601String(), now()->addDay());
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        $failedAt = now();
+        $server = Server::find($this->serverId);
+
+        $server?->forceFill([
+            'last_polled_at' => $failedAt,
+            'last_query_error' => Str::limit('Polling job failed: '.$exception->getMessage(), 2000),
+        ])->save();
+
+        Cache::put('speedmn.poll.last_failed_at', $failedAt->toIso8601String(), now()->addDay());
     }
 }

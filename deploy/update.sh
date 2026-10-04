@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-APP_DIR="${APP_DIR:-/var/www/speed.mn}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="${APP_DIR:-$(dirname -- "$SCRIPT_DIR")}"
 BRANCH="${BRANCH:-main}"
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
