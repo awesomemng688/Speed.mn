@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AdminDemoVideosTest extends TestCase
@@ -127,5 +128,64 @@ class AdminDemoVideosTest extends TestCase
             ->assertSee('Team A')
             ->assertSee('Player A')
             ->assertSee('1');
+    }
+
+    public function test_admin_can_import_matchzy_demo_without_browser_upload(): void
+    {
+        Storage::fake('local');
+        Queue::fake();
+        $admin = User::factory()->create(['is_admin' => true]);
+        $sourceDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'speedmn-matchzy-'.Str::uuid();
+        mkdir($sourceDir, 0700, true);
+        $filename = '2026-10-05_01-05-07_9_de_dust2_team_a_vs_team_b.dem';
+        file_put_contents($sourceDir.DIRECTORY_SEPARATOR.$filename, 'private-match-demo');
+        config(['services.cs2_demo_parser.source_dir' => $sourceDir]);
+
+        try {
+            $this->actingAsAdmin($admin)
+                ->get(route('admin.demos.index'))
+                ->assertOk()
+                ->assertSee($filename);
+
+            $this->post(route('admin.demos.import-matchzy'), ['filename' => $filename])
+                ->assertRedirect(route('admin.demos.index'))
+                ->assertSessionHas('status', 'MatchZy demo parser queue-д орлоо.');
+
+            $demo = DemoVideo::sole();
+            $this->assertSame('dem', $demo->media_type);
+            $this->assertSame('queued', $demo->processing_status);
+            $this->assertSame('de_dust2', $demo->map);
+            $this->assertSame('2026 10 05 01 05 07 9 de dust2 team a vs team b', $demo->title);
+            $this->assertSame('private-match-demo', Storage::disk('local')->get($demo->file_path));
+            Queue::assertPushed(ParseCs2Demo::class, fn (ParseCs2Demo $job) => $job->demoVideoId === $demo->id);
+
+            $this->post(route('admin.demos.import-matchzy'), ['filename' => $filename])
+                ->assertRedirect(route('admin.demos.index'))
+                ->assertSessionHas('status', 'Энэ demo өмнө нь import хийгдсэн байна.');
+            $this->assertDatabaseCount('demo_videos', 1);
+            Queue::assertPushed(ParseCs2Demo::class, 1);
+        } finally {
+            @unlink($sourceDir.DIRECTORY_SEPARATOR.$filename);
+            @rmdir($sourceDir);
+        }
+    }
+
+    public function test_matchzy_import_rejects_path_traversal(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['is_admin' => true]);
+        $sourceDir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'speedmn-matchzy-'.Str::uuid();
+        mkdir($sourceDir, 0700, true);
+        config(['services.cs2_demo_parser.source_dir' => $sourceDir]);
+
+        try {
+            $this->actingAsAdmin($admin)
+                ->post(route('admin.demos.import-matchzy'), ['filename' => '../outside.dem'])
+                ->assertNotFound();
+
+            $this->assertDatabaseCount('demo_videos', 0);
+        } finally {
+            @rmdir($sourceDir);
+        }
     }
 }

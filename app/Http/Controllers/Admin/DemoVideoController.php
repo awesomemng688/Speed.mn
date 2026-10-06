@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
@@ -45,7 +46,94 @@ class DemoVideoController extends Controller
             return $demo;
         });
 
-        return view('admin.demos.index', compact('demos'));
+        $sourceDir = realpath((string) config('services.cs2_demo_parser.source_dir'));
+        $sourceAvailable = $sourceDir !== false && is_dir($sourceDir) && is_readable($sourceDir);
+        $availableDemFiles = collect();
+
+        if ($sourceAvailable) {
+            $importedNames = DemoVideo::query()
+                ->where('media_type', 'dem')
+                ->whereIn('processing_status', ['queued', 'processing', 'ready'])
+                ->pluck('original_filename')
+                ->flip();
+
+            $availableDemFiles = collect(File::files($sourceDir))
+                ->filter(fn (\SplFileInfo $file) => strtolower($file->getExtension()) === 'dem'
+                    && $file->isReadable()
+                    && $file->getSize() > 0
+                    && $file->getSize() <= 500 * 1024 * 1024)
+                ->map(fn (\SplFileInfo $file) => [
+                    'name' => $file->getFilename(),
+                    'size' => $file->getSize(),
+                    'modified_at' => $file->getMTime(),
+                    'imported' => $importedNames->has($file->getFilename()),
+                ])
+                ->sortByDesc('modified_at')
+                ->values();
+        }
+
+        return view('admin.demos.index', compact('demos', 'availableDemFiles', 'sourceAvailable'));
+    }
+
+    public function importFromMatchZy(Request $request, AdminAuditLogger $audit): RedirectResponse
+    {
+        $validated = $request->validate(['filename' => ['required', 'string', 'max:255']]);
+        $filename = $validated['filename'];
+        abort_unless(basename($filename) === $filename && strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'dem', 404);
+
+        $sourceDir = realpath((string) config('services.cs2_demo_parser.source_dir'));
+        abort_unless($sourceDir !== false && is_dir($sourceDir), 503, 'MatchZy demo folder is unavailable.');
+        $sourcePath = realpath($sourceDir.DIRECTORY_SEPARATOR.$filename);
+        abort_unless($sourcePath !== false
+            && str_starts_with($sourcePath, rtrim($sourceDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR)
+            && is_file($sourcePath)
+            && is_readable($sourcePath), 404);
+
+        $size = filesize($sourcePath);
+        abort_unless($size !== false && $size > 0 && $size <= 500 * 1024 * 1024, 422, 'Demo must be between 1 byte and 500 MiB.');
+
+        $existing = DemoVideo::query()
+            ->where('media_type', 'dem')
+            ->where('original_filename', $filename)
+            ->whereIn('processing_status', ['queued', 'processing', 'ready'])
+            ->first();
+        if ($existing) {
+            return back()->with('status', 'Энэ demo өмнө нь import хийгдсэн байна.');
+        }
+
+        $disk = Storage::disk('local');
+        $path = 'demo-videos/'.Str::uuid().'.dem';
+        $disk->makeDirectory('demo-videos');
+        if (! copy($sourcePath, $disk->path($path))) {
+            return back()->withErrors(['filename' => 'Demo-г private storage руу хуулж чадсангүй.']);
+        }
+
+        try {
+            $demo = DB::transaction(function () use ($request, $audit, $filename, $path): DemoVideo {
+                $title = pathinfo($filename, PATHINFO_FILENAME);
+                preg_match('/(?:^|[_-])(de_[a-z0-9_]+?)(?=_(?:team|vs|match|final|scrim)(?:_|$)|$)/i', $title, $mapMatch);
+                $demo = DemoVideo::create([
+                    'title' => Str::limit(str_replace(['_', '-'], ' ', $title), 180, ''),
+                    'original_filename' => $filename,
+                    'file_path' => $path,
+                    'media_type' => 'dem',
+                    'processing_status' => 'queued',
+                    'map' => isset($mapMatch[1]) ? Str::limit($mapMatch[1], 64, '') : null,
+                    'uploaded_by' => $request->user()->id,
+                ]);
+
+                $audit->record($request, 'demo.parser_imported', $demo, ['source' => 'matchzy']);
+
+                return $demo;
+            });
+
+            ParseCs2Demo::dispatch($demo->id)->afterCommit();
+        } catch (Throwable $exception) {
+            $disk->delete($path);
+            throw $exception;
+        }
+
+        return redirect()->route('admin.demos.index')->with('status', 'MatchZy demo parser queue-д орлоо.');
     }
 
     public function store(Request $request, AdminAuditLogger $audit): RedirectResponse

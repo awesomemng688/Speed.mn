@@ -23,6 +23,17 @@
             <button class="button button-primary" type="submit">MP4 хадгалах</button>
         </form>
     </div>
+    <div class="panel admin-form-panel">
+        <h2>MatchZy серверээс import</h2>
+        @if(!$sourceAvailable)
+            <p class="admin-alert error">MatchZy demo хавтас уншигдахгүй байна. `CS2_DEMO_SOURCE_DIR` болон www-data эрхийг шалга.</p>
+        @elseif($availableDemFiles->isEmpty())
+            <p class="muted">Import хийх боломжтой шинэ `.dem` файл алга. 500 MiB-аас бага файлууд харагдана.</p>
+        @else
+            <div class="demo-source-list">@foreach($availableDemFiles as $sourceFile)<form method="POST" action="{{ route('admin.demos.import-matchzy') }}" class="demo-source-row">@csrf<input type="hidden" name="filename" value="{{ $sourceFile['name'] }}"><span><strong>{{ $sourceFile['name'] }}</strong><small>{{ number_format($sourceFile['size'] / 1048576, 1) }} MiB · {{ date('Y-m-d H:i', $sourceFile['modified_at']) }}</small></span>@if($sourceFile['imported'])<span class="status online">Imported</span>@else<button class="button button-primary" type="submit">Import & parse</button>@endif</form>@endforeach</div>
+        @endif
+        @error('filename')<p class="field-error">{{ $message }}</p>@enderror
+    </div>
     <div class="demo-video-list">
         @forelse($demos as $demo)
             <article class="panel demo-video-item">
@@ -58,6 +69,6 @@
     {{ $demos->links() }}
 </section>
 <style>
-    .admin-form-panel{padding:22px;margin-bottom:18px}.admin-form-panel h2{margin:0 0 16px;font-size:18px}.demo-video-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}.demo-video-item{padding:16px;min-width:0}.demo-video-item .panel-heading{align-items:flex-start;gap:12px}.demo-video-item h2{margin:0;font-size:16px}.demo-video-item video{display:block;width:100%;max-height:440px;margin-top:14px;border-radius:8px;background:#05070b}.field-error{color:#ff8998;font-size:12px}.demo-processing{padding:18px;border:1px solid var(--line);border-radius:8px;color:var(--muted)}.demo-analysis-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:16px}.demo-analysis-summary>div{padding:10px;border:1px solid var(--line);border-radius:7px;background:#0b0f17}.demo-analysis-summary small,.demo-analysis-summary strong{display:block}.demo-analysis-summary small{color:var(--muted);font-size:9px}.demo-analysis-summary strong{margin-top:4px;font-size:14px}.demo-analysis-teams{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;color:var(--muted);font-size:12px}.demo-analysis-teams span{padding:8px 10px;border:1px solid var(--line);border-radius:7px}.demo-analysis-players,.demo-analysis-rounds{margin-top:18px}.demo-analysis-players h3,.demo-analysis-rounds h3{font-size:14px}.demo-analysis-rounds details{border-top:1px solid var(--line);padding:9px 2px;font-size:12px}.demo-analysis-rounds summary{cursor:pointer}.demo-round-kills{display:grid;gap:5px;padding:9px 12px;color:var(--muted)}
+    .admin-form-panel{padding:22px;margin-bottom:18px}.admin-form-panel h2{margin:0 0 16px;font-size:18px}.demo-video-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}.demo-video-item{padding:16px;min-width:0}.demo-video-item .panel-heading{align-items:flex-start;gap:12px}.demo-video-item h2{margin:0;font-size:16px}.demo-video-item video{display:block;width:100%;max-height:440px;margin-top:14px;border-radius:8px;background:#05070b}.field-error{color:#ff8998;font-size:12px}.demo-processing{padding:18px;border:1px solid var(--line);border-radius:8px;color:var(--muted)}.demo-analysis-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:16px}.demo-analysis-summary>div{padding:10px;border:1px solid var(--line);border-radius:7px;background:#0b0f17}.demo-analysis-summary small,.demo-analysis-summary strong{display:block}.demo-analysis-summary small{color:var(--muted);font-size:9px}.demo-analysis-summary strong{margin-top:4px;font-size:14px}.demo-analysis-teams{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;color:var(--muted);font-size:12px}.demo-analysis-teams span{padding:8px 10px;border:1px solid var(--line);border-radius:7px}.demo-analysis-players,.demo-analysis-rounds{margin-top:18px}.demo-analysis-players h3,.demo-analysis-rounds h3{font-size:14px}.demo-analysis-rounds details{border-top:1px solid var(--line);padding:9px 2px;font-size:12px}.demo-analysis-rounds summary{cursor:pointer}.demo-round-kills{display:grid;gap:5px;padding:9px 12px;color:var(--muted)}.demo-source-list{display:grid;gap:8px}.demo-source-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.demo-source-row span:first-child{min-width:0;overflow-wrap:anywhere}.demo-source-row strong,.demo-source-row small{display:block}.demo-source-row small{color:var(--muted);margin-top:3px}.demo-source-row .button{flex-shrink:0}@media(max-width:640px){.demo-source-row{align-items:flex-start;flex-direction:column}.demo-source-row .button{width:100%}}
 </style>
 @endsection

@@ -95,6 +95,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('audit', [AdminAuditLogController::class, 'index'])->name('audit.index');
     Route::get('demos', [AdminDemoVideoController::class, 'index'])->name('demos.index');
     Route::post('demos', [AdminDemoVideoController::class, 'store'])->name('demos.store');
+    Route::post('demos/import-matchzy', [AdminDemoVideoController::class, 'importFromMatchZy'])->name('demos.import-matchzy');
     Route::get('demos/{demo}/video', [AdminDemoVideoController::class, 'stream'])->name('demos.stream');
     Route::delete('demos/{demo}', [AdminDemoVideoController::class, 'destroy'])->name('demos.destroy');
 });

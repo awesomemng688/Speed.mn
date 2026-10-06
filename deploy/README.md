@@ -118,10 +118,17 @@ browser. Configure the active PHP-FPM `php.ini` with
 `upload_max_filesize=1024M`, `post_max_size=1050M`, `max_execution_time=300`, and
 `max_input_time=300`, then restart PHP-FPM for large uploads.
 
-Admin `.dem` uploads (up to 500 MiB) are parsed asynchronously into match,
-round, kill, and player statistics. The parser is a separate Python tool, not a
-video renderer; raw demos do not play in the browser. Install a pinned copy
-outside the application releases and run it as the queue worker user:
+Admin `.dem` files can be imported directly from the MatchZy directory, avoiding
+large browser uploads and proxy `413` limits. The default source is
+`/home/cs2/27025/game/csgo/MatchZy`; override it with
+`CS2_DEMO_SOURCE_DIR` in `/var/www/awe/.env`. Ensure `www-data` can traverse the
+parent directories and read the `.dem` files. The admin library lists readable
+files up to 500 MiB and copies a selected demo into private storage before
+queueing it. Browser `.dem` uploads are also limited to 500 MiB.
+
+Parsed demos show match, round, kill, and player statistics. The parser is a
+separate Python tool, not a video renderer; raw demos do not play in the
+browser. Install a pinned copy outside the application releases:
 
 ```bash
 sudo apt install -y python3 python3-venv git
@@ -139,6 +146,7 @@ Set these in `/var/www/awe/.env`, then refresh config and restart the queue:
 CS2_DEMO_PARSER_PYTHON=/opt/speedmn-cs2-demo-parser/.venv/bin/python
 CS2_DEMO_PARSER_ENTRYPOINT=/opt/speedmn-cs2-demo-parser/main.py
 CS2_DEMO_PARSER_TIMEOUT_SECONDS=1800
+CS2_DEMO_SOURCE_DIR=/home/cs2/27025/game/csgo/MatchZy
 ```
 
 ```bash
