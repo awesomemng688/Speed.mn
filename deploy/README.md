@@ -112,6 +112,13 @@ The deploy script verifies Laravel route boot and requests the configured
 `APP_URL` before reporting success. Install `curl` on the VPS for this HTTP
 smoke test.
 
+Admin demo videos are stored on Laravel's private local disk and are only
+streamed through authenticated admin routes. The uploader accepts MP4 files up
+to 1 GiB. Configure the active PHP-FPM `php.ini` with `upload_max_filesize=1024M`,
+`post_max_size=1050M`, `max_execution_time=300`, and `max_input_time=300`, then
+restart PHP-FPM for uploads near that limit to work. Raw `.dem` files are not
+browser-playable and must be converted to MP4 before uploading.
+
 Server status history is pruned daily at 03:30. `SERVER_STATUS_RETENTION_DAYS`
 is clamped to 30–90 days and defaults to 90; a timestamp index and batched
 deletes limit cleanup work.

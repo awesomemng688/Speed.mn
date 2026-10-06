@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
 use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Http\Controllers\Admin\TwoFactorController as AdminTwoFactorController;
+use App\Http\Controllers\Admin\DemoVideoController as AdminDemoVideoController;
 use App\Models\Server;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RankController;
@@ -92,4 +93,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('failed-jobs/{uuid}/retry', [AdminFailedJobController::class, 'retry'])->name('failed-jobs.retry');
     Route::delete('failed-jobs/{uuid}', [AdminFailedJobController::class, 'destroy'])->name('failed-jobs.destroy');
     Route::get('audit', [AdminAuditLogController::class, 'index'])->name('audit.index');
+    Route::get('demos', [AdminDemoVideoController::class, 'index'])->name('demos.index');
+    Route::post('demos', [AdminDemoVideoController::class, 'store'])->name('demos.store');
+    Route::get('demos/{demo}/video', [AdminDemoVideoController::class, 'stream'])->name('demos.stream');
+    Route::delete('demos/{demo}', [AdminDemoVideoController::class, 'destroy'])->name('demos.destroy');
 });
