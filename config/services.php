@@ -49,4 +49,10 @@ return [
         'players_webhook' => env('DISCORD_SERVER_PLAYERS_WEBHOOK'),
     ],
 
+    'cs2_demo_parser' => [
+        'python' => env('CS2_DEMO_PARSER_PYTHON', '/opt/speedmn-cs2-demo-parser/.venv/bin/python'),
+        'entrypoint' => env('CS2_DEMO_PARSER_ENTRYPOINT', '/opt/speedmn-cs2-demo-parser/main.py'),
+        'timeout_seconds' => (int) env('CS2_DEMO_PARSER_TIMEOUT_SECONDS', 1800),
+    ],
+
 ];

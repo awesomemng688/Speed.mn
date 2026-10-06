@@ -113,11 +113,49 @@ The deploy script verifies Laravel route boot and requests the configured
 smoke test.
 
 Admin demo videos are stored on Laravel's private local disk and are only
-streamed through authenticated admin routes. The uploader accepts MP4 files up
-to 1 GiB. Configure the active PHP-FPM `php.ini` with `upload_max_filesize=1024M`,
-`post_max_size=1050M`, `max_execution_time=300`, and `max_input_time=300`, then
-restart PHP-FPM for uploads near that limit to work. Raw `.dem` files are not
-browser-playable and must be converted to MP4 before uploading.
+streamed through authenticated admin routes. MP4 files up to 1 GiB play in the
+browser. Configure the active PHP-FPM `php.ini` with
+`upload_max_filesize=1024M`, `post_max_size=1050M`, `max_execution_time=300`, and
+`max_input_time=300`, then restart PHP-FPM for large uploads.
+
+Admin `.dem` uploads (up to 500 MiB) are parsed asynchronously into match,
+round, kill, and player statistics. The parser is a separate Python tool, not a
+video renderer; raw demos do not play in the browser. Install a pinned copy
+outside the application releases and run it as the queue worker user:
+
+```bash
+sudo apt install -y python3 python3-venv git
+sudo git clone https://github.com/faschmitz/cs2-demo-parser.git /opt/speedmn-cs2-demo-parser
+sudo git -C /opt/speedmn-cs2-demo-parser checkout 319833c4f846a1f14fb2d2cf3d2cf7d604704a99
+sudo python3 -m venv /opt/speedmn-cs2-demo-parser/.venv
+sudo /opt/speedmn-cs2-demo-parser/.venv/bin/pip install -r /opt/speedmn-cs2-demo-parser/requirements.txt
+sudo chown -R root:www-data /opt/speedmn-cs2-demo-parser
+sudo chmod -R o-w /opt/speedmn-cs2-demo-parser
+```
+
+Set these in `/var/www/awe/.env`, then refresh config and restart the queue:
+
+```dotenv
+CS2_DEMO_PARSER_PYTHON=/opt/speedmn-cs2-demo-parser/.venv/bin/python
+CS2_DEMO_PARSER_ENTRYPOINT=/opt/speedmn-cs2-demo-parser/main.py
+CS2_DEMO_PARSER_TIMEOUT_SECONDS=1800
+```
+
+```bash
+cd /var/www/awe/current
+sudo -u www-data php artisan config:cache
+sudo supervisorctl restart 'speedmn-worker:*'
+```
+
+Demo parsing uses its own long-running queue so large files do not block server
+polling. Install the dedicated Supervisor worker once:
+
+```bash
+sudo cp /var/www/awe/current/deploy/supervisor/speedmn-demo-parser.conf /etc/supervisor/conf.d/speedmn-demo-parser.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl status 'speedmn-demo-parser:*'
+```
 
 Server status history is pruned daily at 03:30. `SERVER_STATUS_RETENTION_DAYS`
 is clamped to 30–90 days and defaults to 90; a timestamp index and batched

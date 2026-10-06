@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DemoVideo extends Model
 {
     protected $fillable = [
-        'title', 'original_filename', 'file_path', 'map', 'recorded_at', 'uploaded_by',
+        'title', 'original_filename', 'file_path', 'media_type', 'processing_status',
+        'analysis_path', 'processing_error', 'map', 'recorded_at', 'uploaded_by',
     ];
 
     protected $casts = [
