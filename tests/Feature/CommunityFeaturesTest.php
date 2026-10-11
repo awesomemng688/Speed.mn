@@ -104,6 +104,7 @@ class CommunityFeaturesTest extends TestCase
 
     private function configurePrimaryRankConnection(): void
     {
+        config(['services.steam.key' => '']);
         config(['database.connections.rank_public_1' => [
             'driver' => 'sqlite',
             'database' => ':memory:',

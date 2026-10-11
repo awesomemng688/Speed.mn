@@ -19,7 +19,7 @@ class PublicPlayerProfileController extends Controller
 
     public function show(string $steamId): View
     {
-        abort_unless(preg_match('/^\d{17}$/', $steamId) === 1, 404);
+        abort_unless(preg_match('/^\d{17}$/', $steamId) === 1 && (int) $steamId >= 76561197960265728, 404);
 
         $accountId = (int) $steamId - 76561197960265728;
         $legacySteamId = 'STEAM_0:'.($accountId % 2).':'.intdiv($accountId, 2);
