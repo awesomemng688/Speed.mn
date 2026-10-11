@@ -15,4 +15,13 @@ class SitemapTest extends TestCase
         $this->assertStringContainsString('<loc>'.url('/').'</loc>', $response->getContent());
         $this->assertNotFalse(simplexml_load_string($response->getContent()));
     }
+
+    public function test_home_has_jsonld_and_no_noindex(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('application/ld+json', $html);
+        $this->assertStringContainsString('"@type":"WebSite"', $html);
+        $this->assertStringNotContainsString('noindex', $html);
+    }
 }

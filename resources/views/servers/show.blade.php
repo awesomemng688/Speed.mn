@@ -4,6 +4,13 @@
 @php($isOnline = $statusState === 'online')
 @section('title', $server->name.' — Speed.mn серверийн төлөв')
 @section('description', $server->name.' серверийн бодит цагийн төлөв, тоглогчдын тоо, газрын зураг болон холболтын мэдээлэл.')
+@section('jsonld')
+{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
+    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Speed.mn', 'item' => url('/')],
+    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Серверүүд', 'item' => route('servers.index')],
+    ['@type' => 'ListItem', 'position' => 3, 'name' => $server->name, 'item' => url()->current()],
+]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
+@endsection
 @section('content')
 <section class="page-head"><div class="shell"><a class="back" href="{{ route('servers.index') }}">← Бүх сервер</a><div class="detail-title"><div><span class="game-pill {{ $server->game }}">{{ $server->game === 'cs2' ? 'CS2' : 'CS 1.6' }}</span><h1>{{ $server->name }}</h1><p class="muted">{{ $server->address }} · {{ $server->region ?: 'Монгол' }}</p></div><div class="card-actions"><button class="button button-ghost copy-address" type="button" data-copy-address="{{ $server->address }}">IP хуулах</button><a class="button button-primary" href="steam://connect/{{ $server->address }}">Серверт холбогдох</a></div></div>
 @auth

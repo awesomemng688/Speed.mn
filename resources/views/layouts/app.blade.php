@@ -10,7 +10,14 @@
     <meta property="og:description" content="@yield('og_description', 'Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.')">
     <meta property="og:image" content="{{ asset('img/hero/background.jpg') }}">
     <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:locale" content="mn_MN">
     <link rel="canonical" href="{{ url()->current() }}">
+    @if(request()->routeIs('admin.*', 'profile', 'skins.*', 'two-factor.*'))
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+    @hasSection('jsonld')
+        <script type="application/ld+json">@yield('jsonld')</script>
+    @endif
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('og_title', 'Speed.mn Gaming Network')">
     <meta name="twitter:description" content="@yield('og_description', 'Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.')">
