@@ -17,27 +17,7 @@
     <meta name="twitter:image" content="{{ asset('img/hero/background.jpg') }}">
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=home-account-1' }}">
-    <style>
-        .server-filters{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#11151e;margin-bottom:14px}
-        .favorite-form{margin-top:10px}.favorite-button{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:#171d28;color:var(--text);font:inherit;text-decoration:none;cursor:pointer}.favorite-button[aria-pressed="true"]{color:#ffd17d;border-color:#ffd17d88}.detail-favorite{margin-top:12px}.profile-server-row form{margin:0}.favorite-remove{width:40px;height:40px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font-size:22px;cursor:pointer}
-        .server-filters .search-box{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:7px;background:#0e121a}
-        .server-filters .search-box input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit}
-        .filter-field{display:grid;gap:5px;color:var(--muted);font-size:11px}
-        .filter-field input,.filter-field select{width:100%;min-height:44px;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#0e121a;color:var(--text);font:inherit}
-        .server-filters .button,.card-actions .button{min-height:44px}
-        .server-card-cover img[hidden],.server-card-cover-fallback[hidden]{display:none!important}
-        .server-card-overlay .status.stale{color:#ffd17d;border-color:#ffd17d55;background:#211a0dcc}
-        .updated-at{display:block;margin-top:11px;color:#aeb9cb;font-size:11px}
-        .updated-at time{font-variant-numeric:tabular-nums}
-        .status.stale{color:#ffd17d}.status.stale i{background:#ffd17d}
-        :where(a,button,input,select):focus-visible{outline:2px solid #ffd17d;outline-offset:3px}
-        .nav-links a,.tabs a,.menu-toggle{min-height:44px}
-        .detail-title .card-actions{align-items:center}
-        @media(max-width:900px){.server-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.server-filters .search-box,.server-filters>.button{grid-column:1/-1}}
-        @media(max-width:640px){.server-filters{grid-template-columns:1fr;padding:12px}.server-filters .search-box,.server-filters>.button{grid-column:auto}.server-filters>.button{width:100%}.toolbar{flex-wrap:wrap}.detail-title{align-items:flex-start;flex-direction:column}.detail-title>.card-actions{width:100%}.detail-title>.card-actions .button{flex:1}.card-actions{flex-wrap:wrap;gap:8px}.card-actions .button{flex:1}.server-card-body{padding:16px}.server-card-body>p{overflow-wrap:anywhere}.hero-account-actions a,.hero-account-login{min-height:44px;display:inline-flex;align-items:center}.live-notice{align-items:flex-start;flex-wrap:wrap}.live-notice small{width:100%;margin-left:0}.rank-table-wrap{max-width:100%}}
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=responsive-ui-1' }}">
 </head>
 <body class="@yield('body_class')">
 <header class="site-header">
