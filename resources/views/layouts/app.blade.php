@@ -11,6 +11,8 @@
     <meta property="og:image" content="{{ asset('img/hero/background.jpg') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:locale" content="mn_MN">
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link href="https://fonts.bunny.net/css?family=rajdhani:600,700" rel="stylesheet">
     <link rel="canonical" href="{{ url()->current() }}">
     @if(request()->routeIs('admin.*', 'profile', 'skins.*', 'two-factor.*'))
         <meta name="robots" content="noindex, nofollow">
@@ -96,6 +98,12 @@
 </header>
 <main>@if(session('error'))<div class="shell admin-alert error" role="alert">{{ session('error') }}</div>@endif @if(session('status'))<div class="shell admin-alert success" role="status">{{ session('status') }}</div>@endif @yield('content')</main>
 <footer id="community"><div class="shell footer"><div><a class="brand footer-brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"></a><p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p><div class="social-links"><a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer">Discord ↗</a><a href="https://steamcommunity.com/" target="_blank" rel="noreferrer">Steam нийгэмлэг ↗</a><a href="mailto:contact@speed.mn">Админтай холбогдох</a></div></div><div><strong>ЦЭС</strong><a href="{{ route('servers.index') }}">Бүх сервер</a><a href="{{ route('servers.game', 'cs2') }}">CS2 сервер</a><a href="{{ route('servers.game', 'cs16') }}">CS 1.6 сервер</a><a href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}">Зэвсгийн skin</a><a href="{{ route('ranks.index') }}">Тоглогчдын чансаа</a><a href="#community">Серверийн дүрэм</a></div></div><div class="shell copyright">© {{ date('Y') }} Speed.mn тоглоомын сүлжээ</div></footer>
+<nav class="mobile-tabbar" aria-label="Үндсэн цэс">
+    <a class="{{ request()->routeIs('home') || request()->is('/') ? 'is-active' : '' }}" href="{{ url('/') }}"><span aria-hidden="true">⌂</span>Нүүр</a>
+    <a class="{{ request()->routeIs('servers.*') ? 'is-active' : '' }}" href="{{ route('servers.index') }}"><span aria-hidden="true">▦</span>Сервер</a>
+    <a class="{{ request()->routeIs('ranks.index') ? 'is-active' : '' }}" href="{{ route('ranks.index') }}"><span aria-hidden="true">♜</span>Чансаа</a>
+    <a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer"><span aria-hidden="true">⌁</span>Discord</a>
+</nav>
 <script src="{{ asset('js/speed.js').'?v='.filemtime(public_path('js/speed.js')) }}" defer></script>
 </body>
 </html>

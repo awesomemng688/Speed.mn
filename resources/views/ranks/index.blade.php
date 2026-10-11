@@ -75,8 +75,8 @@
                         @php
                             $position = $players->firstItem() + $loop->index;
                         @endphp
-                        <tr>
-                            <td class="rank-position">{{ $position }}</td>
+                        <tr class="{{ $position <= 3 ? 'rank-top rank-top-'.$position : '' }}">
+                            <td class="rank-position"><span class="rank-badge">{{ $position }}</span></td>
                             <td class="rank-player">
                                 @if ($avatarValue($player))
                                     <img src="{{ $avatarValue($player) }}" alt="" loading="lazy">

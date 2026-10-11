@@ -216,3 +216,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+(function () {
+    var els = document.querySelectorAll('[data-count]');
+    if (!els.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    els.forEach(function (el) {
+        var target = parseInt(el.dataset.count, 10);
+        if (!target || target < 0) return;
+        var start = null;
+        function tick(ts) {
+            if (start === null) start = ts;
+            var p = Math.min((ts - start) / 900, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+            if (p < 1) requestAnimationFrame(tick);
+        }
+        el.textContent = '0';
+        requestAnimationFrame(tick);
+    });
+})();
