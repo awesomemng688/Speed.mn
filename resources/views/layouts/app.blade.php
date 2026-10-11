@@ -26,6 +26,8 @@
     <meta name="twitter:image" content="{{ asset('img/hero/background.jpg') }}">
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <meta name="theme-color" content="#080a0f">
     <link rel="stylesheet" href="{{ asset('css/speed.css').'?v='.filemtime(public_path('css/speed.css')) }}">
     <style>
         .server-filters{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#11151e;margin-bottom:14px}
@@ -105,5 +107,6 @@
     <a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer"><span aria-hidden="true">⌁</span>Discord</a>
 </nav>
 <script src="{{ asset('js/speed.js').'?v='.filemtime(public_path('js/speed.js')) }}" defer></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 </body>
 </html>

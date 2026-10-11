@@ -264,3 +264,18 @@ For HTTPS:
 sudo apt install -y certbot python3-certbot-apache
 sudo certbot --apache -d speed.mn -d www.speed.mn
 ```
+
+## Backup, cache, cron (server hardening)
+
+```bash
+# Daily DB backup at 03:30, keeps 7 days in /var/backups/speedmn
+sudo chmod +x /var/www/awe/current/deploy/backup-db.sh
+echo '30 3 * * * root /var/www/awe/current/deploy/backup-db.sh >> /var/log/speedmn-backup.log 2>&1' | sudo tee /etc/cron.d/speedmn-backup
+
+# Browser caching for static assets
+sudo a2enmod expires headers && sudo systemctl reload apache2
+
+# Laravel scheduler must run as www-data, never root
+sudo crontab -l | grep -v 'schedule:run' | sudo crontab -
+echo '* * * * * www-data cd /var/www/awe/current && php artisan schedule:run >> /dev/null 2>&1' | sudo tee /etc/cron.d/speedmn-scheduler
+```

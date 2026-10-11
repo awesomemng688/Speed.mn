@@ -1,0 +1,14 @@
+{
+  "name": "Speed.mn Gaming Network",
+  "short_name": "Speed.mn",
+  "description": "Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.",
+  "lang": "mn",
+  "start_url": "/servers",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080a0f",
+  "theme_color": "#080a0f",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
