@@ -5,7 +5,7 @@
 @section('title', $server->name.' — Speed.mn серверийн төлөв')
 @section('description', $server->name.' серверийн бодит цагийн төлөв, тоглогчдын тоо, газрын зураг болон холболтын мэдээлэл.')
 @section('jsonld')
-{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
+{!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
     ['@type' => 'ListItem', 'position' => 1, 'name' => 'Speed.mn', 'item' => url('/')],
     ['@type' => 'ListItem', 'position' => 2, 'name' => 'Серверүүд', 'item' => route('servers.index')],
     ['@type' => 'ListItem', 'position' => 3, 'name' => $server->name, 'item' => url()->current()],

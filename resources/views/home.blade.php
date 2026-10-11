@@ -6,7 +6,7 @@
 @section('og_description', 'CS2 болон CS 1.6 серверийн бодит цагийн төлөв, тоглогчдын ранк, Steam профайл болон skin хэрэгслүүд.')
 @section('body_class', 'home-page')
 @section('jsonld')
-{!! json_encode(['@context' => 'https://schema.org', '@type' => 'WebSite', 'name' => 'Speed.mn', 'url' => url('/'), 'inLanguage' => 'mn', 'description' => 'Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
+{!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'WebSite', 'name' => 'Speed.mn', 'url' => url('/'), 'inLanguage' => 'mn', 'description' => 'Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
 @endsection
 
 @section('content')
