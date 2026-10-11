@@ -12,7 +12,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:locale" content="mn_MN">
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
-    <link href="https://fonts.bunny.net/css?family=rajdhani:600,700" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=rajdhani:600,700&display=swap" rel="stylesheet">
     <link rel="canonical" href="{{ url()->current() }}">
     @if(request()->routeIs('admin.*', 'profile', 'skins.*', 'two-factor.*'))
         <meta name="robots" content="noindex, nofollow">

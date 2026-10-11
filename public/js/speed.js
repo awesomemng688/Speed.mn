@@ -99,6 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (metrics[1]) metrics[1].textContent = online ? (server.map || '—') : '—';
             if (metrics[2]) metrics[2].textContent = online && server.ping ? `${server.ping}мс` : '—';
 
+            const bar = card.querySelector('.load-bar span');
+            if (bar) {
+                const cap = Math.max(1, Number(server.max_players) || 1);
+                bar.style.width = `${online ? Math.min(100, Math.round(((server.players || 0) / cap) * 100)) : 0}%`;
+            }
+
             const body = card.querySelector('.server-card-body');
             let updated = card.querySelector('.updated-at');
             if (!updated && body) {
