@@ -49,6 +49,11 @@ return [
         'players_webhook' => env('DISCORD_SERVER_PLAYERS_WEBHOOK'),
     ],
 
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
+
     'cs2_demo_parser' => [
         'python' => env('CS2_DEMO_PARSER_PYTHON', '/opt/speedmn-cs2-demo-parser/.venv/bin/python'),
         'entrypoint' => env('CS2_DEMO_PARSER_ENTRYPOINT', '/opt/speedmn-cs2-demo-parser/main.py'),

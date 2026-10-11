@@ -10,6 +10,7 @@ use App\Services\ServerQueryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
@@ -66,6 +67,8 @@ class PollServer implements ShouldQueue
                     'error' => $exception->getMessage(),
                 ]);
             }
+
+            $this->alertAdmins($server, $confirmedRecovery);
         }
 
         $server->forceFill([
@@ -88,6 +91,29 @@ class PollServer implements ShouldQueue
         ])->save();
 
         $this->storeHeartbeat('speedmn.poll.last_failed_at', $failedAt);
+    }
+
+    private function alertAdmins(Server $server, bool $recovered): void
+    {
+        $text = ($recovered ? '🟢 Сервер сэргэлээ: ' : '🔴 Сервер унав: ').$server->name.' ('.$server->address.')';
+
+        if ($webhook = config('services.discord.admin_webhook')) {
+            try {
+                Http::timeout(5)->post($webhook, ['content' => $text])->throw();
+            } catch (Throwable $exception) {
+                Log::warning('Discord server alert failed', ['server_id' => $server->id, 'error' => $exception->getMessage()]);
+            }
+        }
+
+        $token = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
+        if ($token && $chatId) {
+            try {
+                Http::timeout(5)->post("https://api.telegram.org/bot{$token}/sendMessage", ['chat_id' => $chatId, 'text' => $text])->throw();
+            } catch (Throwable $exception) {
+                Log::warning('Telegram server alert failed', ['server_id' => $server->id]);
+            }
+        }
     }
 
     private function storeHeartbeat(string $key, $timestamp): void
