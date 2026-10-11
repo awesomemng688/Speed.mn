@@ -104,16 +104,6 @@ class PollServer implements ShouldQueue
                 Log::warning('Discord server alert failed', ['server_id' => $server->id, 'error' => $exception->getMessage()]);
             }
         }
-
-        $token = config('services.telegram.bot_token');
-        $chatId = config('services.telegram.chat_id');
-        if ($token && $chatId) {
-            try {
-                Http::timeout(5)->post("https://api.telegram.org/bot{$token}/sendMessage", ['chat_id' => $chatId, 'text' => $text])->throw();
-            } catch (Throwable $exception) {
-                Log::warning('Telegram server alert failed', ['server_id' => $server->id]);
-            }
-        }
     }
 
     private function storeHeartbeat(string $key, $timestamp): void
