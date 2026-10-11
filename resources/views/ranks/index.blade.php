@@ -83,7 +83,11 @@
                                 @else
                                     <span class="rank-avatar">{{ strtoupper(substr($nameValue($player), 0, 1)) }}</span>
                                 @endif
-                                <strong>{{ $nameValue($player) }}</strong>
+                                @if ($player->public_profile_url)
+                                    <a href="{{ $player->public_profile_url }}"><strong>{{ $nameValue($player) }}</strong></a>
+                                @else
+                                    <strong>{{ $nameValue($player) }}</strong>
+                                @endif
                             </td>
                             @if ($source['type'] === 'public')
                                 <td class="rank-xp">{{ number_format((int) $rankValue($player, 'XP', $rankValue($player, 'points'))) }}</td>

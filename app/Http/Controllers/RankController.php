@@ -78,6 +78,10 @@ class RankController extends Controller
         }
 
         $avatars = $this->resolveAvatars($players->getCollection());
+        foreach ($players as $player) {
+            $steamId = $this->steam64((string) ($player->steamid ?? $player->{'Steam ID'} ?? $player->Steam ?? ''));
+            $player->public_profile_url = $steamId !== '' ? route('players.show', $steamId) : null;
+        }
 
         return view('ranks.index', [
             'category' => $category,

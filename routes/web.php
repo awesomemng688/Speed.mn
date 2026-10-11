@@ -3,6 +3,9 @@
 use App\Http\Controllers\Auth\SteamController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPlayerProfileController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
@@ -61,6 +64,12 @@ Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers
 Route::get('/rank/{category?}', [RankController::class, 'index'])
     ->where('category', 'public-1|public-2|knife-1|knife-2')
     ->name('ranks.index');
+Route::get('/players/{steamId}', [PublicPlayerProfileController::class, 'show'])
+    ->where('steamId', '\d{17}')
+    ->name('players.show');
+Route::view('/rules', 'rules')->name('rules');
+Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:5,10')->name('feedback.store');
 Route::get('/auth/steam', [SteamController::class, 'redirect'])->middleware('throttle:10,1')->name('steam.login');
 Route::get('/login', [SteamController::class, 'redirect'])->middleware('throttle:10,1')->name('login');
 Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->middleware('throttle:20,1')->name('steam.callback');
@@ -84,4 +93,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('failed-jobs/{uuid}/retry', [AdminFailedJobController::class, 'retry'])->name('failed-jobs.retry');
     Route::delete('failed-jobs/{uuid}', [AdminFailedJobController::class, 'destroy'])->name('failed-jobs.destroy');
     Route::get('audit', [AdminAuditLogController::class, 'index'])->name('audit.index');
+    Route::get('feedback', [AdminFeedbackController::class, 'index'])->name('feedback.index');
+    Route::patch('feedback/{feedback}', [AdminFeedbackController::class, 'update'])->name('feedback.update');
 });

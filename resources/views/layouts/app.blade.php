@@ -49,6 +49,7 @@
             <a class="{{ request()->routeIs('servers.game') && request()->route('game') === 'cs16' ? 'is-active' : '' }}" href="{{ route('servers.game', 'cs16') }}"><span>◉</span> CS 1.6</a>
             <a class="{{ request()->routeIs('skins.bridge') ? 'is-active' : '' }}" href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}"><span>✦</span> Skin</a>
             <a class="{{ request()->routeIs('ranks.index') ? 'is-active' : '' }}" href="{{ route('ranks.index') }}"><span>♜</span> Чансаа</a>
+            <a class="{{ request()->routeIs('rules') ? 'is-active' : '' }}" href="{{ route('rules') }}"><span>☷</span> Дүрэм</a>
             <a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer"><span>⌁</span> Discord</a>
             @auth
                 <div class="mobile-account-actions">
@@ -87,7 +88,7 @@
     </div>
 </header>
 <main>@if(session('error'))<div class="shell admin-alert error" role="alert">{{ session('error') }}</div>@endif @yield('content')</main>
-<footer id="community"><div class="shell footer"><div><a class="brand footer-brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"></a><p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p><div class="social-links"><a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer">Discord ↗</a><a href="https://steamcommunity.com/" target="_blank" rel="noreferrer">Steam нийгэмлэг ↗</a><a href="mailto:contact@speed.mn">Админтай холбогдох</a></div></div><div><strong>ЦЭС</strong><a href="{{ route('servers.index') }}">Бүх сервер</a><a href="{{ route('servers.game', 'cs2') }}">CS2 сервер</a><a href="{{ route('servers.game', 'cs16') }}">CS 1.6 сервер</a><a href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}">Зэвсгийн skin</a><a href="{{ route('ranks.index') }}">Тоглогчдын чансаа</a><a href="#community">Серверийн дүрэм</a></div></div><div class="shell copyright">© {{ date('Y') }} Speed.mn тоглоомын сүлжээ</div></footer>
+<footer id="community"><div class="shell footer"><div><a class="brand footer-brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"></a><p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p><div class="social-links"><a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer">Discord ↗</a><a href="https://steamcommunity.com/" target="_blank" rel="noreferrer">Steam нийгэмлэг ↗</a><a href="{{ route('feedback.create') }}">Санал хүсэлт</a><a href="mailto:contact@speed.mn">Админтай холбогдох</a></div></div><div><strong>ЦЭС</strong><a href="{{ route('servers.index') }}">Бүх сервер</a><a href="{{ route('servers.game', 'cs2') }}">CS2 сервер</a><a href="{{ route('servers.game', 'cs16') }}">CS 1.6 сервер</a><a href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}">Зэвсгийн skin</a><a href="{{ route('ranks.index') }}">Тоглогчдын чансаа</a><a href="{{ route('rules') }}">Серверийн дүрэм</a></div></div><div class="shell copyright">© {{ date('Y') }} Speed.mn тоглоомын сүлжээ</div></footer>
 <script src="{{ asset('js/speed.js').'?v=4' }}" defer></script>
 </body>
 </html>
