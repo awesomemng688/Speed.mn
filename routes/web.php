@@ -61,6 +61,16 @@ Route::get('/', function () {
 
     return view('home', compact('servers', 'stats'));
 })->name('home');
+Route::get('/sitemap.xml', function () {
+    $urls = collect([url('/'), route('servers.index'), route('servers.game', 'cs2'), route('servers.game', 'cs16'), url('/rank')])
+        ->merge(Server::query()->where('enabled', true)->pluck('id')->map(fn ($id) => route('servers.show', $id)));
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        .$urls->map(fn ($u) => '<url><loc>'.e($u).'</loc></url>')->implode('')
+        .'</urlset>';
+
+    return response($xml, 200, ['Content-Type' => 'application/xml']);
+})->name('sitemap');
 Route::get('/servers', [ServerController::class, 'index'])->name('servers.index');
 Route::get('/servers/{game}', [ServerController::class, 'index'])->where('game', 'cs2|cs16')->name('servers.game');
 Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');

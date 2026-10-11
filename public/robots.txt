@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /auth
+Disallow: /profile
+Disallow: /login
+Disallow: /skins
+
+Sitemap: https://speed.mn/sitemap.xml
