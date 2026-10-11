@@ -83,12 +83,17 @@ Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->middle
 Route::get('/auth/logout', [SteamController::class, 'logout'])->middleware('auth')->name('steam.logout');
 Route::get('/skins/bridge', SkinBridgeController::class)->middleware('auth')->name('skins.bridge');
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth')->name('profile');
+Route::get('/submit-server', [\App\Http\Controllers\ServerSubmissionController::class, 'create'])->middleware('auth')->name('submissions.create');
+Route::post('/submit-server', [\App\Http\Controllers\ServerSubmissionController::class, 'store'])->middleware(['auth', 'throttle:5,1'])->name('submissions.store');
 Route::post('/servers/{server}/favorite', [ServerFavoriteController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('servers.favorite');
 Route::delete('/servers/{server}/favorite', [ServerFavoriteController::class, 'destroy'])->middleware(['auth', 'throttle:60,1'])->name('servers.unfavorite');
 Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'read'])->middleware(['auth', 'throttle:60,1'])->name('notifications.read');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('submissions', [\App\Http\Controllers\Admin\ServerSubmissionController::class, 'index'])->name('submissions.index');
+    Route::post('submissions/{submission}/approve', [\App\Http\Controllers\Admin\ServerSubmissionController::class, 'approve'])->name('submissions.approve');
+    Route::post('submissions/{submission}/reject', [\App\Http\Controllers\Admin\ServerSubmissionController::class, 'reject'])->name('submissions.reject');
     Route::get('two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('two-factor.setup');
     Route::post('two-factor/setup', [AdminTwoFactorController::class, 'confirmSetup'])->name('two-factor.confirm');
     Route::get('two-factor/challenge', [AdminTwoFactorController::class, 'challenge'])->name('two-factor.challenge');

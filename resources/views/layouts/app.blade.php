@@ -65,6 +65,7 @@
             @auth
                 <div class="mobile-account-actions">
                     <a href="{{ route('profile') }}">Миний профайл</a>
+                    <a href="{{ route('submissions.create') }}">Сервер нэмэх</a>
                     <a href="{{ route('skins.bridge') }}">CS2 Skin нээх</a>
                     <a href="https://steamcommunity.com/profiles/{{ auth()->user()->steam_id }}" target="_blank" rel="noreferrer">Steam профайл ↗</a>
                     <a href="{{ route('steam.logout') }}">Гарах</a>
@@ -88,6 +89,7 @@
                 </button>
                 <div id="account-dropdown" class="account-dropdown" hidden>
                     <a href="{{ route('profile') }}">Миний профайл</a>
+                    <a href="{{ route('submissions.create') }}">Сервер нэмэх</a>
                     <a href="{{ route('skins.bridge') }}">CS2 Skin нээх</a>
                     <a href="https://steamcommunity.com/profiles/{{ auth()->user()->steam_id }}" target="_blank" rel="noreferrer">Steam профайл ↗</a>
                     <a href="{{ route('steam.logout') }}">Гарах</a>
