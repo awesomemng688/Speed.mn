@@ -42,8 +42,12 @@ jobs:
     concurrency:
       group: production-deploy
       cancel-in-progress: false
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
     steps:
     - name: Configure SSH
+      if: env.DEPLOY_HOST != '' && env.DEPLOY_SSH_KEY != ''
       env:
         DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -58,6 +62,7 @@ jobs:
           ssh-keyscan -H "$DEPLOY_HOST" > ~/.ssh/known_hosts
         fi
     - name: Run update.sh on server
+      if: env.DEPLOY_HOST != '' && env.DEPLOY_SSH_KEY != ''
       env:
         DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
