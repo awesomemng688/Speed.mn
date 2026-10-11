@@ -17,7 +17,7 @@
     <meta name="twitter:image" content="{{ asset('img/hero/background.jpg') }}">
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=home-account-1' }}">
+    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v='.filemtime(public_path('css/speed.css')) }}">
     <style>
         .server-filters{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#11151e;margin-bottom:14px}
         .favorite-form{margin-top:10px}.favorite-button{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:#171d28;color:var(--text);font:inherit;text-decoration:none;cursor:pointer}.favorite-button[aria-pressed="true"]{color:#ffd17d;border-color:#ffd17d88}.detail-favorite{margin-top:12px}.profile-server-row form{margin:0}.favorite-remove{width:40px;height:40px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font-size:22px;cursor:pointer}
@@ -89,6 +89,6 @@
 </header>
 <main>@if(session('error'))<div class="shell admin-alert error" role="alert">{{ session('error') }}</div>@endif @if(session('status'))<div class="shell admin-alert success" role="status">{{ session('status') }}</div>@endif @yield('content')</main>
 <footer id="community"><div class="shell footer"><div><a class="brand footer-brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"></a><p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p><div class="social-links"><a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer">Discord ↗</a><a href="https://steamcommunity.com/" target="_blank" rel="noreferrer">Steam нийгэмлэг ↗</a><a href="mailto:contact@speed.mn">Админтай холбогдох</a></div></div><div><strong>ЦЭС</strong><a href="{{ route('servers.index') }}">Бүх сервер</a><a href="{{ route('servers.game', 'cs2') }}">CS2 сервер</a><a href="{{ route('servers.game', 'cs16') }}">CS 1.6 сервер</a><a href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}">Зэвсгийн skin</a><a href="{{ route('ranks.index') }}">Тоглогчдын чансаа</a><a href="#community">Серверийн дүрэм</a></div></div><div class="shell copyright">© {{ date('Y') }} Speed.mn тоглоомын сүлжээ</div></footer>
-<script src="{{ asset('js/speed.js').'?v=4' }}" defer></script>
+<script src="{{ asset('js/speed.js').'?v='.filemtime(public_path('js/speed.js')) }}" defer></script>
 </body>
 </html>

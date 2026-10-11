@@ -83,9 +83,9 @@ Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->middle
 Route::get('/auth/logout', [SteamController::class, 'logout'])->middleware('auth')->name('steam.logout');
 Route::get('/skins/bridge', SkinBridgeController::class)->middleware('auth')->name('skins.bridge');
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth')->name('profile');
-Route::post('/servers/{server}/favorite', [ServerFavoriteController::class, 'store'])->middleware('auth')->name('servers.favorite');
-Route::delete('/servers/{server}/favorite', [ServerFavoriteController::class, 'destroy'])->middleware('auth')->name('servers.unfavorite');
-Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'read'])->middleware('auth')->name('notifications.read');
+Route::post('/servers/{server}/favorite', [ServerFavoriteController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('servers.favorite');
+Route::delete('/servers/{server}/favorite', [ServerFavoriteController::class, 'destroy'])->middleware(['auth', 'throttle:60,1'])->name('servers.unfavorite');
+Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'read'])->middleware(['auth', 'throttle:60,1'])->name('notifications.read');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('two-factor.setup');

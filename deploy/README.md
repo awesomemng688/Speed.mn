@@ -70,6 +70,19 @@ only when using a different deployment root. Ensure `.env` and `storage` exist
 before running it. Check `/var/www/awe/storage/logs/laravel.log` after a failed
 deploy.
 
+### Automatic deploy from GitHub Actions
+
+Every push to `main` runs the tests in `.github/workflows/laravel.yml`; when
+they pass, the `deploy` job SSHes to the server and runs the command above.
+Configure these repository secrets (Settings → Secrets and variables → Actions):
+
+- `DEPLOY_HOST`: server IP or hostname
+- `DEPLOY_USER`: SSH user (root or a user with passwordless `sudo`)
+- `DEPLOY_SSH_KEY`: private key whose public key is in that user's `authorized_keys`
+- `DEPLOY_KNOWN_HOSTS` (optional): pinned host key; otherwise `ssh-keyscan` is used
+
+Run the scheduler as `www-data` (not root) so `storage` stays writable.
+
 Server checks are dispatched every 30 seconds; an open page refreshes the API
 state every 15 seconds. Run exactly one scheduler driver. The simplest option
 is cron (`crontab -e`):
