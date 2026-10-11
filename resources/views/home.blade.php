@@ -27,6 +27,20 @@
         .home-page .server-category+.server-category{margin-top:20px}
         .home-page .server-category-heading{margin-bottom:20px}
         .home-page .community-panel{margin-top:18px;box-shadow:0 25px 65px #0005}
+        .home-page .hero-copy-block>.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #70e2a633;border-radius:999px;background:#0b1421b8;color:#b9f3d0;letter-spacing:.12em}
+        .home-page .hero-copy-block>.eyebrow:before{width:7px;height:7px;border-radius:50%;background:#70e2a6;box-shadow:0 0 12px #70e2a6;content:""}
+        .home-page .hero h1{line-height:.98}
+        .home-page .hero h1 em{color:#91baff;font-style:normal}
+        .home-page .hero-server-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+        .home-page .hero-server-card:hover{transform:translateY(-5px);border-color:#70e2a677;box-shadow:0 28px 60px #000c}
+        .home-page .stats-row>div{transition:background .2s ease}
+        .home-page .stats-row>div:hover{background:#ffffff08}
+        .home-page .stats-row strong{font-variant-numeric:tabular-nums}
+        .home-page .server-category{position:relative;overflow:hidden;transition:border-color .2s ease,background .2s ease}
+        .home-page .server-category:before{position:absolute;inset:0 auto 0 0;width:2px;background:linear-gradient(180deg,#70e2a699,transparent 80%);content:"";opacity:.55}
+        .home-page .server-category:hover{border-color:#ffffff20;background:linear-gradient(145deg,#141d29dd,#0d131ddd)}
+        .home-page .server-category-heading h3{margin:0;font-size:clamp(1.05rem,2vw,1.3rem)}
+        .home-page .server-category-heading>div{display:flex;align-items:center;gap:12px}
         @media(max-width:800px){.home-page .hero{min-height:0;padding:70px 0 52px}.home-page .hero-grid{grid-template-columns:1fr}.home-page .hero-visual{min-height:360px;margin-top:10px}.home-page .hero-stack{transform:scale(.9);margin-top:28px}.home-page .hero-status{right:4%;top:-6px}.home-page .stats-row{margin-top:-18px}.home-page .server-category{padding:15px}.home-page .server-category-heading{align-items:flex-start;flex-direction:column;gap:8px}}
         @media(max-width:480px){.home-page .hero h1{font-size:42px;letter-spacing:0}}
         @media(max-width:360px){.home-page .hero h1{font-size:36px}}
