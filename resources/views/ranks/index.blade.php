@@ -26,10 +26,10 @@
         $weaponColumns = ['Knife', 'Glock', 'USP', 'Deagle', 'P228', 'Elite', 'Fiveseven', 'AWP', 'AK47', 'M4A1', 'AUG', 'SG552', 'Scout', 'G3SG1', 'SG550', 'Galil', 'Famas', 'MP5', 'M249', 'Grenade', 'Glock18', 'M3', 'XM1014', 'MAC10', 'UMP45', 'P90', 'TMP', 'MP5 Navy', 'HE Grenade', 'Flashbang', 'Smoke Grenade', 'C4'];
     @endphp
 
-    <section class="page-head rank-head" style="position:relative;isolation:isolate;overflow:hidden;min-height:294px;background:#101827;">
-        <img class="rank-background" src="{{ asset($rankImage) }}" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;object-fit:cover;object-position:center 35%;opacity:.8;pointer-events:none;">
-        <div class="rank-background-overlay" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;background:linear-gradient(90deg,#080a0fe8 0%,#080a0fb8 43%,#080a0f5c 100%),linear-gradient(180deg,#080a0f55 0%,transparent 42%,#080a0fd9 100%);"></div>
-        <div class="shell" style="position:relative;z-index:2;">
+    <section class="page-head rank-head">
+        <img class="rank-background" src="{{ asset($rankImage) }}" alt="" aria-hidden="true">
+        <div class="rank-background-overlay" aria-hidden="true"></div>
+        <div class="shell rank-head-content">
             <div class="rank-head-grid">
                 <div>
                     <p class="eyebrow">SPEED.MN ЧАНСАА</p>
@@ -64,9 +64,9 @@
                         <th>#</th>
                         <th>Тоглогч</th>
                         @if ($source['type'] === 'public')
-                            <th>XP</th><th>Аллага</th><th>Үхэл</th><th>Толгой оносон</th><th>Ур чадвар</th><th>Байр</th>
+                            <th>XP</th><th>Аллага</th><th class="rank-secondary">Үхэл</th><th class="rank-secondary">Толгой оносон</th><th class="rank-secondary">Ур чадвар</th><th class="rank-secondary">Байр</th>
                         @else
-                            <th>Хутганы аллага</th><th>Нийт аллага</th><th>Түгээмэл зэвсэг</th><th>Тоглосон хугацаа</th>
+                            <th>Хутганы аллага</th><th>Нийт аллага</th><th class="rank-secondary">Түгээмэл зэвсэг</th><th class="rank-secondary">Тоглосон хугацаа</th>
                         @endif
                     </tr>
                 </thead>
@@ -74,6 +74,13 @@
                     @forelse ($players as $player)
                         @php
                             $position = $players->firstItem() + $loop->index;
+                            $weaponKills = null;
+                            $topWeapon = null;
+                            if ($source['type'] !== 'public') {
+                                $weaponKills = collect($weaponColumns)->sum(fn ($weapon) => (int) $rankValue($player, $weapon));
+                                $weaponValues = collect($weaponColumns)->mapWithKeys(fn ($weapon) => [$weapon => (int) $rankValue($player, $weapon)])->sortDesc();
+                                $topWeapon = $weaponValues->keys()->first(fn ($weapon) => $weaponValues[$weapon] > 0);
+                            }
                         @endphp
                         <tr>
                             <td class="rank-position">{{ $position }}</td>
@@ -84,24 +91,35 @@
                                     <span class="rank-avatar">{{ strtoupper(substr($nameValue($player), 0, 1)) }}</span>
                                 @endif
                                 <strong>{{ $nameValue($player) }}</strong>
+                                <details class="rank-mobile-details">
+                                    <summary>Дэлгэрэнгүй</summary>
+                                    @if ($source['type'] === 'public')
+                                        <dl>
+                                            <div><dt>Үхэл</dt><dd>{{ number_format((int) $rankValue($player, 'deaths')) }}</dd></div>
+                                            <div><dt>Толгой оносон</dt><dd>{{ number_format((int) $rankValue($player, 'headshots')) }}</dd></div>
+                                            <div><dt>Ур чадвар</dt><dd>{{ $rankValue($player, 'Skill Range', $rankValue($player, 'points', '—')) }}</dd></div>
+                                            <div><dt>Байр</dt><dd>{{ (int) $rankValue($player, 'Rank') > 0 ? $rankValue($player, 'Rank') : $position }}</dd></div>
+                                        </dl>
+                                    @else
+                                        <dl>
+                                            <div><dt>Түгээмэл зэвсэг</dt><dd>{{ $topWeapon ?: ($player->weapon ?: '—') }}</dd></div>
+                                            <div><dt>Тоглосон хугацаа</dt><dd>{{ number_format((int) $rankValue($player, 'Played Time', $rankValue($player, 'playtime'))) }} мин</dd></div>
+                                        </dl>
+                                    @endif
+                                </details>
                             </td>
                             @if ($source['type'] === 'public')
                                 <td class="rank-xp">{{ number_format((int) $rankValue($player, 'XP', $rankValue($player, 'points'))) }}</td>
                                 <td>{{ number_format((int) $rankValue($player, 'kills')) }}</td>
-                                <td>{{ number_format((int) $rankValue($player, 'deaths')) }}</td>
-                                <td>{{ number_format((int) $rankValue($player, 'headshots')) }}</td>
-                                <td>{{ $rankValue($player, 'Skill Range', $rankValue($player, 'points', '—')) }}</td>
-                                <td>{{ (int) $rankValue($player, 'Rank') > 0 ? $rankValue($player, 'Rank') : $position }}</td>
+                                <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'deaths')) }}</td>
+                                <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'headshots')) }}</td>
+                                <td class="rank-secondary">{{ $rankValue($player, 'Skill Range', $rankValue($player, 'points', '—')) }}</td>
+                                <td class="rank-secondary">{{ (int) $rankValue($player, 'Rank') > 0 ? $rankValue($player, 'Rank') : $position }}</td>
                             @else
                                 <td class="rank-xp">{{ number_format((int) $rankValue($player, 'Knife')) }}</td>
-                                @php
-                                    $weaponKills = collect($weaponColumns)->sum(fn ($weapon) => (int) $rankValue($player, $weapon));
-                                    $weaponValues = collect($weaponColumns)->mapWithKeys(fn ($weapon) => [$weapon => (int) $rankValue($player, $weapon)])->sortDesc();
-                                    $topWeapon = $weaponValues->keys()->first(fn ($weapon) => $weaponValues[$weapon] > 0);
-                                @endphp
                                 <td>{{ number_format($weaponKills ?: (int) $rankValue($player, 'kills')) }}</td>
-                                <td>{{ $topWeapon ?: ($player->weapon ?: '—') }}</td>
-                                <td>{{ number_format((int) $rankValue($player, 'Played Time', $rankValue($player, 'playtime'))) }} мин</td>
+                                <td class="rank-secondary">{{ $topWeapon ?: ($player->weapon ?: '—') }}</td>
+                                <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'Played Time', $rankValue($player, 'playtime'))) }} мин</td>
                             @endif
                         </tr>
                     @empty
