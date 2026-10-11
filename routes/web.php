@@ -88,6 +88,7 @@ Route::delete('/servers/{server}/favorite', [ServerFavoriteController::class, 'd
 Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'read'])->middleware(['auth', 'throttle:60,1'])->name('notifications.read');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('two-factor/setup', [AdminTwoFactorController::class, 'setup'])->name('two-factor.setup');
     Route::post('two-factor/setup', [AdminTwoFactorController::class, 'confirmSetup'])->name('two-factor.confirm');
     Route::get('two-factor/challenge', [AdminTwoFactorController::class, 'challenge'])->name('two-factor.challenge');

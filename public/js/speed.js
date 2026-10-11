@@ -14,6 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (image.complete && image.naturalWidth === 0) image.dispatchEvent(new Event('error'));
     });
 
+    document.querySelectorAll('[data-share]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const url = button.dataset.share;
+            if (navigator.share) {
+                try { await navigator.share({ title: button.dataset.shareTitle, url }); return; } catch { /* fall through to copy */ }
+            }
+            try { await navigator.clipboard.writeText(url); } catch { /* ignore */ }
+            const originalText = button.textContent;
+            button.textContent = 'Линк хуулагдлаа';
+            window.setTimeout(() => { button.textContent = originalText; }, 1800);
+        });
+    });
+
     document.querySelectorAll('[data-copy-address]').forEach((button) => {
         button.addEventListener('click', async () => {
             const address = button.dataset.copyAddress;

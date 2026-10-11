@@ -103,3 +103,4 @@ Schedule::command('speedmn:audit-prune')->dailyAt('02:15')->withoutOverlapping()
 Schedule::command('speedmn:backup')->dailyAt('03:00')->withoutOverlapping();
 Schedule::command('speedmn:status-prune')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('speedmn:discord-players')->everyTenMinutes()->withoutOverlapping();
+Schedule::command('speedmn:daily-report')->dailyAt('09:00')->timezone('Asia/Ulaanbaatar')->withoutOverlapping();
