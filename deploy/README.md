@@ -70,6 +70,19 @@ only when using a different deployment root. Ensure `.env` and `storage` exist
 before running it. Check `/var/www/awe/storage/logs/laravel.log` after a failed
 deploy.
 
+### Automatic deploy from GitHub Actions
+
+Every push to `main` runs the tests in `.github/workflows/laravel.yml`; when
+they pass, the `deploy` job SSHes to the server and runs the command above.
+Configure these repository secrets (Settings → Secrets and variables → Actions):
+
+- `DEPLOY_HOST`: server IP or hostname
+- `DEPLOY_USER`: SSH user (root or a user with passwordless `sudo`)
+- `DEPLOY_SSH_KEY`: private key whose public key is in that user's `authorized_keys`
+- `DEPLOY_KNOWN_HOSTS` (optional): pinned host key; otherwise `ssh-keyscan` is used
+
+Run the scheduler as `www-data` (not root) so `storage` stays writable.
+
 Server checks are dispatched every 30 seconds; an open page refreshes the API
 state every 15 seconds. Run exactly one scheduler driver. The simplest option
 is cron (`crontab -e`):
@@ -250,4 +263,19 @@ For HTTPS:
 ```bash
 sudo apt install -y certbot python3-certbot-apache
 sudo certbot --apache -d speed.mn -d www.speed.mn
+```
+
+## Backup, cache, cron (server hardening)
+
+```bash
+# Daily DB backup at 03:30, keeps 7 days in /var/backups/speedmn
+sudo chmod +x /var/www/awe/current/deploy/backup-db.sh
+echo '30 3 * * * root /var/www/awe/current/deploy/backup-db.sh >> /var/log/speedmn-backup.log 2>&1' | sudo tee /etc/cron.d/speedmn-backup
+
+# Browser caching for static assets
+sudo a2enmod expires headers && sudo systemctl reload apache2
+
+# Laravel scheduler must run as www-data, never root
+sudo crontab -l | grep -v 'schedule:run' | sudo crontab -
+echo '* * * * * www-data cd /var/www/awe/current && php artisan schedule:run >> /dev/null 2>&1' | sudo tee /etc/cron.d/speedmn-scheduler
 ```

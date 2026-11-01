@@ -164,7 +164,7 @@ if command -v supervisorctl >/dev/null 2>&1; then
         sudo supervisorctl restart speedmn-scheduler
     fi
 fi
-sudo systemctl reload apache2
+sudo systemctl reload-or-restart apache2
 for php_fpm_service in php8.4-fpm php8.3-fpm php8.2-fpm; do
     if sudo systemctl is-active --quiet "$php_fpm_service"; then
         sudo systemctl reload "$php_fpm_service"

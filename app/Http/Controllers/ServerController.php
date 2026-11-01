@@ -17,7 +17,7 @@ class ServerController extends Controller
             'map' => ['nullable', 'string', 'max:80'],
             'status' => ['nullable', 'in:any,online,offline'],
             'players' => ['nullable', 'in:any,available,full'],
-            'sort' => ['nullable', 'in:recommended,players,name'],
+            'sort' => ['nullable', 'in:recommended,players,name,ping'],
         ]);
         $freshSince = ServerStatus::freshSince();
         $servers = Server::query()
@@ -55,6 +55,7 @@ class ServerController extends Controller
             ->when($request->user(), fn ($query, $user) => $query->withExists([
                 'favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', $user->id),
             ]))
+            ->when($request->user() && ($filters['sort'] ?? 'recommended') === 'recommended', fn ($query) => $query->orderByDesc('is_favorited'))
             ->when(($filters['sort'] ?? 'recommended') === 'players', function ($query) use ($freshSince): void {
                 $query->orderByDesc(ServerStatus::query()
                     ->select('players')
@@ -65,6 +66,12 @@ class ServerController extends Controller
             }, function ($query) use ($filters, $freshSince): void {
                 if (($filters['sort'] ?? 'recommended') === 'name') {
                     $query->orderBy('name');
+                    return;
+                }
+
+                if (($filters['sort'] ?? 'recommended') === 'ping') {
+                    $query->orderByRaw('(SELECT CASE WHEN ss.online = 1 AND ss.response_time > 0 THEN ss.response_time ELSE 999999 END FROM server_statuses ss WHERE ss.server_id = servers.id AND ss.created_at >= ? ORDER BY ss.created_at DESC LIMIT 1) IS NULL, (SELECT CASE WHEN ss.online = 1 AND ss.response_time > 0 THEN ss.response_time ELSE 999999 END FROM server_statuses ss WHERE ss.server_id = servers.id AND ss.created_at >= ? ORDER BY ss.created_at DESC LIMIT 1) ASC', [$freshSince, $freshSince])
+                        ->orderBy('name');
                     return;
                 }
 

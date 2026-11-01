@@ -5,6 +5,9 @@
 @section('og_title', 'Speed.mn — Монголын тоглоомын сүлжээ')
 @section('og_description', 'CS2 болон CS 1.6 серверийн бодит цагийн төлөв, тоглогчдын ранк, Steam профайл болон skin хэрэгслүүд.')
 @section('body_class', 'home-page')
+@section('jsonld')
+{!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'WebSite', 'name' => 'Speed.mn', 'url' => url('/'), 'inLanguage' => 'mn', 'description' => 'Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
+@endsection
 
 @section('content')
     @php
@@ -99,9 +102,9 @@
     </section>
 
     <section class="shell stats-row">
-        <div><span class="stat-icon red">◈</span><strong>{{ $stats['servers'] }}</strong><small>НИЙТ СЕРВЕР</small></div>
-        <div><span class="stat-icon blue">◉</span><strong>{{ $stats['online'] }}</strong><small>ОДОО АЖИЛЛАЖ БУЙ</small></div>
-        <div><span class="stat-icon purple">♙</span><strong>{{ $stats['players'] }}</strong><small>ТОГЛОЖ БУЙ ХҮН</small></div>
+        <div><span class="stat-icon red">◈</span>        <strong data-count="{{ $stats['servers'] }}">{{ $stats['servers'] }}</strong><small>НИЙТ СЕРВЕР</small></div>
+                <div><span class="stat-icon blue">◉</span><strong data-count="{{ $stats['online'] }}">{{ $stats['online'] }}</strong><small>ОДОО АЖИЛЛАЖ БУЙ</small></div>
+                <div><span class="stat-icon purple">♙</span><strong data-count="{{ $stats['players'] }}">{{ $stats['players'] }}</strong><small>ТОГЛОЖ БУЙ ХҮН</small></div>
     </section>
     <section class="shell live-notice {{ $networkState['class'] }}" role="status">
         <span class="pulse {{ $networkState['class'] }}"></span>
