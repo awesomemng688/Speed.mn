@@ -554,3 +554,219 @@ footer{border-top-color:#ffffff14;background:#070b12}
    .home-page .section-heading{align-items:flex-start}
    .home-page .stats-row .stat-icon{width:30px;height:30px;border-radius:9px}
 }
+
+/* Arena identity: graphite, electric lime, and ember */
+:root{
+   --bg:#090c0a;
+   --panel:#111713;
+   --line:#28342b;
+   --text:#f2f5ef;
+   --muted:#9aa59a;
+   --red:#ff7955;
+   --blue:#c9f36a;
+   --purple:#e7ad62;
+}
+body{
+   background:
+       radial-gradient(ellipse at 82% 4%,#b5e95612,transparent 34rem),
+       radial-gradient(ellipse at 8% 45%,#ff79550b,transparent 30rem),
+       var(--bg);
+}
+.site-header{
+   background:#090d0bea;
+   border-bottom-color:#c9f36a24;
+}
+.brand img{filter:saturate(.8)}
+.nav-links{color:#b4beb2}
+.nav-links>a:hover,.nav-links>a.is-active{
+   color:#f4f8ef;
+   background:#c9f36a0d;
+}
+.nav-links>a.is-active{box-shadow:inset 0 -2px 0 var(--blue)}
+.nav-links>a span{color:var(--blue)}
+.button-primary{
+   color:#11170b;
+   background:linear-gradient(115deg,#d5f77b,#b6e755);
+   box-shadow:0 10px 28px #c9f36a26,inset 0 1px #ffffff80;
+}
+.button-primary:hover{box-shadow:0 14px 34px #c9f36a42,inset 0 1px #ffffff9c}
+.button-ghost{border-color:#ffffff20;background:#ffffff06}
+.button-ghost:hover{border-color:#c9f36a77;background:#c9f36a12}
+.home-page .hero{
+   min-height:700px;
+   background-position:center 42%;
+}
+.home-page .hero:after{
+   background:
+       radial-gradient(ellipse at 76% 45%,#c9f36a1c,transparent 34%),
+       linear-gradient(90deg,#090d0bf5 0%,#090d0bd9 48%,#090d0b72 100%),
+       linear-gradient(0deg,#090c0a 0%,transparent 38%);
+}
+.home-page .hero:before{
+   opacity:.14;
+   background-image:
+       linear-gradient(#c9f36a16 1px,transparent 1px),
+       linear-gradient(90deg,#c9f36a16 1px,transparent 1px);
+}
+.home-page .hero-copy-block>.eyebrow{
+   border-color:#c9f36a42;
+   background:#10180dcf;
+   color:#d5f77b;
+}
+.home-page .hero-copy-block>.eyebrow:before{
+   background:#d5f77b;
+   box-shadow:0 0 12px #d5f77baa;
+}
+.home-page .hero h1 em{
+   background:linear-gradient(100deg,#e1ff9d 3%,#c9f36a 55%,#a4d94c 100%);
+   background-clip:text;
+   -webkit-background-clip:text;
+}
+.home-page .hero-copy{color:#c3ccc0}
+.home-page .hero-actions .button-primary{
+   color:#12180c;
+   box-shadow:0 12px 32px #c9f36a30,inset 0 1px #ffffff8a;
+}
+.home-page .hero-account{
+   border-color:#c9f36a29;
+   background:#0b110de3;
+}
+.home-page .hero-features span{
+   border-color:#c9f36a22;
+   background:#0d140fdb;
+   color:#c0cabc;
+}
+.home-page .hero-features i{
+   background:#c9f36a;
+   box-shadow:0 0 0 4px #c9f36a22;
+}
+.home-page .hero-glow{
+   background:radial-gradient(ellipse,#c9f36a30 0,transparent 70%);
+}
+.home-page .hero-status{
+   border-color:#c9f36a30;
+   background:#0d150fea;
+}
+.home-page .hero-status .pulse.online,
+.home-page .live-notice .pulse.online{
+   background:#c9f36a;
+   box-shadow:0 0 0 5px #c9f36a25;
+}
+.home-page .hero-server-card{
+   border-color:#d5f77b45;
+   background:#111a13f2;
+}
+.home-page .hero-server-card:hover{
+   border-color:#d5f77b!important;
+   box-shadow:0 24px 60px #000c,0 0 28px #c9f36a24;
+}
+.home-page .stats-row{
+   border-color:#c9f36a24;
+   background:linear-gradient(125deg,#151d16f5,#0d130ef5);
+}
+.home-page .stats-row .blue{color:#d5f77b}
+.home-page .stats-row .purple{color:#f2bb70}
+.home-page .stats-row>div:not(:last-child):after{
+   background:linear-gradient(transparent,#c9f36a55,transparent);
+}
+.home-page .live-notice{
+   border-color:#c9f36a2d;
+   background:linear-gradient(100deg,#151f16e8,#0d140fea);
+}
+.home-page .server-category{
+   border-color:#ffffff15;
+   background:linear-gradient(145deg,#141c16ed,#0d130ff0);
+}
+.home-page .server-category-heading .game-pill{
+   border-color:#c9f36a42;
+   background:#c9f36a12;
+   color:#d5f77b;
+}
+.home-page .server-category-heading .game-pill.cs16{
+   border-color:#ffad6b42;
+   background:#ffad6b12;
+   color:#ffbd80;
+}
+.home-page .community-panel{
+   border-color:#c9f36a29;
+   background:
+       radial-gradient(circle at 90% 15%,#c9f36a1c,transparent 36%),
+       linear-gradient(120deg,#172019,#0d130f);
+}
+.community-orb{
+   color:#17200f;
+   background:linear-gradient(135deg,#d5f77b,#a9d94c);
+   box-shadow:0 8px 25px #c9f36a30;
+}
+.servers-page .page-head:before{
+   background:linear-gradient(90deg,#090d0bf5,#090d0bd9 55%,#090d0b9c);
+}
+.page-head .eyebrow{color:#d5f77b}
+.tabs a.active{
+   border-color:#c9f36a45;
+   background:#c9f36a12;
+}
+.server-card,.panel{
+   border-color:#ffffff16;
+   background:linear-gradient(145deg,#151e17,#0d140f);
+}
+.server-card:hover{
+   border-color:#c9f36a55;
+   box-shadow:0 20px 45px #0007,0 0 24px #c9f36a0c;
+}
+.server-card:after{
+   background:radial-gradient(ellipse at 50% 0%,#c9f36a16,transparent 68%);
+}
+.server-card-overlay .game-pill{
+   border-color:#c9f36a33;
+   background:#10190fe8;
+   color:#d5f77b;
+}
+.game-pill{
+   color:#d5f77b;
+   background:#c9f36a14;
+}
+.game-pill.cs16{
+   color:#ffbd80;
+   background:#ffad6b16;
+}
+.server-card .card-actions .button-primary{
+   color:#12180c;
+   box-shadow:0 7px 18px #c9f36a24;
+}
+.server-filters{
+   border-color:#ffffff17;
+   background:linear-gradient(145deg,#151d17,#0c130f);
+}
+.server-filters .search-box,.filter-field input,.filter-field select{
+   border-color:#ffffff20;
+   background:#090e0b;
+}
+.server-filters .search-box:focus-within,.filter-field input:focus,.filter-field select:focus{
+   border-color:#c9f36a88;
+   box-shadow:0 0 0 3px #c9f36a1c;
+}
+.rank-table-wrap{
+   border-color:#ffffff19;
+   background:linear-gradient(145deg,#151e17,#0d140f);
+}
+.rank-xp{color:#ffd27f}
+.rank-tabs a.active,.rank-tabs a:hover{
+   border-color:#c9f36a65;
+   color:#e4ffad;
+   background:#c9f36a12;
+}
+.profile-card,.profile-side,.profile-progress,.profile-network,.profile-activity{
+   border-color:#ffffff18;
+   background:linear-gradient(145deg,#151e17,#0d140f);
+}
+.profile-server-row:hover{
+   border-color:#c9f36a35;
+   background:#c9f36a09;
+}
+footer{background:#080b09}
+.social-links a:hover,.footer>div:last-child>a:hover{color:#d5f77b}
+@media(max-width:640px){
+   .home-page .hero:before{background-size:38px 38px;opacity:.1}
+   .home-page .hero h1 em{background-image:linear-gradient(100deg,#e1ff9d,#c9f36a 60%,#a4d94c)}
+}
