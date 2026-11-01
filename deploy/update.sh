@@ -155,7 +155,7 @@ sudo chown -R www-data:www-data "$APP_DIR/storage" "$release_dir/bootstrap/cache
 sudo find "$APP_DIR/storage" "$release_dir/bootstrap/cache" -type d -exec chmod 775 {} \;
 sudo find "$APP_DIR/storage" "$release_dir/bootstrap/cache" -type f -exec chmod 664 {} \;
 
-sudo apachectl configtest
+sudo nginx -t
 if command -v supervisorctl >/dev/null 2>&1; then
     if sudo supervisorctl status 'speedmn-worker:*' >/dev/null 2>&1; then
         sudo supervisorctl restart 'speedmn-worker:*'
@@ -164,7 +164,11 @@ if command -v supervisorctl >/dev/null 2>&1; then
         sudo supervisorctl restart speedmn-scheduler
     fi
 fi
-sudo systemctl reload-or-restart apache2
+if sudo systemctl is-active --quiet nginx; then
+    sudo systemctl reload nginx
+else
+    sudo systemctl restart nginx
+fi
 for php_fpm_service in php8.4-fpm php8.3-fpm php8.2-fpm; do
     if sudo systemctl is-active --quiet "$php_fpm_service"; then
         sudo systemctl reload "$php_fpm_service"

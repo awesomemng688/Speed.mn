@@ -1,4 +1,4 @@
-# Speed.mn deployment (Ubuntu 22.04/24.04 + Apache2)
+# Speed.mn deployment (Ubuntu 22.04/24.04 + Nginx)
 
 ## First-time VPS setup
 
@@ -7,7 +7,7 @@ GitHub; create it only on the VPS.
 
 ```bash
 sudo apt update
-sudo apt install -y apache2 mariadb-server git unzip php8.2 php8.2-cli php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl php8.2-zip php8.2-bcmath
+sudo apt install -y nginx mariadb-server git unzip php8.2 php8.2-cli php8.2-fpm php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl php8.2-zip php8.2-bcmath
 sudo a2enmod rewrite headers ssl
 sudo mkdir -p /var/www/awe
 sudo git clone https://github.com/awesomemng688/SpeedMN.git /var/www/awe
@@ -21,9 +21,9 @@ php artisan key:generate
 php artisan migrate --force
 php artisan storage:link
 sudo ln -s /var/www/awe /var/www/awe/current
-sudo cp deploy/apache/speed.mn.conf /etc/apache2/sites-available/speed.mn.conf
-sudo a2ensite speed.mn.conf
-sudo systemctl reload apache2
+sudo cp deploy/nginx/speed.mn.conf /etc/nginx/sites-available/speed.mn.conf
+sudo ln -sf /etc/nginx/sites-available/speed.mn.conf /etc/nginx/sites-enabled/speed.mn.conf
+sudo nginx -t && sudo systemctl reload nginx
 sudo chown -R www-data:www-data storage bootstrap/cache
 ```
 
@@ -41,11 +41,10 @@ it does not already exist:
 sudo ln -s /var/www/awe /var/www/awe/current
 ```
 
-Update the active Apache virtual host so its `DocumentRoot` and matching
-`<Directory>` path are `/var/www/awe/current/public`. Change the Supervisor
+Update the active Nginx server block so its `root` is `/var/www/awe/current/public`. Change the Supervisor
 worker and scheduler commands/directories to `/var/www/awe/current`, then run
-`sudo apachectl configtest`, reload Apache, and restart the Supervisor programs.
-Review the existing virtual host before editing so TLS and certificate settings
+`sudo nginx -t`, reload Nginx, and restart the Supervisor programs.
+Review the existing server block before editing so TLS and certificate settings
 are retained.
 
 ## Updating the VPS
@@ -59,7 +58,7 @@ sudo bash /var/www/awe/current/deploy/update.sh
 The script fetches `origin/main` and builds an isolated release without merging
 or cleaning the existing checkout. It shares the existing `.env` and `storage`,
 links the image and FastDL directories above, runs migrations, atomically
-switches `current`, rebuilds Laravel caches, and restarts Apache, PHP-FPM, and
+switches `current`, rebuilds Laravel caches, and restarts Nginx, PHP-FPM, and
 configured Supervisor programs. It keeps the five newest releases; only old
 code directories under `/var/www/awe/releases` are pruned. Existing checkout
 changes and shared data are not removed. On a failed post-switch step it restores
@@ -261,8 +260,8 @@ Vite; build assets only if that view is used or its Vite-managed files change.
 For HTTPS:
 
 ```bash
-sudo apt install -y certbot python3-certbot-apache
-sudo certbot --apache -d speed.mn -d www.speed.mn
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d speed.mn -d www.speed.mn
 ```
 
 ## Backup, cache, cron (server hardening)
@@ -273,7 +272,8 @@ sudo chmod +x /var/www/awe/current/deploy/backup-db.sh
 echo '30 3 * * * root /var/www/awe/current/deploy/backup-db.sh >> /var/log/speedmn-backup.log 2>&1' | sudo tee /etc/cron.d/speedmn-backup
 
 # Browser caching for static assets
-sudo a2enmod expires headers && sudo systemctl reload apache2
+# Add `expires 30d;` to a static-assets location in the Nginx server block, then:
+sudo nginx -t && sudo systemctl reload nginx
 
 # Laravel scheduler must run as www-data, never root
 sudo crontab -l | grep -v 'schedule:run' | sudo crontab -
