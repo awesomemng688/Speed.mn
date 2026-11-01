@@ -440,3 +440,117 @@ footer{border-top-color:#ffffff14;background:#070b12}
 @media(prefers-reduced-motion:reduce){
    .server-card-cover img{transition:none}
 }
+
+/* Finishing polish */
+.home-page .hero{isolation:isolate}
+.home-page .hero:before{
+   content:"";
+   position:absolute;
+   z-index:0;
+   inset:0;
+   pointer-events:none;
+   opacity:.12;
+   background-image:
+       linear-gradient(#a9c8ff18 1px,transparent 1px),
+       linear-gradient(90deg,#a9c8ff18 1px,transparent 1px);
+   background-size:54px 54px;
+   mask-image:linear-gradient(90deg,#000 0%,#0008 58%,transparent 100%);
+}
+.home-page .hero-copy-block{filter:drop-shadow(0 10px 24px #0004)}
+.home-page .hero-copy-block>.eyebrow:before{
+   content:"";
+   display:inline-block;
+   width:7px;
+   height:7px;
+   margin:0 8px 1px 0;
+   border-radius:50%;
+   background:#70e2a6;
+   box-shadow:0 0 12px #70e2a6aa;
+}
+.home-page .hero-server-card{
+   outline:1px solid #ffffff08;
+   outline-offset:3px;
+}
+.home-page .hero-server-card:hover{
+   transform:translateY(-6px) scale(1.035);
+   border-color:#8bbaff!important;
+   box-shadow:0 24px 60px #000c,0 0 28px #68a4ff20;
+}
+.home-page .stats-row>div{position:relative;border-right:0}
+.home-page .stats-row>div:not(:last-child):after{
+   content:"";
+   position:absolute;
+   top:18%;
+   right:-1px;
+   width:1px;
+   height:64%;
+   background:linear-gradient(transparent,#68a4ff55,transparent);
+}
+.home-page .stats-row .stat-icon{
+   display:grid;
+   place-items:center;
+   width:38px;
+   height:38px;
+   border:1px solid #ffffff12;
+   border-radius:12px;
+   background:#ffffff08;
+}
+.home-page .stats-row .red{color:#ff8795}
+.home-page .stats-row .blue{color:#8fbdff}
+.home-page .stats-row .purple{color:#c3a9ff}
+.home-page .section-heading{align-items:flex-end;margin-bottom:8px}
+.home-page .section-heading .eyebrow{margin-bottom:8px}
+.home-page .section-heading h2{margin-bottom:16px;font-size:clamp(24px,3vw,32px)}
+.home-page .server-category-heading>div{gap:12px}
+.home-page .server-category-heading .game-pill{
+   padding:7px 10px;
+   border:1px solid #68a4ff32;
+   border-radius:7px;
+   background:#68a4ff12;
+}
+.home-page .server-category-heading .game-pill.cs16{
+   border-color:#ffb15c38;
+   background:#ffb15c12;
+}
+.server-card{
+   position:relative;
+   isolation:isolate;
+   background:linear-gradient(145deg,#142033,#0d1420);
+}
+.server-card:after{
+   content:"";
+   position:absolute;
+   z-index:-1;
+   inset:0;
+   pointer-events:none;
+   border-radius:inherit;
+   opacity:0;
+   background:radial-gradient(ellipse at 50% 0%,#68a4ff16,transparent 68%);
+   transition:opacity .25s;
+}
+.server-card:hover:after{opacity:1}
+.server-card .card-actions .button-primary{box-shadow:0 7px 18px #ff526820}
+.server-card .card-actions .button-primary:hover{box-shadow:0 10px 24px #ff526844}
+.server-filters .button-primary{min-height:46px}
+.rank-tabs a,.history-period a{
+   transition:color .2s,border-color .2s,background .2s,transform .2s;
+}
+.rank-tabs a:hover,.history-period a:hover{transform:translateY(-1px)}
+.community-side{
+   border-color:#ffffff20;
+   background:linear-gradient(145deg,#111e30dd,#0a111cdd);
+}
+.community-stats div{border-top-color:#ffffff14}
+.community-stats strong{color:#eef5ff}
+.profile-server-row{
+   transition:background .18s,border-color .18s,transform .18s;
+}
+.profile-server-row:hover{
+   border-color:#68a4ff30;
+   background:#68a4ff08;
+}
+@media(max-width:640px){
+   .home-page .hero:before{background-size:38px 38px;opacity:.1}
+   .home-page .section-heading{align-items:flex-start}
+   .home-page .stats-row .stat-icon{width:30px;height:30px;border-radius:9px}
+}
