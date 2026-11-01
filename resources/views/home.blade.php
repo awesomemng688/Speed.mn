@@ -50,7 +50,7 @@
                     @else
                         <span class="hero-account-icon">◉</span>
                         <div class="hero-account-copy">
-                            <small>НЭГ STEAM БҮРТГЭЛ</small>
+                            <small>ТОГЛОХОД БЭЛЭН ҮҮ?</small>
                             <strong>Steam бүртгэлээ холбоорой</strong>
                         </div>
                         <a class="hero-account-login" href="{{ route('steam.login', ['redirect' => '/']) }}">Steam-ээр нэвтрэх <span>→</span></a>
@@ -68,7 +68,7 @@
                 <div class="hero-status orbit-card">
                     <span class="pulse {{ $networkState['class'] }}"></span>
                     <div>
-                        <small>NETWORK STATUS</small>
+                        <small>СҮЛЖЭЭНИЙ ТӨЛӨВ · LIVE</small>
                         <strong>{{ $networkState['label'] }}</strong>
                     </div>
                     <b>{{ $stats['online'] }}/{{ $stats['servers'] }}</b>

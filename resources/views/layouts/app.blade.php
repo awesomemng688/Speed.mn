@@ -17,7 +17,7 @@
     <meta name="twitter:image" content="{{ asset('img/hero/background.jpg') }}">
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=arena-identity-2026-11' }}">
+    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=nomadic-inspired-2026-11' }}">
 </head>
 <body class="@yield('body_class')">
 <header class="site-header">
