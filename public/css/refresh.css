@@ -12,6 +12,10 @@
     --surface-raised: #171d1e;
 }
 
+.rank-avatar {
+    color: #10150b;
+}
+
 html {
     scroll-behavior: smooth;
 }
