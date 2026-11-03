@@ -30,6 +30,14 @@
         .home-page .server-category+.server-category{margin-top:20px}
         .home-page .server-category-heading{margin-bottom:20px}
         .home-page .community-panel{margin-top:18px;box-shadow:0 25px 65px #0005}
+        .cc-bar{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;padding:10px max(16px,calc((100% - 1180px)/2));background:#06090e;border-bottom:1px solid #ffffff14;font:600 .72rem/1 ui-monospace,Consolas,monospace;letter-spacing:.14em;color:#9fb0c8}
+        .cc-brand i{color:#ff5a4d;font-style:normal}.cc-clock{color:#fff}
+        .cc-net{display:inline-flex;align-items:center;gap:8px}.cc-net.online{color:#70e2a6}.cc-net.degraded{color:#ffc857}.cc-net.offline{color:#ff5a4d}
+        .aim-head{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-end;margin-bottom:16px}
+        .aim-score{display:flex;flex-wrap:wrap;gap:14px;align-items:center;font:600 .8rem ui-monospace,Consolas,monospace;letter-spacing:.1em;color:#9fb0c8}.aim-score b{color:#fff;font-size:1.1rem}
+        .aim-arena{position:relative;height:320px;overflow:hidden;border:1px solid #ffffff1a;border-radius:16px;background:radial-gradient(circle at 50% 50%,#16233a,#0a0f18);cursor:crosshair;touch-action:manipulation}
+        .aim-hint{position:absolute;inset:auto 0 12px;text-align:center;margin:0;font:600 .7rem ui-monospace,Consolas,monospace;letter-spacing:.2em;color:#9fb0c8;pointer-events:none}
+        .aim-target{position:absolute;width:52px;height:52px;border-radius:50%;border:0;padding:0;cursor:crosshair;background:radial-gradient(circle,#fff 0 12%,#ff3b30 13% 36%,#fff 37% 56%,#ff3b30 57% 100%);box-shadow:0 0 24px #ff3b3088;transform:translate(-50%,-50%)}
         @media(max-width:800px){.home-page .hero{min-height:0;padding:70px 0 52px}.home-page .hero-grid{grid-template-columns:1fr}.home-page .hero-visual{min-height:360px;margin-top:10px}.home-page .hero-stack{transform:scale(.9);margin-top:28px}.home-page .hero-status{right:4%;top:-6px}.home-page .stats-row{margin-top:-18px}.home-page .server-category{padding:15px}.home-page .server-category-heading{align-items:flex-start;flex-direction:column;gap:8px}}
         @media(max-width:480px){.home-page .hero h1{font-size:42px;letter-spacing:0}}
         @media(max-width:360px){.home-page .hero h1{font-size:36px}}
@@ -125,6 +133,13 @@
         </div>
     </section>
 
+    <div class="cc-bar" role="status">
+        <span class="cc-brand">SPEED <i>/</i> COMMAND CENTER</span>
+        <span class="cc-game">COUNTER-STRIKE</span>
+        <span class="cc-clock" id="cc-clock">--:--:--</span>
+        <span class="cc-net {{ $networkState['class'] }}"><i class="pulse {{ $networkState['class'] }}"></i>{{ $networkState['class'] === 'online' ? 'NETWORK ONLINE' : ($networkState['class'] === 'degraded' ? 'NETWORK DEGRADED' : 'NETWORK OFFLINE') }}</span>
+    </div>
+
     <section class="shell stats-row">
         <div><span class="stat-icon red">◈</span>        <strong data-count="{{ $stats['servers'] }}">{{ $stats['servers'] }}</strong><small>НИЙТ СЕРВЕР</small></div>
                 <div><span class="stat-icon blue">◉</span><strong data-count="{{ $stats['online'] }}">{{ $stats['online'] }}</strong><small>ОДОО АЖИЛЛАЖ БУЙ</small></div>
@@ -136,6 +151,22 @@
         <span>·</span>
         <strong>{{ $stats['players'] }} хүн тоглож байна</strong>
         <small>{{ $networkState['label'] }} · {{ $stats['stale'] }} серверийн мэдээлэл хуучирсан, {{ $stats['unknown'] }} серверийн төлөв ирээгүй</small>
+    </section>
+
+    <section class="shell section aim-section" aria-labelledby="aim-title">
+        <div class="aim-head">
+            <div><p class="eyebrow">SPEED МИНИ ТОГЛООМ</p><h2 id="aim-title">Aim Trainer</h2></div>
+            <div class="aim-score">
+                <span>ОНОО <b id="aim-score">0</b></span>
+                <span>АТАЛТ <b id="aim-shots">0</b></span>
+                <span>ЗОРИЛТ <b id="aim-acc">0%</b></span>
+                <button type="button" class="button button-ghost" id="aim-reset">Дахин</button>
+            </div>
+        </div>
+        <div class="aim-arena" id="aim-arena">
+            <p class="aim-hint" id="aim-hint">ЗОРИЛТЫГ ДАР</p>
+            <button type="button" class="aim-target" id="aim-target" aria-label="Зорилт"></button>
+        </div>
     </section>
 
     <section id="servers" class="shell section home-server-sections">
@@ -196,4 +227,19 @@
             </div>
         </div>
     </section>
+    <script>
+    (function(){
+        var clock=document.getElementById('cc-clock');
+        function tick(){if(clock)clock.textContent=new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Ulaanbaatar'});}
+        tick();setInterval(tick,1000);
+        var arena=document.getElementById('aim-arena'),t=document.getElementById('aim-target');
+        if(!arena||!t)return;
+        var score=0,shots=0,els={s:document.getElementById('aim-score'),h:document.getElementById('aim-shots'),a:document.getElementById('aim-acc'),hint:document.getElementById('aim-hint')};
+        function move(){var w=arena.clientWidth,h=arena.clientHeight;t.style.left=(30+Math.random()*(w-60))+'px';t.style.top=(30+Math.random()*(h-60))+'px';}
+        function render(){els.s.textContent=score;els.h.textContent=shots;els.a.textContent=(shots?Math.round(score/shots*100):0)+'%';}
+        arena.addEventListener('click',function(e){shots++;if(e.target===t){score++;els.hint.textContent='';move();}render();});
+        document.getElementById('aim-reset').addEventListener('click',function(){score=0;shots=0;render();move();});
+        move();
+    })();
+    </script>
 @endsection
