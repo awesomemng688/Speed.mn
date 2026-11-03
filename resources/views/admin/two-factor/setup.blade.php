@@ -17,10 +17,20 @@
         </div>
     @else
         <div class="panel" style="padding:24px;max-width:640px">
-            <h2>1. Add this key to an authenticator app</h2>
-            <p class="muted">Use any TOTP-compatible authenticator. Enter the key manually; it is only shown during setup.</p>
-            <p><code>{{ $secret }}</code></p>
-            <p class="muted">Account: {{ auth()->user()->email }} · Issuer: {{ config('app.name') }}</p>
+            @if($secretRotated)
+                <div class="admin-alert success" role="status">Аюулгүй байдлын үүднээс өмнөх тохиргооны түлхүүрийг шинэчиллээ. Доорх QR кодыг authenticator app-аараа уншуулна уу.</div>
+            @endif
+            <h2>1. Authenticator app-д QR код уншуулна уу</h2>
+            <p class="muted">Authenticator app-аараа QR кодыг уншуулна. QR нь таны браузерт локалаар үүсэх тул гаднын QR үйлчилгээнд түлхүүр илгээгдэхгүй.</p>
+            <div style="display:grid;justify-items:start;gap:12px">
+                <canvas data-totp-qr data-otpauth-url="{{ $otpauthUrl }}" aria-label="Authenticator тохируулах QR код"></canvas>
+                <p class="muted" data-totp-qr-status role="status">QR код ачаалж байна…</p>
+            </div>
+            <details style="margin-top:16px">
+                <summary>QR уншуулах боломжгүй бол түлхүүрийг гараар оруулах</summary>
+                <p class="muted">Account: {{ auth()->user()->email }} · Issuer: {{ config('app.name') }}</p>
+                <p><code>{{ $secret }}</code></p>
+            </details>
             <h2>2. Confirm setup</h2>
             <form method="POST" action="{{ route('admin.two-factor.confirm') }}" class="admin-actions">
                 @csrf
@@ -28,6 +38,7 @@
                 <button class="button button-primary" type="submit">Enable 2FA</button>
             </form>
         </div>
+        @vite('resources/js/admin-totp-setup.js')
     @endif
 </section>
 @endsection

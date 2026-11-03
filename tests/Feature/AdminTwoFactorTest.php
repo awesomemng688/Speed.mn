@@ -24,6 +24,8 @@ class AdminTwoFactorTest extends TestCase
         $setupResponse = $this->get(route('admin.two-factor.setup'))
             ->assertOk()
             ->assertViewIs('admin.two-factor.setup');
+        $this->assertStringStartsWith('otpauth://totp/', $setupResponse->viewData('otpauthUrl'));
+        $setupResponse->assertSee('data-totp-qr', false);
         $secret = session('admin_totp_setup_secret');
         $google2fa = app(Google2FA::class);
 
@@ -41,6 +43,22 @@ class AdminTwoFactorTest extends TestCase
         ]);
 
         $this->get(route('admin.servers.index'))->assertOk();
+    }
+
+    public function test_admin_setup_rotates_an_existing_unmarked_totp_secret(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $oldSecret = 'OLD-EXPOSED-SETUP-KEY';
+
+        $response = $this->actingAs($admin)
+            ->withSession(['admin_totp_setup_secret' => $oldSecret])
+            ->get(route('admin.two-factor.setup'))
+            ->assertOk()
+            ->assertViewIs('admin.two-factor.setup')
+            ->assertSee('өмнөх тохиргооны түлхүүрийг шинэчиллээ');
+
+        $this->assertNotSame($oldSecret, session('admin_totp_setup_secret'));
+        $this->assertTrue($response->viewData('secretRotated'));
     }
 
     public function test_admin_can_use_a_recovery_code_once_for_challenge(): void

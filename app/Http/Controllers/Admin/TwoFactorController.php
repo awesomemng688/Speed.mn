@@ -28,15 +28,19 @@ class TwoFactorController extends Controller
         }
 
         $secret = $request->session()->get('admin_totp_setup_secret');
-        if (! $secret) {
+        $secretRotated = false;
+        if (! $secret || ! $request->session()->get('admin_totp_setup_key_ready')) {
+            $secretRotated = (bool) $secret;
             $secret = $google2fa->generateSecretKey();
             $request->session()->put('admin_totp_setup_secret', $secret);
+            $request->session()->put('admin_totp_setup_key_ready', true);
         }
 
         return view('admin.two-factor.setup', [
             'enabled' => false,
             'secret' => $secret,
             'otpauthUrl' => $google2fa->getQRCodeUrl(config('app.name'), $user->email, $secret),
+            'secretRotated' => $secretRotated,
         ]);
     }
 
@@ -70,7 +74,7 @@ class TwoFactorController extends Controller
         ])->save();
         $audit->record($request, 'admin.2fa_enabled', $user, ['recovery_codes_issued' => count($hashedCodes)]);
 
-        $request->session()->forget('admin_totp_setup_secret');
+        $request->session()->forget(['admin_totp_setup_secret', 'admin_totp_setup_key_ready']);
         $this->markSessionVerified($request);
         RateLimiter::clear($this->rateLimitKey($request));
 
