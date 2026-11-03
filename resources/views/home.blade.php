@@ -182,6 +182,9 @@
     <div class="nx">
         <section class="nx-hero" style="--nx-bg: url('{{ asset('img/hero/background.jpg') }}')">
             <span class="nx-orb a"></span><span class="nx-orb b"></span><span class="nx-gridlines"></span>
+            @if (file_exists(public_path('video/hero.mp4')))
+                <video class="nx-video" src="{{ asset('video/hero.mp4') }}" autoplay muted loop playsinline preload="none" aria-hidden="true"></video>
+            @endif
             <div class="shell nx-grid">
                 <div>
                     <span class="nx-tag"><span class="pulse {{ $networkState['class'] }}"></span>МОНГОЛЫН CS СҮЛЖЭЭ</span>

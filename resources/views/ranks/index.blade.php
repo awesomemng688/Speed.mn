@@ -73,6 +73,26 @@
             </form>
             <span class="rank-count">{{ $players->total() }} тоглогч</span>
         </div>
+        @if ($source['type'] === 'public' && $players->currentPage() === 1 && ! request('search') && $players->count() >= 3)
+            <div class="rank-podium">
+                @foreach ([1, 0, 2] as $idx)
+                    @php($pp = $players->items()[$idx])
+                    @php($pk = (int) $rankValue($pp, 'Kills'))
+                    @php($pd = (int) $rankValue($pp, 'Deaths'))
+                    <div class="podium-card p{{ $idx + 1 }}">
+                        <span class="podium-pos">#{{ $idx + 1 }}</span>
+                        @if ($avatarValue($pp))
+                            <img class="podium-avatar" src="{{ $avatarValue($pp) }}" alt="" loading="lazy">
+                        @else
+                            <span class="podium-avatar">{{ strtoupper(substr($nameValue($pp), 0, 1)) }}</span>
+                        @endif
+                        <strong><a href="{{ route('ranks.player', [$category, $pp->Player]) }}">{{ $nameValue($pp) }}</a></strong>
+                        <span class="podium-xp">{{ number_format((int) $rankValue($pp, 'XP')) }} XP</span>
+                        <span class="podium-meta"><span><b>{{ number_format($pk) }}</b> K</span><span>K/D <b>{{ number_format($pk / max(1, $pd), 2) }}</b></span></span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
         <div class="rank-table-wrap">
             <table class="rank-table">
                 <thead>

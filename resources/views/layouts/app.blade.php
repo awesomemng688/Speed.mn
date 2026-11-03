@@ -26,7 +26,9 @@
     <meta name="twitter:image" content="{{ asset('img/hero/background.jpg') }}">
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <script>try{var t=localStorage.getItem('speedmn-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
     <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=home-account-1' }}">
+    <link rel="stylesheet" href="{{ asset('css/esports.css').'?v='.filemtime(public_path('css/esports.css')) }}">
     <style>
         .server-filters{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#11151e;margin-bottom:14px}
         .favorite-form{margin-top:10px}.favorite-button{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:#171d28;color:var(--text);font:inherit;text-decoration:none;cursor:pointer}.favorite-button[aria-pressed="true"]{color:#ffd17d;border-color:#ffd17d88}.detail-favorite{margin-top:12px}.profile-server-row form{margin:0}.favorite-remove{width:40px;height:40px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font-size:22px;cursor:pointer}
@@ -73,6 +75,7 @@
                 <a class="mobile-login-link" href="{{ route('steam.login', ['redirect' => url()->current()]) }}">Steam-ээр нэвтрэх</a>
             @endauth
         </nav>
+        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Харанхуй / цайвар загвар солих">◐</button>
         @auth
             @if(auth()->user()->is_admin)
                 <a class="button button-small button-ghost" href="{{ route('admin.servers.index') }}">Admin</a>
@@ -108,6 +111,7 @@
     <a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer"><span aria-hidden="true">⌁</span>Discord</a>
 </nav>
 <script src="{{ asset('js/speed.js').'?v='.filemtime(public_path('js/speed.js')) }}" defer></script>
+<script>document.getElementById('theme-toggle').addEventListener('click',function(){var r=document.documentElement,l=r.getAttribute('data-theme')==='light';if(l){r.removeAttribute('data-theme');}else{r.setAttribute('data-theme','light');}try{localStorage.setItem('speedmn-theme',l?'dark':'light');}catch(e){}});</script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
 </body>
 </html>
