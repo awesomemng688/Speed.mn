@@ -19,7 +19,10 @@ class ShopController extends Controller
             : collect();
 
         return view('shop.index', [
-            'products' => ShopProduct::query()->where('active', true)->orderBy('price')->get(),
+            'products' => ShopProduct::query()->where('active', true)
+                ->when(array_key_exists((string) $request->query('category'), ShopProduct::CATEGORIES), fn ($q) => $q->where('category', $request->query('category')))
+                ->orderBy('price')->get(),
+            'category' => (string) $request->query('category', ''),
             'orders' => $orders,
             'bankInfo' => Setting::value('shop_bank_info', ''),
         ]);
@@ -34,11 +37,14 @@ class ShopController extends Controller
             return back()->with('error', 'Хүлээгдэж буй захиалга хэт олон байна. Эхлээд тэдгээрийг баталгаажуулна уу.');
         }
 
+        $request->validate(['details' => ['nullable', 'string', 'max:255']]);
+
         $order = ShopOrder::create([
             'user_id' => $request->user()->id,
             'shop_product_id' => $product->id,
             'code' => 'SP'.strtoupper(Str::random(8)),
             'amount' => $product->price,
+            'details' => $request->input('details'),
         ]);
 
         return redirect()->route('shop.index')->with('status', 'Захиалга үүслээ. Гүйлгээний утгад '.$order->code.' кодыг бичнэ үү.');

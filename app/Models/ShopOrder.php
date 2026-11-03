@@ -9,7 +9,7 @@ class ShopOrder extends Model
 {
     public const STATUSES = ['pending' => 'Хүлээгдэж байна', 'paid' => 'Баталгаажсан', 'cancelled' => 'Цуцлагдсан'];
 
-    protected $fillable = ['user_id', 'shop_product_id', 'code', 'amount', 'status', 'note', 'paid_at'];
+    protected $fillable = ['user_id', 'shop_product_id', 'code', 'amount', 'status', 'note', 'details', 'paid_at'];
 
     protected $casts = ['paid_at' => 'datetime'];
 

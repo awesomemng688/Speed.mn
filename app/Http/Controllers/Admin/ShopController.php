@@ -11,6 +11,8 @@ use App\Services\AdminAuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ShopController extends Controller
@@ -29,10 +31,16 @@ class ShopController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'category' => ['required', Rule::in(array_keys(ShopProduct::CATEGORIES))],
             'price' => ['required', 'integer', 'min:0', 'max:100000000'],
             'duration_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
-        $data['is_vip'] = $request->boolean('is_vip');
+        unset($data['image']);
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('shop', 'public');
+        }
+        $data['is_vip'] = $request->boolean('is_vip') || $data['category'] === 'vip';
         $data['active'] = true;
         $product = ShopProduct::create($data);
         $audit->record($request, 'shop.product_created', $product, [], $product->name);
@@ -51,6 +59,9 @@ class ShopController extends Controller
     public function destroyProduct(Request $request, ShopProduct $product, AdminAuditLogger $audit): RedirectResponse
     {
         $audit->record($request, 'shop.product_deleted', $product, [], $product->name);
+        if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
         $product->delete();
 
         return back()->with('status', 'Бараа устгагдлаа.');
