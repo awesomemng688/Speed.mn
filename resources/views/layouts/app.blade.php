@@ -49,6 +49,7 @@
         @media(max-width:640px){.server-filters{grid-template-columns:1fr;padding:12px}.server-filters .search-box,.server-filters>.button{grid-column:auto}.server-filters>.button{width:100%}.toolbar{flex-wrap:wrap}.detail-title{align-items:flex-start;flex-direction:column}.detail-title>.card-actions{width:100%}.detail-title>.card-actions .button{flex:1}.card-actions{flex-wrap:wrap;gap:8px}.card-actions .button{flex:1}.server-card-body{padding:16px}.server-card-body>p{overflow-wrap:anywhere}.hero-account-actions a,.hero-account-login{min-height:44px;display:inline-flex;align-items:center}.live-notice{align-items:flex-start;flex-wrap:wrap}.live-notice small{width:100%;margin-left:0}.rank-table-wrap{max-width:100%}}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
     </style>
+    <link rel="stylesheet" href="{{ asset('css/refresh.css').'?v=1' }}">
 </head>
 <body class="@yield('body_class')">
 <header class="site-header">
@@ -56,11 +57,9 @@
         <a class="brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"><span class="sr-only">Speed.mn</span></a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Цэс <span aria-hidden="true">☰</span></button>
         <nav id="site-menu" class="nav-links">
-            <a class="{{ request()->routeIs('servers.index', 'servers.show') ? 'is-active' : '' }}" href="{{ route('servers.index') }}"><span>▦</span> Серверүүд</a>
-            <a class="{{ request()->routeIs('servers.game') && request()->route('game') === 'cs2' ? 'is-active' : '' }}" href="{{ route('servers.game', 'cs2') }}"><span>◈</span> CS2</a>
-            <a class="{{ request()->routeIs('servers.game') && request()->route('game') === 'cs16' ? 'is-active' : '' }}" href="{{ route('servers.game', 'cs16') }}"><span>◉</span> CS 1.6</a>
-            <a class="{{ request()->routeIs('skins.bridge') ? 'is-active' : '' }}" href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}"><span>✦</span> Skin</a>
+            <a class="{{ request()->routeIs('servers.index', 'servers.game', 'servers.show') ? 'is-active' : '' }}" href="{{ route('servers.index') }}"><span>▦</span> Серверүүд</a>
             <a class="{{ request()->routeIs('ranks.index') ? 'is-active' : '' }}" href="{{ route('ranks.index') }}"><span>♜</span> Чансаа</a>
+            <a class="{{ request()->routeIs('skins.bridge') ? 'is-active' : '' }}" href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}"><span>✦</span> Skin</a>
             <a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer"><span>⌁</span> Discord</a>
             @auth
                 <div class="mobile-account-actions">

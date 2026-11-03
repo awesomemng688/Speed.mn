@@ -10,44 +10,6 @@
 @endsection
 
 @section('content')
-    <style>
-        .home-page .hero{min-height:650px;padding:105px 0 82px;background-position:center 35%;}
-        .home-page .hero:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 72% 42%,#4e8dff18,transparent 28%),linear-gradient(90deg,transparent 0 48%,#080a0f26 72%,#080a0f99 100%);z-index:-1}
-        .home-page .hero-copy-block{max-width:570px}
-        .home-page .hero h1{font-size:clamp(3.5rem,7vw,6.5rem);text-wrap:balance;text-shadow:0 10px 40px #0008}
-        .home-page .hero-copy{font-size:1.05rem;line-height:1.75;max-width:500px;color:#d3dced}
-        .home-page .hero-actions{margin-top:34px}
-        .home-page .hero-account{margin-top:30px;border-color:#4e8dff55;background:#0b1220cc;box-shadow:0 18px 45px #0005}
-        .home-page .hero-features{margin-top:20px}
-        .home-page .hero-visual{min-height:430px;display:grid;place-items:center}
-        .home-page .hero-glow{opacity:.8;filter:blur(10px)}
-        .home-page .hero-status{top:0;right:0;z-index:4;border-color:#70e2a655;background:#0b1421ee;box-shadow:0 18px 45px #0008}
-        .home-page .hero-stack{margin-top:55px;transform:scale(1.06)}
-        .home-page .hero-server-card{border-color:#ffffff2d;box-shadow:0 24px 55px #000b}
-        .home-page .stats-row{position:relative;z-index:3;margin-top:-34px;border:1px solid #ffffff15;border-radius:16px;background:#111923e8;box-shadow:0 20px 45px #0006;backdrop-filter:blur(16px)}
-        .home-page .live-notice{margin-top:18px}
-        .home-page .server-category{padding:22px;border:1px solid #ffffff0d;border-radius:16px;background:linear-gradient(145deg,#111923aa,#0b1018aa)}
-        .home-page .server-category+.server-category{margin-top:20px}
-        .home-page .server-category-heading{margin-bottom:20px}
-        .home-page .community-panel{margin-top:18px;box-shadow:0 25px 65px #0005}
-        .home-page .hero-copy-block>.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #70e2a633;border-radius:999px;background:#0b1421b8;color:#b9f3d0;letter-spacing:.12em}
-        .home-page .hero-copy-block>.eyebrow:before{width:7px;height:7px;border-radius:50%;background:#70e2a6;box-shadow:0 0 12px #70e2a6;content:""}
-        .home-page .hero h1{line-height:.98}
-        .home-page .hero h1 em{color:#91baff;font-style:normal}
-        .home-page .hero-server-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
-        .home-page .hero-server-card:hover{transform:translateY(-5px);border-color:#70e2a677;box-shadow:0 28px 60px #000c}
-        .home-page .stats-row>div{transition:background .2s ease}
-        .home-page .stats-row>div:hover{background:#ffffff08}
-        .home-page .stats-row strong{font-variant-numeric:tabular-nums}
-        .home-page .server-category{position:relative;overflow:hidden;transition:border-color .2s ease,background .2s ease}
-        .home-page .server-category:before{position:absolute;inset:0 auto 0 0;width:2px;background:linear-gradient(180deg,#70e2a699,transparent 80%);content:"";opacity:.55}
-        .home-page .server-category:hover{border-color:#ffffff20;background:linear-gradient(145deg,#141d29dd,#0d131ddd)}
-        .home-page .server-category-heading h3{margin:0;font-size:clamp(1.05rem,2vw,1.3rem)}
-        .home-page .server-category-heading>div{display:flex;align-items:center;gap:12px}
-        @media(max-width:800px){.home-page .hero{min-height:0;padding:70px 0 52px}.home-page .hero-grid{grid-template-columns:1fr}.home-page .hero-visual{min-height:360px;margin-top:10px}.home-page .hero-stack{transform:scale(.9);margin-top:28px}.home-page .hero-status{right:4%;top:-6px}.home-page .stats-row{margin-top:-18px}.home-page .server-category{padding:15px}.home-page .server-category-heading{align-items:flex-start;flex-direction:column;gap:8px}}
-        @media(max-width:480px){.home-page .hero h1{font-size:42px;letter-spacing:0}}
-        @media(max-width:360px){.home-page .hero h1{font-size:36px}}
-    </style>
     @php
         $networkState = match (true) {
             $stats['servers'] === 0 => ['label' => 'Сервер бүртгэгдээгүй', 'class' => 'offline'],

@@ -15,7 +15,7 @@
         @if($server->game === 'cs16' && $server->category)<span class="server-category-label">{{ ['public-1' => 'Public 1', 'public-2' => 'Public 2', 'knife-1' => 'Knife 1', 'knife-2' => 'Knife 2'][$server->category] ?? $server->category }}</span>@endif
         <h3>{{ $server->name }}</h3>
         <p class="muted">{{ $server->region ?: 'Монгол' }} · {{ $server->address }}</p>
-        <div class="server-metrics"><div><strong>{{ $isOnline ? $status->players : 0 }}/{{ $isOnline ? ($status->max_players ?: $server->max_players) : $server->max_players }}</strong><small>ТОГЛОГЧ</small></div><div><strong>{{ $isOnline ? $map : '—' }}</strong><small>ГАЗРЫН ЗУРАГ</small></div><div><strong>{{ $isOnline && $status->response_time ? $status->response_time.'мс' : '—' }}</strong><small>ХОЦРОЛТ</small></div></div>
+        <div class="server-metrics"><div><strong>{{ $isOnline ? $status->players : ($statusState === 'offline' ? 0 : '—') }}/{{ $isOnline ? ($status->max_players ?: $server->max_players) : $server->max_players }}</strong><small>ТОГЛОГЧ</small></div><div><strong>{{ $isOnline ? $map : '—' }}</strong><small>ГАЗРЫН ЗУРАГ</small></div><div><strong>{{ $isOnline && $status->response_time ? $status->response_time.'мс' : '—' }}</strong><small>ХОЦРОЛТ</small></div></div>
         @php($cap = max(1, (int) ($isOnline ? ($status->max_players ?: $server->max_players) : $server->max_players)))
         @php($fill = $isOnline ? min(100, round(((int) $status->players) / $cap * 100)) : 0)
         <div class="load-bar" role="img" aria-label="Сервер {{ $fill }}% дүүрсэн"><span style="width:{{ $fill }}%"></span></div>
