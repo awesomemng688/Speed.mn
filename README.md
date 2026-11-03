@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://speed.mn" target="_blank">
-    <img src="https://speed.mn/logo.png" width="220" alt="Speed.mn Logo" style="border-radius: 12px;">
+    <img src="public/logo.png" width="220" alt="Speed.mn Logo">
   </a>
 </p>
 
