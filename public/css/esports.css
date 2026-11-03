@@ -33,6 +33,12 @@ h1,h2{font-weight:700}
 .shop-card h3{margin:0}
 .shop-card form{display:grid;gap:8px;margin-top:auto}
 .shop-card input{width:100%}
+.shop-card h3 a{color:inherit;text-decoration:none}
+.shop-detail{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px}
+.shop-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;align-content:start}
+.shop-gallery a:first-child{grid-column:1/-1}
+.shop-gallery img{width:100%;border-radius:8px;object-fit:cover;background:#0a0b0f}
+@media (max-width:800px){.shop-detail{grid-template-columns:1fr}}
 .theme-toggle{display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--text);font-size:18px;cursor:pointer}
 .theme-toggle:hover{border-color:#ff3b4f}
 

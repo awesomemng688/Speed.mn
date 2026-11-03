@@ -86,6 +86,10 @@ Route::get('/sitemap.xml', function () {
 })->name('sitemap');
 Route::get('/vip', fn () => view('vip'))->name('vip');
 Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('shop.index');
+Route::get('/shop/{product}', [\App\Http\Controllers\ShopController::class, 'show'])->whereNumber('product')->name('shop.show');
+Route::post('/shop/orders/{order}/cancel', [\App\Http\Controllers\ShopController::class, 'cancel'])->middleware(['auth', 'throttle:20,1'])->name('shop.orders.cancel');
+Route::post('/shop/orders/{order}/receipt', [\App\Http\Controllers\ShopController::class, 'receipt'])->middleware(['auth', 'throttle:10,1'])->name('shop.orders.receipt');
+Route::get('/shop/orders/{order}/receipt', [\App\Http\Controllers\ShopController::class, 'showReceipt'])->middleware('auth')->name('shop.orders.receipt.show');
 Route::post('/shop/{product}/order', [\App\Http\Controllers\ShopController::class, 'order'])->middleware(['auth', 'throttle:10,1'])->name('shop.order');
 Route::get('/news', [\App\Http\Controllers\PostController::class, 'index'])->name('news.index');
 Route::get('/news/{post}', [\App\Http\Controllers\PostController::class, 'show'])->name('news.show');
@@ -118,6 +122,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
+    Route::get('shop/export', [\App\Http\Controllers\Admin\ShopController::class, 'export'])->name('shop.export');
+    Route::get('shop/products/{product}/edit', [\App\Http\Controllers\Admin\ShopController::class, 'editProduct'])->name('shop.products.edit');
+    Route::put('shop/products/{product}', [\App\Http\Controllers\Admin\ShopController::class, 'updateProduct'])->name('shop.products.update');
     Route::get('shop', [\App\Http\Controllers\Admin\ShopController::class, 'index'])->name('shop.index');
     Route::put('shop/bank', [\App\Http\Controllers\Admin\ShopController::class, 'bankInfo'])->name('shop.bank');
     Route::post('shop/products', [\App\Http\Controllers\Admin\ShopController::class, 'storeProduct'])->name('shop.products.store');
