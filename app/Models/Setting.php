@@ -25,7 +25,6 @@ class Setting extends Model
         'banner_enabled' => '0',
         'banner_text' => '',
         'banner_url' => '',
-        'shop_bank_info' => '',
     ];
 
     public static function value(string $key, ?string $default = null): ?string
