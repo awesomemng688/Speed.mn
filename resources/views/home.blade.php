@@ -96,6 +96,12 @@
         .nx-join-stats small{font:700 .64rem ui-monospace,Consolas,monospace;letter-spacing:.12em;color:var(--nx-mute)}
         .nx-end{height:70px}
 
+        .nx-hot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;padding:22px 26px;border:1px solid #ff3b4f55;border-radius:10px;background:linear-gradient(90deg,#ff3b4f1f,#0d1219);color:var(--nx-ink);text-decoration:none;transition:transform .2s,border-color .2s}
+        .nx-hot:hover{transform:translateY(-3px);border-color:#ff3b4f}
+        .nx-hot-tag{font:800 .7rem ui-monospace,Consolas,monospace;letter-spacing:.16em;color:#ff4a5e}
+        .nx-hot strong{font-size:1.3rem}
+        .nx-hot span:not(.nx-hot-tag){color:var(--nx-mute)}
+        .nx-hot b{margin-left:auto;color:#ff4a5e}
         /* v2 polish */
         .nx-hero .nx-orb{position:absolute;border-radius:50%;filter:blur(70px);z-index:-1;pointer-events:none;animation:nx-float 12s ease-in-out infinite}
         .nx-orb.a{width:380px;height:380px;right:6%;top:-60px;background:#4e8dff55}
@@ -256,6 +262,20 @@
             <strong>{{ $stats['players'] }} хүн тоглож байна</strong>
             <small>{{ $networkState['label'] }} · {{ $stats['stale'] }} серверийн мэдээлэл хуучирсан, {{ $stats['unknown'] }} серверийн төлөв ирээгүй</small>
         </section>
+
+        @php
+            $busiest = $servers->filter(fn ($s) => \App\Models\ServerStatus::stateOf($s->latestStatus) === 'online')->sortByDesc(fn ($s) => $s->latestStatus->players ?? 0)->first();
+        @endphp
+        @if ($busiest && ($busiest->latestStatus->players ?? 0) > 0)
+            <section class="shell nx-section" aria-label="Хамгийн идэвхтэй сервер">
+                <a class="nx-hot" href="{{ route('servers.show', $busiest) }}">
+                    <span class="nx-hot-tag">🔥 ОДОО ХАМГИЙН ИДЭВХТЭЙ</span>
+                    <strong>{{ $busiest->name }}</strong>
+                    <span>{{ $busiest->latestStatus->players }}/{{ $busiest->latestStatus->max_players ?: $busiest->max_players }} тоглогч · {{ $busiest->latestStatus->map ?: '—' }}</span>
+                    <b>Нэгдэх →</b>
+                </a>
+            </section>
+        @endif
 
         <section id="servers" class="shell nx-section">
             <div class="nx-head">
