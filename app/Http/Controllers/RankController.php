@@ -57,9 +57,12 @@ class RankController extends Controller
                 $query->where('Nick', 'like', '%'.$search.'%');
             }
 
+            $query->orderByDesc('Knife');
+            if ($column('id')) {
+                $query->orderByDesc('id');
+            }
+
             $players = $query
-                ->orderByDesc('Knife')
-                ->orderByDesc('id')
                 ->paginate(50)
                 ->withQueryString();
         } else {
@@ -70,9 +73,12 @@ class RankController extends Controller
                 $query->where($column('Nick') ?: ($column('name') ?: 'id'), 'like', '%'.$search.'%');
             });
 
+            $query->orderByDesc($orderColumn);
+            if ($column('id') && $orderColumn !== 'id') {
+                $query->orderByDesc('id');
+            }
+
             $players = $query
-                ->orderByDesc($orderColumn)
-                ->orderByDesc('id')
                 ->paginate(50)
                 ->withQueryString();
         }
