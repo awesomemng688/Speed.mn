@@ -71,6 +71,7 @@ Route::get('/sitemap.xml', function () {
 
     return response($xml, 200, ['Content-Type' => 'application/xml']);
 })->name('sitemap');
+Route::get('/vip', fn () => view('vip'))->name('vip');
 Route::get('/servers', [ServerController::class, 'index'])->name('servers.index');
 Route::get('/servers/{game}', [ServerController::class, 'index'])->where('game', 'cs2|cs16')->name('servers.game');
 Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');

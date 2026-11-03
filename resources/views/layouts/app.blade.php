@@ -59,6 +59,7 @@
             <a class="{{ request()->routeIs('servers.game') && request()->route('game') === 'cs16' ? 'is-active' : '' }}" href="{{ route('servers.game', 'cs16') }}"><span>◉</span> CS 1.6</a>
             <a class="{{ request()->routeIs('skins.bridge') ? 'is-active' : '' }}" href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}"><span>✦</span> Skin</a>
             <a class="{{ request()->routeIs('ranks.index') ? 'is-active' : '' }}" href="{{ route('ranks.index') }}"><span>♜</span> Чансаа</a>
+            <a class="{{ request()->routeIs('vip') ? 'is-active' : '' }}" href="{{ route('vip') }}"><span>★</span> VIP</a>
             <a href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer"><span>⌁</span> Discord</a>
             @auth
                 <div class="mobile-account-actions">

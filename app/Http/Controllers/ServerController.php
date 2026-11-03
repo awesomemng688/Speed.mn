@@ -145,10 +145,24 @@ class ServerController extends Controller
                 ->get();
         }
 
+        $mapHistory = $server->statuses()
+            ->where('created_at', '>=', Carbon::now()->subDay())
+            ->whereNotNull('map')
+            ->oldest()
+            ->get(['map', 'created_at'])
+            ->reduce(function (array $changes, $point) {
+                if (($changes[array_key_last($changes)]['map'] ?? null) !== $point->map) {
+                    $changes[] = ['map' => $point->map, 'since' => $point->created_at];
+                }
+
+                return $changes;
+            }, []);
+        $mapHistory = array_slice(array_reverse($mapHistory), 0, 10);
+
         if ($request->user()) {
             $server->loadExists(['favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', $request->user()->id)]);
         }
 
-        return view('servers.show', compact('server', 'history', 'uptime', 'averagePlayers', 'peakPlayers', 'totalChecks', 'offlineHistory', 'period', 'periodDays'));
+        return view('servers.show', compact('server', 'history', 'uptime', 'averagePlayers', 'peakPlayers', 'totalChecks', 'offlineHistory', 'period', 'periodDays', 'mapHistory'));
     }
 }

@@ -48,24 +48,26 @@ class RankController extends Controller
         $column = static fn (string $name): ?string => in_array($name, $columns, true) ? $name : null;
 
         $search = trim((string) $request->query('search', ''));
-        if ($source['type'] === 'knife') {
-            $query = $connection
-                ->table($source['table'])
-                ->where('Knife', '>', 0);
+        $page = max(1, (int) $request->query('page', 1));
+        $cacheKey = 'rank.page.'.$category.'.'.sha1(mb_strtolower($search)).'.'.$page;
+        $players = Cache::remember($cacheKey, now()->addSeconds(60), function () use ($source, $connection, $column, $search) {
+            if ($source['type'] === 'knife') {
+                $query = $connection
+                    ->table($source['table'])
+                    ->where('Knife', '>', 0);
 
-            if ($search !== '') {
-                $query->where('Nick', 'like', '%'.$search.'%');
+                if ($search !== '') {
+                    $query->where('Nick', 'like', '%'.$search.'%');
+                }
+
+                $query->orderByDesc('Knife');
+                if ($column('id')) {
+                    $query->orderByDesc('id');
+                }
+
+                return $query->paginate(50);
             }
 
-            $query->orderByDesc('Knife');
-            if ($column('id')) {
-                $query->orderByDesc('id');
-            }
-
-            $players = $query
-                ->paginate(50)
-                ->withQueryString();
-        } else {
             $orderColumn = $column('XP') ?: ($column('points') ?: 'id');
             $query = $connection->table($source['table']);
 
@@ -78,10 +80,9 @@ class RankController extends Controller
                 $query->orderByDesc('id');
             }
 
-            $players = $query
-                ->paginate(50)
-                ->withQueryString();
-        }
+            return $query->paginate(50);
+        });
+        $players->withQueryString();
 
         $avatars = $this->resolveAvatars($players->getCollection());
 
