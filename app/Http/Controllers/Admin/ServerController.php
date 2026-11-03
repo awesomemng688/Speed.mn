@@ -106,7 +106,7 @@ class ServerController extends Controller
             'fields' => array_keys($request->validated()),
         ]);
 
-        return redirect()->route('admin.servers.index')->with('status', "Server {$server->name} was created.");
+        return redirect()->route('admin.servers.index')->with('status', "{$server->name} сервер амжилттай бүртгэгдлээ.");
     }
 
     public function edit(Server $server): View
@@ -123,7 +123,7 @@ class ServerController extends Controller
             'changed_fields' => $changedFields,
         ]);
 
-        return redirect()->route('admin.servers.index')->with('status', "Server {$server->name} was updated.");
+        return redirect()->route('admin.servers.index')->with('status', "{$server->name} серверийн мэдээлэл шинэчлэгдлээ.");
     }
 
     public function destroy(Server $server, Request $request, AdminAuditLogger $audit): RedirectResponse
@@ -132,36 +132,36 @@ class ServerController extends Controller
         $audit->record($request, 'server.deleted', $server);
         $server->delete();
 
-        return redirect()->route('admin.servers.index')->with('status', "Server {$name} was deleted.");
+        return redirect()->route('admin.servers.index')->with('status', "{$name} сервер устгагдлаа.");
     }
 
     public function toggle(Server $server, Request $request, AdminAuditLogger $audit): RedirectResponse
     {
         $server->update(['enabled' => ! $server->enabled]);
-        $state = $server->enabled ? 'enabled' : 'disabled';
+        $state = $server->enabled ? 'идэвхжүүллээ' : 'идэвхгүй болголоо';
         $audit->record($request, $server->enabled ? 'server.enabled' : 'server.disabled', $server);
 
-        return back()->with('status', "Server {$server->name} is now {$state}.");
+        return back()->with('status', "{$server->name} серверийг {$state}.");
     }
 
     public function test(Server $server, ServerQueryService $queryService): RedirectResponse
     {
         $result = $queryService->query($server);
         $message = $result['online']
-            ? "Connection successful ({$result['response_time']} ms)."
-            : ($result['query_error'] ?? 'Connection failed or the server did not respond.');
+            ? "Холболт амжилттай ({$result['response_time']} мс)."
+            : ($result['query_error'] ?? 'Холболт амжилтгүй эсвэл сервер хариу өгсөнгүй.');
 
         return back()->with($result['online'] ? 'connection_success' : 'connection_error', $message);
     }
 
     public function pollNow(Server $server, Request $request, AdminAuditLogger $audit): RedirectResponse
     {
-        abort_unless($server->enabled, 422, 'Enable the server before polling it.');
+        abort_unless($server->enabled, 422, 'Шалгалт эхлүүлэхийн өмнө серверийг идэвхжүүлнэ үү.');
 
         PollServer::dispatch($server->id);
         $audit->record($request, 'server.poll_dispatched', $server);
 
-        return back()->with('status', "A poll was queued for {$server->name}.");
+        return back()->with('status', "{$server->name} серверийн төлөв шалгах хүсэлт дараалалд орлоо.");
     }
 
     private function cacheTimestamp(string $key): ?Carbon

@@ -171,6 +171,12 @@ class AdminOperationsTest extends TestCase
         $admin = User::factory()->create(['is_admin' => true]);
 
         $this->actingAsAdmin($admin)
+            ->get(route('admin.servers.create'))
+            ->assertOk()
+            ->assertSee('Шинэ сервер бүртгэх')
+            ->assertSee('IP хаяг');
+
+        $this->actingAsAdmin($admin)
             ->post(route('admin.servers.store'), [
                 'name' => 'Audited server',
                 'game' => 'cs2',

@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Edit server — Speed.mn')
+@section('title', 'Сервер засах — Speed.mn')
 @section('content')
-<section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><h1>Edit server</h1></div></section>
-<section class="shell section">@include('admin.servers.form', ['formAction' => route('admin.servers.update', $server), 'formMethod' => 'PUT'])</section>
+<section class="page-head"><div class="shell"><p class="eyebrow">СЕРВЕРИЙН УДИРДЛАГА</p><h1>Сервер засах</h1><p class="muted">{{ $server->name }} · {{ $server->address }}</p><x-admin-nav /></div></section>
+<section class="shell section admin-section admin-server-editor">@include('admin.servers.form', ['formAction' => route('admin.servers.update', $server), 'formMethod' => 'PUT'])</section>
 @endsection
