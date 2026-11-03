@@ -72,6 +72,8 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200, ['Content-Type' => 'application/xml']);
 })->name('sitemap');
 Route::get('/vip', fn () => view('vip'))->name('vip');
+Route::get('/news', [\App\Http\Controllers\PostController::class, 'index'])->name('news.index');
+Route::get('/news/{post}', [\App\Http\Controllers\PostController::class, 'show'])->name('news.show');
 Route::get('/servers', [ServerController::class, 'index'])->name('servers.index');
 Route::get('/servers/{game}', [ServerController::class, 'index'])->where('game', 'cs2|cs16')->name('servers.game');
 Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');
@@ -96,6 +98,14 @@ Route::post('/notifications/{notification}/read', [UserNotificationController::c
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'edit'])->name('settings.edit');
+    Route::put('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
+    Route::get('vip', [\App\Http\Controllers\Admin\VipController::class, 'index'])->name('vip.index');
+    Route::post('vip', [\App\Http\Controllers\Admin\VipController::class, 'store'])->name('vip.store');
+    Route::delete('vip/{member}', [\App\Http\Controllers\Admin\VipController::class, 'destroy'])->name('vip.destroy');
+    Route::get('ranks', [\App\Http\Controllers\Admin\RankAdminController::class, 'index'])->name('ranks.index');
+    Route::post('ranks/{category}/reset', [\App\Http\Controllers\Admin\RankAdminController::class, 'reset'])->where('category', 'public-1|public-2|knife-1|knife-2')->name('ranks.reset');
     Route::get('submissions', [\App\Http\Controllers\Admin\ServerSubmissionController::class, 'index'])->name('submissions.index');
     Route::post('submissions/{submission}/approve', [\App\Http\Controllers\Admin\ServerSubmissionController::class, 'approve'])->name('submissions.approve');
     Route::post('submissions/{submission}/reject', [\App\Http\Controllers\Admin\ServerSubmissionController::class, 'reject'])->name('submissions.reject');

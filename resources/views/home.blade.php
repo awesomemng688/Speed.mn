@@ -194,8 +194,8 @@
             <div class="shell nx-grid">
                 <div>
                     <span class="nx-tag"><span class="pulse {{ $networkState['class'] }}"></span>МОНГОЛЫН CS СҮЛЖЭЭ</span>
-                    <h1>Хурдан тогло.<br><em>Хамтдаа тогло.</em></h1>
-                    <p class="nx-lead">CS2 болон CS 1.6 тоглогчдод зориулсан найдвартай серверүүд, бодит цагийн статус, чансаа, skin хэрэгслүүд нэг дор.</p>
+                    <h1>{{ \App\Models\Setting::value('hero_title') }}<br><em>{{ \App\Models\Setting::value('hero_accent') }}</em></h1>
+                                        <p class="nx-lead">{{ \App\Models\Setting::value('hero_lead') }}</p>
                     <div class="nx-cta">
                         <a class="nx-btn primary" href="{{ route('servers.index') }}">Сервер сонгох <span>→</span></a>
                         @auth
@@ -346,7 +346,7 @@
                 <h2 id="community-title">Хамтдаа тогло. Холбоотой бай.</h2>
                 <p>Speed.mn-ийн Discord-д нэгдэж серверийн мэдээ, тэмцээн, чансаа болон шинэ skin-ий мэдээлэл аваарай.</p>
                 <div class="nx-cta">
-                    <a class="nx-btn primary" href="https://discord.gg/93XEkJDD6" target="_blank" rel="noreferrer">Discord-д нэгдэх <span>↗</span></a>
+                    <a class="nx-btn primary" href="{{ \App\Models\Setting::value('discord_url') }}" target="_blank" rel="noreferrer">Discord-д нэгдэх <span>↗</span></a>
                     <a class="nx-btn" href="{{ route('vip') }}">VIP</a>
                 </div>
             </div>
