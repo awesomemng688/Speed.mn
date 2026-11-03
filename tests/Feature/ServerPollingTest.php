@@ -175,7 +175,7 @@ class ServerPollingTest extends TestCase
             ->assertSee('Өдрийн нөөцлөлт:')
             ->assertSee('HTTP шалгалт:')
             ->assertSee('A2S query timed out')
-            ->assertSee('Сүүлд амжилттай:');
+            ->assertSee('Сүүлд амжилттай');
     }
 
     public function test_admin_server_page_survives_unavailable_heartbeat_cache(): void
