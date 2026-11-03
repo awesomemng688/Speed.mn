@@ -1,0 +1,23 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-DEsqKiwq.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/admin-totp-setup.js": {
+    "file": "assets/admin-totp-setup-Bc3uvj5O.js",
+    "name": "admin-totp-setup",
+    "src": "resources/js/admin-totp-setup.js",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DMsN-rLE.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}
