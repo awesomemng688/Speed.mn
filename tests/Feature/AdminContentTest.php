@@ -27,7 +27,7 @@ class AdminContentTest extends TestCase
 
     public function test_settings_drive_home_banner_and_title(): void
     {
-        $this->actingAs($this->admin())->put('/admin/settings', [
+        $this->actingAsAdmin($this->admin())->put('/admin/settings', [
             'discord_url' => 'https://discord.gg/test',
             'hero_title' => 'Шинэ гарчиг',
             'hero_accent' => 'Өнгөт мөр',
@@ -42,7 +42,7 @@ class AdminContentTest extends TestCase
 
     public function test_settings_reject_non_https_discord_url(): void
     {
-        $this->actingAs($this->admin())->put('/admin/settings', [
+        $this->actingAsAdmin($this->admin())->put('/admin/settings', [
             'discord_url' => 'javascript:alert(1)',
             'hero_title' => 'a', 'hero_accent' => 'b', 'hero_lead' => 'c',
         ])->assertSessionHasErrors('discord_url');
@@ -50,7 +50,7 @@ class AdminContentTest extends TestCase
 
     public function test_admin_can_publish_post_and_public_can_read_it(): void
     {
-        $this->actingAs($this->admin())->post('/admin/posts', [
+        $this->actingAsAdmin($this->admin())->post('/admin/posts', [
             'type' => 'tournament', 'title' => 'Speed Cup', 'body' => 'Дэлгэрэнгүй', 'is_published' => '1',
         ])->assertRedirect();
 
@@ -70,7 +70,7 @@ class AdminContentTest extends TestCase
 
     public function test_admin_can_add_vip_member(): void
     {
-        $this->actingAs($this->admin())->post('/admin/vip', [
+        $this->actingAsAdmin($this->admin())->post('/admin/vip', [
             'steam_id' => '76561198000000000', 'name' => 'Bat', 'plan' => 'VIP', 'amount' => 10000,
             'starts_at' => now()->toDateString(), 'expires_at' => now()->addMonth()->toDateString(),
         ])->assertSessionHasNoErrors();
