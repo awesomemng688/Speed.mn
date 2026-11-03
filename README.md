@@ -1,30 +1,54 @@
 <p align="center">
   <a href="https://speed.mn" target="_blank">
-    <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Speed.mn Logo">
+    <img src="https://speed.mn/logo.png" width="220" alt="Speed.mn Logo" style="border-radius: 12px;">
   </a>
 </p>
 
+<h1 align="center">Speed.mn Web Platform</h1>
+
 <p align="center">
-<a href="https://github.com/awesomemng688/Speed.mn/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat&logo=php" alt="PHP Version">
-<img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat&logo=laravel" alt="Laravel Version">
-<img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
+  <strong>Counter-Strike тоглоомын серверүүдийн нэгдсэн систем болон Speed.mn платформын албан ёсны веб аппликейшн</strong>
 </p>
 
-## About Speed.mn
+<p align="center">
+  <a href="https://github.com/awesomemng688/Speed.mn/actions"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions" alt="Build Status"></a>
+  <a href="https://php.net"><img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP Version"></a>
+  <a href="https://laravel.com"><img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel"></a>
+  <a href="https://mariadb.org"><img src="https://img.shields.io/badge/Database-MariaDB%20%2F%20MySQL-003545?style=for-the-badge&logo=mariadb" alt="Database"></a>
+</p>
 
-**Speed.mn** нь хэрэглэгчдэд хурдан, найдвартай бөгөөд ухаалаг үйлчилгээг хүргэх зорилготой Laravel фрэймворк дээр суурилсан веб платформ юм. Бид хөгжүүлэлтийн явцыг хялбар, өндөр бүтээмжтэй байлгахын тулд орчин үеийн архитектур болон хэрэгслүүдийг ашигладаг.
+---
 
-- [⚡ Хурдан бөгөөд оновчтой routing систем](https://speed.mn)
-- [📦 dependency injection болон үйлчилгээний архитектур]
-- [🗄️ Expressive, intuitive database ORM (Eloquent)]
-- [🔄 Robust background job processing and queues]
+## ⚡ Speed.mn-ийн тухай
 
-## Getting Started
+**Speed.mn** нь CS 1.6 болон CS2 тоглоомын серверүүдийн тоглогчдын бүртгэл, статистик, веб дэлгүүр болон нийгэмлэгийн үйлчилгээг нэгтгэсэн веб систем юм. Системийн уян хатан байдал, өндөр хурд, найдвартай ажиллагааг хангахаар Laravel архитектур дээр суурилан хөгжүүлэгдэж байна.
 
-Системийг локал орчинд татаж суулгах болон хөгжүүлэлт хийхэд дараах алхмуудыг дагана уу:
+### ✨ Үндсэн боломжууд
+* 🎮 **Серверийн интеграци:** Game серверүүдийн өгөгдлийн сантай шууд холбогдож тоглогчдын статистик, бан жагсаалт, VIP/Admin эрхийг удирдана.
+* ⚡ **Real-time дата:** Серверийн төлөв, онлайн тоглогчдын мэдээллийг шууд харах боломж.
+* 🛡️ **Хэрэглэгчийн систем:** Steam / Web нэвтрэлт, профайл тохиргоо болон хянах самбар.
+* 🚀 **Өндөр хурд:** Оновчтой кэш болон асинхрон background job ажиллагаа.
 
-1. **Репозиторыг хуулж авах (Clone):**
-   ```bash
-   git clone [https://github.com/awesomemng688/Speed.mn.git](https://github.com/awesomemng688/Speed.mn.git)
-   cd Speed.mn
+---
+
+## 🛠 Технологийн стек
+
+| Дагах үе шат | Ашигласан технологи |
+| :--- | :--- |
+| **Backend** | PHP 8.2+, Laravel Framework |
+| **Frontend** | Blade Templates, Tailwind CSS, JavaScript |
+| **Database** | MariaDB / MySQL |
+| **Automation** | Systemd, Screen Multiplexer, Webhooks |
+
+---
+
+## 🔧 Мэдээлэл & Холбоос
+
+* **Албан ёсны сайт:** [speed.mn](https://speed.mn)
+* **GitHub Репозитори:** [awesomemng688/Speed.mn](https://github.com/awesomemng688/Speed.mn)
+
+---
+
+<p align="center">
+  Made with ❤️ for <strong>Speed.mn</strong> Community
+</p>
