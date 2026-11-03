@@ -12,9 +12,15 @@ use Illuminate\View\View;
 
 class PostController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        return view('admin.posts.index', ['posts' => Post::query()->latest()->paginate(20)]);
+        $search = trim((string) $request->query('search', ''));
+        $escaped = addcslashes(mb_substr($search, 0, 100), '%_\\');
+        $posts = Post::query()
+            ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$escaped}%"))
+            ->latest()->paginate(20)->withQueryString();
+
+        return view('admin.posts.index', ['posts' => $posts, 'search' => $search]);
     }
 
     public function create(): View

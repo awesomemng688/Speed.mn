@@ -4,6 +4,11 @@
 <section class="page-head"><div class="shell"><p class="eyebrow">УДИРДЛАГА</p><div class="section-heading"><h1>Мэдээ / Тэмцээн</h1></div><x-admin-nav /></div></section>
 <section class="shell section admin-section">
     <p><a class="button button-primary" href="{{ route('admin.posts.create') }}">+ Шинэ нийтлэл</a></p>
+    <form class="rank-search" method="GET" action="{{ route('admin.posts.index') }}" role="search">
+        <input type="search" name="search" value="{{ $search }}" placeholder="Гарчгаар хайх" aria-label="Нийтлэл хайх">
+        <button class="button button-primary" type="submit">Хайх</button>
+        @if($search)<a class="text-link" href="{{ route('admin.posts.index') }}">Цэвэрлэх</a>@endif
+    </form>
     <div class="panel">
         @forelse($posts as $post)
             <div class="adm-row">

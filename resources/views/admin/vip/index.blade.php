@@ -21,6 +21,12 @@
         <label class="adm-field">Тэмдэглэл<input name="note" value="{{ old('note') }}" maxlength="255"></label>
         <button class="button button-primary" type="submit">Нэмэх</button>
     </form>
+    <form class="rank-search" method="GET" action="{{ route('admin.vip.index') }}" role="search">
+        <input type="search" name="search" value="{{ $search }}" placeholder="Нэр, Steam ID, багц хайх" aria-label="VIP хайх">
+        <button class="button button-primary" type="submit">Хайх</button>
+        @if($search)<a class="text-link" href="{{ route('admin.vip.index') }}">Цэвэрлэх</a>@endif
+        <a class="button button-ghost" href="{{ route('admin.vip.export', ['search' => $search ?: null]) }}">CSV татах</a>
+    </form>
     <div class="panel">
         @forelse($members as $m)
             <div class="adm-row">
