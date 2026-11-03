@@ -96,6 +96,38 @@
         .nx-join-stats small{font:700 .64rem ui-monospace,Consolas,monospace;letter-spacing:.12em;color:var(--nx-mute)}
         .nx-end{height:70px}
 
+        /* v2 polish */
+        .nx-hero .nx-orb{position:absolute;border-radius:50%;filter:blur(70px);z-index:-1;pointer-events:none;animation:nx-float 12s ease-in-out infinite}
+        .nx-orb.a{width:380px;height:380px;right:6%;top:-60px;background:#4e8dff55}
+        .nx-orb.b{width:320px;height:320px;left:-80px;bottom:-60px;background:#b6f24b3d;animation-delay:-5s}
+        @keyframes nx-float{50%{transform:translate(30px,-26px) scale(1.08)}}
+        .nx-hero .nx-gridlines{position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(#ffffff0a 1px,transparent 1px),linear-gradient(90deg,#ffffff0a 1px,transparent 1px);background-size:54px 54px;-webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 40%,#000 25%,transparent 75%)}
+        .nx-hero h1 em{background-size:200% 100%;animation:nx-shine 5s linear infinite;background-image:linear-gradient(90deg,#b6f24b,#7ee8c0,#4e8dff,#b6f24b)}
+        @keyframes nx-shine{to{background-position:200% 0}}
+        .nx-btn{position:relative;overflow:hidden}
+        .nx-btn.primary:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,#ffffff66 50%,transparent 70%);transform:translateX(-120%);transition:transform .6s}
+        .nx-btn.primary:hover:after{transform:translateX(120%)}
+        .nx-console{position:relative;backdrop-filter:blur(14px);transform:perspective(1200px) rotateY(-4deg) rotateX(2deg);transition:transform .4s}
+        .nx-console:hover{transform:perspective(1200px) rotateY(0) rotateX(0)}
+        .nx-console:before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(140deg,#b6f24b88,transparent 40%,#4e8dff88);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+        .nx-row:hover{background:linear-gradient(90deg,#b6f24b14,transparent)}
+        .nx-row:hover img{transform:scale(1.06)}
+        .nx-row img{transition:transform .3s}
+        .nx-feature,.nx-step{position:relative;transition:transform .25s,border-color .25s,box-shadow .25s}
+        .nx-feature:hover,.nx-step:hover{transform:translateY(-6px);border-color:#b6f24b66;box-shadow:0 20px 50px #b6f24b14}
+        .nx-feature b{transition:transform .3s,background .3s}
+        .nx-feature:hover b{transform:rotate(-8deg) scale(1.1);background:#b6f24b33}
+        .home-page .stats-row strong{background:linear-gradient(180deg,#fff,#9fb4d4);-webkit-background-clip:text;background-clip:text;color:transparent}
+        .home-page .stats-row>div:nth-child(2) strong{background:linear-gradient(180deg,#d8ff8a,#b6f24b);-webkit-background-clip:text;background-clip:text}
+        .nx-head h2{background:linear-gradient(90deg,#fff,#a9bbd6);-webkit-background-clip:text;background-clip:text;color:transparent}
+        .nx-aim-target{animation:nx-pop .25s ease-out}
+        @keyframes nx-pop{from{transform:translate(-50%,-50%) scale(.2);opacity:0}}
+        .nx-join{position:relative;overflow:hidden}
+        .nx-join:before{content:"";position:absolute;width:420px;height:420px;right:-120px;top:-160px;border-radius:50%;background:#b6f24b22;filter:blur(80px);pointer-events:none}
+        .nx-rv{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+        .nx-rv.in{opacity:1;transform:none}
+        @media(prefers-reduced-motion:reduce){.nx-rv{opacity:1;transform:none;transition:none}.nx-orb,.nx-hero h1 em{animation:none}}
+        @media(max-width:860px){.nx-console{transform:none}}
         @media(max-width:1000px){.nx-features{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:860px){.nx-grid,.nx-join{grid-template-columns:1fr}.nx-hero{padding:56px 0 90px}.nx-steps{grid-template-columns:1fr}.home-page .stats-row{grid-template-columns:1fr;margin-top:-34px}.home-page .stats-row>div{border-right:0;border-bottom:1px solid var(--nx-line)}.home-page .stats-row>div:last-child{border-bottom:0}.nx-join{padding:28px}}
         @media(max-width:520px){.nx-features{grid-template-columns:1fr}.nx-hero h1{font-size:2.6rem}}
@@ -119,6 +151,7 @@
 
     <div class="nx">
         <section class="nx-hero" style="--nx-bg: url('{{ asset('img/hero/background.jpg') }}')">
+            <span class="nx-orb a"></span><span class="nx-orb b"></span><span class="nx-gridlines"></span>
             <div class="shell nx-grid">
                 <div>
                     <span class="nx-tag"><span class="pulse {{ $networkState['class'] }}"></span>МОНГОЛЫН CS СҮЛЖЭЭ</span>
@@ -274,6 +307,13 @@
     </div>
 
     <script>
+    (function(){
+        var rv=document.querySelectorAll('.nx-section,.nx-join,.nx-group,.nx-feature,.nx-step');
+        if(!('IntersectionObserver' in window)){return;}
+        rv.forEach(function(el){el.classList.add('nx-rv');});
+        var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.08});
+        rv.forEach(function(el){io.observe(el);});
+    })();
     (function(){
         var arena=document.getElementById('aim-arena'),t=document.getElementById('aim-target');
         if(!arena||!t)return;
