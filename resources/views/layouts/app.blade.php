@@ -71,6 +71,7 @@
             <a class="{{ request()->routeIs('ranks.index') ? 'is-active' : '' }}" href="{{ route('ranks.index') }}"><span>♜</span> Чансаа</a>
             <a class="{{ request()->routeIs('news.*') ? 'is-active' : '' }}" href="{{ route('news.index') }}"><span>✎</span> Мэдээ</a>
             <a class="{{ request()->routeIs('vip') ? 'is-active' : '' }}" href="{{ route('vip') }}"><span>★</span> VIP</a>
+            <a class="{{ request()->routeIs('shop.*') ? 'is-active' : '' }}" href="{{ route('shop.index') }}"><span>◈</span> ДЭЛГҮҮР</a>
             <a href="{{ $discordUrl }}" target="_blank" rel="noreferrer"><span>⌁</span> Discord</a>
             @auth
                 <div class="mobile-account-actions">
