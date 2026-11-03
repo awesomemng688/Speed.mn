@@ -85,6 +85,8 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200, ['Content-Type' => 'application/xml']);
 })->name('sitemap');
 Route::get('/vip', fn () => view('vip'))->name('vip');
+Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('shop.index');
+Route::post('/shop/{product}/order', [\App\Http\Controllers\ShopController::class, 'order'])->middleware(['auth', 'throttle:10,1'])->name('shop.order');
 Route::get('/news', [\App\Http\Controllers\PostController::class, 'index'])->name('news.index');
 Route::get('/news/{post}', [\App\Http\Controllers\PostController::class, 'show'])->name('news.show');
 Route::post('/news/{post}/register', [\App\Http\Controllers\TournamentRegistrationController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('tournaments.register');
@@ -116,6 +118,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
+    Route::get('shop', [\App\Http\Controllers\Admin\ShopController::class, 'index'])->name('shop.index');
+    Route::put('shop/bank', [\App\Http\Controllers\Admin\ShopController::class, 'bankInfo'])->name('shop.bank');
+    Route::post('shop/products', [\App\Http\Controllers\Admin\ShopController::class, 'storeProduct'])->name('shop.products.store');
+    Route::patch('shop/products/{product}', [\App\Http\Controllers\Admin\ShopController::class, 'toggleProduct'])->name('shop.products.toggle');
+    Route::delete('shop/products/{product}', [\App\Http\Controllers\Admin\ShopController::class, 'destroyProduct'])->name('shop.products.destroy');
+    Route::post('shop/orders/{order}/approve', [\App\Http\Controllers\Admin\ShopController::class, 'approve'])->name('shop.orders.approve');
+    Route::post('shop/orders/{order}/cancel', [\App\Http\Controllers\Admin\ShopController::class, 'cancel'])->name('shop.orders.cancel');
     Route::get('backups', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('backups.index');
     Route::post('backups', [\App\Http\Controllers\Admin\BackupController::class, 'run'])->name('backups.run');
     Route::get('backups/{name}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('backups.download');

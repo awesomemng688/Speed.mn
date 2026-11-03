@@ -10,6 +10,7 @@
     <a class="{{ request()->routeIs('admin.failed-jobs.*') ? 'active' : '' }}" href="{{ route('admin.failed-jobs.index') }}">Алдаатай ажлууд</a>
     <a class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}" href="{{ route('admin.audit.index') }}">Үйлдлийн бүртгэл</a>
     <a class="{{ request()->routeIs('admin.demos.*') ? 'active' : '' }}" href="{{ route('admin.demos.index') }}">Демо бичлэг</a>
+    <a class="{{ request()->routeIs('admin.shop.*') ? 'active' : '' }}" href="{{ route('admin.shop.index') }}">Дэлгүүр</a>
     <a class="{{ request()->routeIs('admin.backups.*') ? 'active' : '' }}" href="{{ route('admin.backups.index') }}">Нөөцлөлт</a>
     <a class="{{ request()->routeIs('admin.two-factor.*') ? 'active' : '' }}" href="{{ route('admin.two-factor.setup') }}">Аюулгүй байдал</a>
 </nav>
