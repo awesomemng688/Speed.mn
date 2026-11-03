@@ -116,6 +116,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
+    Route::get('backups', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('backups.index');
+    Route::post('backups', [\App\Http\Controllers\Admin\BackupController::class, 'run'])->name('backups.run');
+    Route::get('backups/{name}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('backups.download');
     Route::get('vip/export', [\App\Http\Controllers\Admin\VipController::class, 'export'])->name('vip.export');
     Route::get('vip', [\App\Http\Controllers\Admin\VipController::class, 'index'])->name('vip.index');
     Route::post('vip', [\App\Http\Controllers\Admin\VipController::class, 'store'])->name('vip.store');
