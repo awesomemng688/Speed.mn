@@ -160,3 +160,4 @@ html[data-theme="light"] .nx-console,html[data-theme="light"] .nx-aim,html[data-
 html[data-theme="light"] .home-page .nx-join{background:linear-gradient(135deg,#fff,#fdecee)}
 html[data-theme="light"] .nx-head h2,html[data-theme="light"] .nx-feature h3{color:#14161c}
 html[data-theme="light"] .home-page .stats-row strong{background:none;-webkit-text-fill-color:#14161c;color:#14161c}
+.mdl-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px}.mdl-list{max-height:560px;overflow:auto;padding:12px}.mdl-list summary{cursor:pointer;padding:6px 0;font-weight:700}.mdl-item{display:block;width:100%;text-align:left;background:none;border:0;color:inherit;padding:4px 8px;cursor:pointer;border-radius:4px}.mdl-item:hover,.mdl-item.is-active{background:rgba(255,255,255,.1)}.mdl-stage{height:560px;border-radius:8px;overflow:hidden}.mdl-stage canvas{display:block}@media (max-width:800px){.mdl-layout{grid-template-columns:1fr}.mdl-list{max-height:260px}}

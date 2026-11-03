@@ -85,6 +85,7 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200, ['Content-Type' => 'application/xml']);
 })->name('sitemap');
 Route::get('/vip', fn () => view('vip'))->name('vip');
+Route::get('/models', [\App\Http\Controllers\ModelViewerController::class, 'index'])->name('models.index');
 Route::get('/shop', [\App\Http\Controllers\ShopController::class, 'index'])->name('shop.index');
 Route::get('/shop/{product}', [\App\Http\Controllers\ShopController::class, 'show'])->whereNumber('product')->name('shop.show');
 Route::post('/shop/orders/{order}/cancel', [\App\Http\Controllers\ShopController::class, 'cancel'])->middleware(['auth', 'throttle:20,1'])->name('shop.orders.cancel');

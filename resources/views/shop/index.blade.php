@@ -2,7 +2,7 @@
 @section('title', 'Дэлгүүр — Speed.mn')
 @section('description', 'Speed.mn VIP болон бусад бараа захиалах.')
 @section('content')
-<section class="page-head"><div class="shell"><p class="eyebrow">ДЭЛГҮҮР</p><div class="section-heading"><h1>VIP болон бараа</h1></div><p class="muted">Захиалга өгөөд банкны шилжүүлгээр төлнө. Админ төлбөрийг шалгаж баталгаажуулмагц идэвхжинэ.</p></div></section>
+<section class="page-head"><div class="shell"><p class="eyebrow">ДЭЛГҮҮР</p><div class="section-heading"><h1>VIP болон бараа</h1></div><p class="muted">Захиалга өгөөд банкны шилжүүлгээр төлнө. Админ төлбөрийг шалгаж баталгаажуулмагц идэвхжинэ. <a href="{{ route('models.index') }}">3D model үзэх →</a></p></div></section>
 <section class="shell section admin-section">
     @if($bankInfo)<div class="panel"><h2>Төлбөр хийх данс</h2><p style="white-space:pre-line">{{ $bankInfo }}</p><small class="muted">Гүйлгээний утгад захиалгын кодыг заавал бичнэ үү.</small></div>@endif
     <nav class="tabs" aria-label="Ангилал">
