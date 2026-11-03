@@ -82,8 +82,8 @@
                                 $topWeapon = $weaponValues->keys()->first(fn ($weapon) => $weaponValues[$weapon] > 0);
                             }
                         @endphp
-                        <tr>
-                            <td class="rank-position">{{ $position }}</td>
+                        <tr class="{{ $position <= 3 ? 'rank-top rank-top-'.$position : '' }}">
+                            <td class="rank-position"><span class="rank-badge">{{ $position }}</span></td>
                             <td class="rank-player">
                                 @if ($avatarValue($player))
                                     <img src="{{ $avatarValue($player) }}" alt="" loading="lazy">

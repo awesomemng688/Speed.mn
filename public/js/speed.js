@@ -14,6 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (image.complete && image.naturalWidth === 0) image.dispatchEvent(new Event('error'));
     });
 
+    document.querySelectorAll('[data-share]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const url = button.dataset.share;
+            if (navigator.share) {
+                try { await navigator.share({ title: button.dataset.shareTitle, url }); return; } catch { /* fall through to copy */ }
+            }
+            try { await navigator.clipboard.writeText(url); } catch { /* ignore */ }
+            const originalText = button.textContent;
+            button.textContent = 'Линк хуулагдлаа';
+            window.setTimeout(() => { button.textContent = originalText; }, 1800);
+        });
+    });
+
     document.querySelectorAll('[data-copy-address]').forEach((button) => {
         button.addEventListener('click', async () => {
             const address = button.dataset.copyAddress;
@@ -98,6 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (metrics[0]) metrics[0].textContent = `${online ? server.players : state === 'offline' ? 0 : '—'}/${server.max_players ?? '—'}`;
             if (metrics[1]) metrics[1].textContent = online ? (server.map || '—') : '—';
             if (metrics[2]) metrics[2].textContent = online && server.ping ? `${server.ping}мс` : '—';
+
+            const bar = card.querySelector('.load-bar span');
+            if (bar) {
+                const cap = Math.max(1, Number(server.max_players) || 1);
+                bar.style.width = `${online ? Math.min(100, Math.round(((server.players || 0) / cap) * 100)) : 0}%`;
+            }
 
             const body = card.querySelector('.server-card-body');
             let updated = card.querySelector('.updated-at');
@@ -216,3 +235,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+(function () {
+    var els = document.querySelectorAll('[data-count]');
+    if (!els.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    els.forEach(function (el) {
+        var target = parseInt(el.dataset.count, 10);
+        if (!target || target < 0) return;
+        var start = null;
+        function tick(ts) {
+            if (start === null) start = ts;
+            var p = Math.min((ts - start) / 900, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+            if (p < 1) requestAnimationFrame(tick);
+        }
+        el.textContent = '0';
+        requestAnimationFrame(tick);
+    });
+})();

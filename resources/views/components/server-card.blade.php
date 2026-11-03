@@ -16,6 +16,9 @@
         <h3>{{ $server->name }}</h3>
         <p class="muted">{{ $server->region ?: 'Монгол' }} · {{ $server->address }}</p>
         <div class="server-metrics"><div><strong>{{ $isOnline ? $status->players : 0 }}/{{ $isOnline ? ($status->max_players ?: $server->max_players) : $server->max_players }}</strong><small>ТОГЛОГЧ</small></div><div><strong>{{ $isOnline ? $map : '—' }}</strong><small>ГАЗРЫН ЗУРАГ</small></div><div><strong>{{ $isOnline && $status->response_time ? $status->response_time.'мс' : '—' }}</strong><small>ХОЦРОЛТ</small></div></div>
+        @php($cap = max(1, (int) ($isOnline ? ($status->max_players ?: $server->max_players) : $server->max_players)))
+        @php($fill = $isOnline ? min(100, round(((int) $status->players) / $cap * 100)) : 0)
+        <div class="load-bar" role="img" aria-label="Сервер {{ $fill }}% дүүрсэн"><span style="width:{{ $fill }}%"></span></div>
         <div class="card-actions"><a class="button button-primary" href="steam://connect/{{ $server->address }}" aria-label="{{ $server->name }} серверт холбогдох">Холбогдох</a><button class="button button-ghost copy-address" type="button" data-copy-address="{{ $server->address }}" aria-label="{{ $server->address }} IP хуулах">IP хуулах</button><a class="button button-ghost" href="{{ route('servers.show', $server) }}">Дэлгэрэнгүй</a></div>
         @auth
             <form class="favorite-form" method="POST" action="{{ route(($server->is_favorited ?? false) ? 'servers.unfavorite' : 'servers.favorite', $server) }}">
