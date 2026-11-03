@@ -50,12 +50,20 @@
                     <a class="{{ $category === $value ? 'active' : '' }}" href="{{ route('ranks.index', $value) }}">{{ $label }}</a>
                 @endforeach
             </div>
+            @if ($source['type'] === 'public')
+                <div class="rank-tabs">
+                    @foreach (['all' => 'Бүгд', 'day' => 'Өнөөдөр', 'week' => '7 хоног', 'month' => '30 хоног'] as $value => $label)
+                        <a class="{{ ($period ?? 'all') === $value ? 'active' : '' }}" href="{{ route('ranks.index', array_filter(['category' => $category, 'period' => $value === 'all' ? null : $value, 'search' => request('search')])) }}">{{ $label }}</a>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
 
     <section class="shell section">
         <div class="rank-toolbar">
             <form class="rank-search" method="GET" action="{{ route('ranks.index', $category) }}">
+                @if (($period ?? 'all') !== 'all')<input type="hidden" name="period" value="{{ $period }}">@endif
                 <span aria-hidden="true">⌕</span>
                 <input type="search" name="search" value="{{ request('search') }}" placeholder="Тоглогч хайх..." autocomplete="off">
                 <button class="button button-primary" type="submit">Хайх</button>

@@ -48,9 +48,11 @@ class RankController extends Controller
         $column = static fn (string $name): ?string => in_array($name, $columns, true) ? $name : null;
 
         $search = trim((string) $request->query('search', ''));
+        $period = in_array($request->query('period'), ['day', 'week', 'month'], true) ? $request->query('period') : 'all';
+        $periodDays = ['day' => 1, 'week' => 7, 'month' => 30][$period] ?? null;
         $page = max(1, (int) $request->query('page', 1));
-        $cacheKey = 'rank.page.'.$category.'.'.sha1(mb_strtolower($search)).'.'.$page;
-        $players = Cache::remember($cacheKey, now()->addSeconds(60), function () use ($source, $connection, $column, $search) {
+        $cacheKey = 'rank.page.'.$category.'.'.$period.'.'.sha1(mb_strtolower($search)).'.'.$page;
+        $players = Cache::remember($cacheKey, now()->addSeconds(60), function () use ($source, $connection, $column, $search, $periodDays) {
             if ($source['type'] === 'knife') {
                 $query = $connection
                     ->table($source['table'])
@@ -71,6 +73,10 @@ class RankController extends Controller
             $orderColumn = $column('XP') ?: ($column('points') ?: 'id');
             $query = $connection->table($source['table']);
 
+            if ($periodDays && $column('Last Login')) {
+                $query->whereRaw("STR_TO_DATE(`Last Login`, '%m/%d/%Y - %H:%i:%s') >= ?", [now(config('app.timezone'))->subDays($periodDays)->format('Y-m-d H:i:s')]);
+            }
+
             $query->when($search !== '', function ($query) use ($search, $column): void {
                 $query->where($column('Nick') ?: ($column('name') ?: 'id'), 'like', '%'.$search.'%');
             });
@@ -90,6 +96,7 @@ class RankController extends Controller
             'category' => $category,
             'source' => $source,
             'players' => $players,
+            'period' => $period,
             'avatars' => $avatars,
             'columns' => $columns,
             'column' => $column,
