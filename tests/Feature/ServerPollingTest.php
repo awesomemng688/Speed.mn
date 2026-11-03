@@ -171,11 +171,11 @@ class ServerPollingTest extends TestCase
         $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index'))
             ->assertOk()
-            ->assertSee('Queue worker:')
-            ->assertSee('Daily backup:')
-            ->assertSee('HTTP smoke test:')
+            ->assertSee('Ажлын worker:')
+            ->assertSee('Өдрийн нөөцлөлт:')
+            ->assertSee('HTTP шалгалт:')
             ->assertSee('A2S query timed out')
-            ->assertSee('Last success');
+            ->assertSee('Сүүлд амжилттай');
     }
 
     public function test_admin_server_page_survives_unavailable_heartbeat_cache(): void
@@ -187,7 +187,7 @@ class ServerPollingTest extends TestCase
         $this->actingAsAdmin($admin)
             ->get(route('admin.servers.index'))
             ->assertOk()
-            ->assertSee('no recent jobs');
+            ->assertSee('Сүүлд дараалалд орсон: байхгүй');
     }
 
     public function test_permanently_failed_job_records_the_reason_for_admin(): void
