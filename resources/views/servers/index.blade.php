@@ -6,7 +6,9 @@
 @section('body_class', $game === 'cs2' ? 'servers-page cs2-page' : ($game === 'cs16' ? 'servers-page cs16-page' : 'servers-page'))
 @section('content')
 <section class="page-head"><div class="shell"><p class="eyebrow">SPEED.MN СҮЛЖЭЭ</p><h1>{{ $game ? ($game === 'cs2' ? 'CS2 серверүүд' : 'CS 1.6 серверүүд') : 'Бүх сервер' }}</h1><p class="muted">Серверийн төлөв, тоглогчдын тоо шинэчлэгдсэн мэдээллээр харагдана.</p><div class="tabs"><a class="{{ !$game ? 'active' : '' }}" href="{{ route('servers.index') }}">Бүгд</a><a class="{{ $game === 'cs2' ? 'active' : '' }}" href="{{ route('servers.game', 'cs2') }}">CS2</a><a class="{{ $game === 'cs16' ? 'active' : '' }}" href="{{ route('servers.game', 'cs16') }}">CS 1.6</a></div></div></section>
-@php($categoryLabels = ['public-1' => 'Public 1', 'public-2' => 'Public 2', 'knife-1' => 'Knife 1', 'knife-2' => 'Knife 2'])
+@php
+    $categoryLabels = ['public-1' => 'Public 1', 'public-2' => 'Public 2', 'knife-1' => 'Knife 1', 'knife-2' => 'Knife 2'];
+@endphp
 <section class="shell section"><form class="server-filters" method="GET" action="{{ $game ? route('servers.game', $game) : route('servers.index') }}">
     <label class="search-box"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Серверийн нэр эсвэл IP" autocomplete="off" aria-label="Серверийн нэр эсвэл IP хайх"></label>
     <label class="filter-field"><span>Газрын зураг</span><input type="search" name="map" value="{{ $filters['map'] ?? '' }}" placeholder="Жишээ: de_dust2" aria-label="Газрын зургаар шүүх"></label>
@@ -17,7 +19,9 @@
 </form>
 <div class="toolbar"><span class="result-count">{{ $servers->total() }} сервер</span>@if(request()->query())<a class="text-link" href="{{ $game ? route('servers.game', $game) : route('servers.index') }}">Шүүлт цэвэрлэх</a>@endif</div>
 @if($game === 'cs16')
-    @php($groupedServers = $servers->getCollection()->groupBy(fn ($server) => $server->category ?: 'public-1'))
+    @php
+        $groupedServers = $servers->getCollection()->groupBy(fn ($server) => $server->category ?: 'public-1');
+    @endphp
     <div data-server-grid>
         @if($groupedServers->isEmpty())
             <div class="empty">Шүүлтэд тохирох сервер олдсонгүй.</div>

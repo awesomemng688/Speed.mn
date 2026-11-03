@@ -51,7 +51,9 @@
     </style>
 </head>
 <body class="@yield('body_class')">
-@php($discordUrl = \App\Models\Setting::value('discord_url'))
+@php
+    $discordUrl = \App\Models\Setting::value('discord_url');
+@endphp
 @if(\App\Models\Setting::value('banner_enabled') === '1' && \App\Models\Setting::value('banner_text'))
     <div class="site-banner" role="status">
         @if(\App\Models\Setting::value('banner_url'))<a href="{{ \App\Models\Setting::value('banner_url') }}" rel="noopener">{{ \App\Models\Setting::value('banner_text') }} →</a>@else<span>{{ \App\Models\Setting::value('banner_text') }}</span>@endif

@@ -47,7 +47,9 @@
     <div class="panel profile-activity">
         <div class="panel-heading"><div><p class="eyebrow">СҮҮЛИЙН 7 ХОНОГ</p><h3>Өдөр тутмын аллага</h3></div><small class="muted">Шинэчлэлт 15 минут тутам</small></div>
         @if(count($recentActivity))
-            @php($maxDailyKills = max(1, max(array_column($recentActivity, 'kills'))))
+            @php
+                $maxDailyKills = max(1, max(array_column($recentActivity, 'kills')));
+            @endphp
             <div class="profile-rank-history">
                 @foreach($recentActivity as $point)
                     <div class="profile-rank-day"><strong>{{ $point['kills'] }}</strong><span style="height:{{ max(5, (int) round($point['kills'] / $maxDailyKills * 100)) }}%" title="{{ $point['total'] }} нийт аллага"></span><small>{{ \Illuminate\Support\Carbon::parse($point['date'])->format('m/d') }}</small></div>
@@ -86,9 +88,11 @@
         <div class="panel-heading"><div><p class="eyebrow">ОДООГИЙН ИДЭВХ</p><h3>Серверүүд</h3></div><a class="text-link" href="{{ route('servers.index') }}">Бүгдийг харах →</a></div>
         <div class="profile-server-list">
             @forelse($servers as $server)
-                @php($status = $server->latestStatus)
-                @php($statusState = \App\Models\ServerStatus::stateOf($status))
-                @php($serverOnline = $statusState === 'online')
+                @php
+                    $status = $server->latestStatus;
+                    $statusState = \App\Models\ServerStatus::stateOf($status);
+                    $serverOnline = $statusState === 'online';
+                @endphp
                 <a class="profile-server-row" href="{{ route('servers.show', $server) }}"><span class="game-pill {{ $server->game }}">{{ strtoupper($server->game) }}</span><span class="profile-server-name"><strong>{{ $server->name }}</strong><small>{{ $server->address }}</small></span><span class="profile-server-players {{ $serverOnline ? 'profile-status' : '' }}">{{ $serverOnline ? ($status->players ?? 0).' тоглогч' : ['unknown' => 'Мэдээлэл алга', 'offline' => 'Офлайн', 'stale' => 'Мэдээлэл хуучирсан'][$statusState] }}</span><span>→</span></a>
             @empty
                 <p class="muted">Серверийн мэдээлэл одоогоор алга.</p>

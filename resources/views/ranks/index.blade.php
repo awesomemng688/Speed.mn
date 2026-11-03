@@ -76,9 +76,13 @@
         @if ($source['type'] === 'public' && $players->currentPage() === 1 && ! request('search') && $players->count() >= 3)
             <div class="rank-podium">
                 @foreach ([1, 0, 2] as $idx)
-                    @php($pp = $players->items()[$idx])
-                    @php($pk = (int) $rankValue($pp, 'Kills'))
-                    @php($pd = (int) $rankValue($pp, 'Deaths'))
+                    @php
+                        $pp = $players->items()[$idx];
+                    @endphp
+                    @php
+                        $pk = (int) $rankValue($pp, 'Kills');
+                        $pd = (int) $rankValue($pp, 'Deaths');
+                    @endphp
                     <div class="podium-card p{{ $idx + 1 }}">
                         <span class="podium-pos">#{{ $idx + 1 }}</span>
                         @if ($avatarValue($pp))

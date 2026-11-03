@@ -9,7 +9,9 @@
         <div class="panel"><h2>Хэрхэн авах вэ</h2><p class="muted">Discord сервер дээр ticket нээж, Steam ID-гаа бичнэ үү. Админ төлбөрийг баталгаажуулж эрхийг олгоно.</p>
             <a class="button button-primary" href="{{ \App\Models\Setting::value('discord_url') }}" target="_blank" rel="noreferrer">Discord-д нэгдэх <span>↗</span></a></div>
     </div>
-                @php($vips = \App\Models\VipMember::query()->get()->filter->isActive())
+                @php
+                    $vips = \App\Models\VipMember::query()->get()->filter->isActive();
+                @endphp
                 @if($vips->isNotEmpty())
                     <div class="panel" style="margin-top:16px"><h2>Дэмжигчид</h2><p class="muted">@foreach($vips as $v){{ $v->name }}@if(! $loop->last) · @endif @endforeach</p></div>
                 @endif
