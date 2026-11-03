@@ -26,9 +26,7 @@
     <meta name="twitter:image" content="{{ asset('img/hero/background.jpg') }}">
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
-    <meta name="theme-color" content="#080a0f">
-    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v='.filemtime(public_path('css/speed.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=home-account-1' }}">
     <style>
         .server-filters{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#11151e;margin-bottom:14px}
         .favorite-form{margin-top:10px}.favorite-button{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:#171d28;color:var(--text);font:inherit;text-decoration:none;cursor:pointer}.favorite-button[aria-pressed="true"]{color:#ffd17d;border-color:#ffd17d88}.detail-favorite{margin-top:12px}.profile-server-row form{margin:0}.favorite-remove{width:40px;height:40px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font-size:22px;cursor:pointer}
