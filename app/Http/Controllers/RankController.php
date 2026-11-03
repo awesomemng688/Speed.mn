@@ -96,6 +96,32 @@ class RankController extends Controller
         ]);
     }
 
+    public function player(string $category, string $player): View
+    {
+        abort_unless(isset(self::SOURCES[$category]), 404);
+
+        $source = self::SOURCES[$category];
+        $row = DB::connection($source['connection'])
+            ->table($source['table'])
+            ->where('Player', $player)
+            ->first();
+        abort_if($row === null, 404);
+
+        $stats = [];
+        foreach ((array) $row as $key => $value) {
+            if (! in_array($key, ['Player', 'IP', 'Flags', 'Avatar'], true)) {
+                $stats[$key] = $value;
+            }
+        }
+
+        return view('ranks.player', [
+            'category' => $category,
+            'source' => $source,
+            'player' => $row,
+            'stats' => $stats,
+        ]);
+    }
+
     private function resolveAvatars(\Illuminate\Support\Collection $players): array
     {
         $avatars = [];

@@ -78,6 +78,10 @@ Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers
 Route::get('/rank/{category?}', [RankController::class, 'index'])
     ->where('category', 'public-1|public-2|knife-1|knife-2')
     ->name('ranks.index');
+Route::get('/rank/{category}/player/{player}', [RankController::class, 'player'])
+    ->where('category', 'public-1|public-2|knife-1|knife-2')
+    ->where('player', '[^/]+')
+    ->name('ranks.player');
 Route::get('/auth/steam', [SteamController::class, 'redirect'])->middleware('throttle:10,1')->name('steam.login');
 Route::get('/login', [SteamController::class, 'redirect'])->middleware('throttle:10,1')->name('login');
 Route::get('/auth/steam/callback', [SteamController::class, 'callback'])->middleware('throttle:20,1')->name('steam.callback');

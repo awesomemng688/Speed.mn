@@ -6,8 +6,16 @@
 
 @section('content')
     @php
-        $rankValue = fn ($player, string $name, $fallback = 0) => isset($player->{$name}) ? $player->{$name} : $fallback;
-        $nameValue = fn ($player) => ($player->Nick ?? null) ?: ($player->name ?: ($player->Player ?? 'Тоглогч'));
+        $rankValue = function ($player, string $name, $fallback = 0) {
+            foreach ((array) $player as $key => $value) {
+                if (strcasecmp((string) $key, $name) === 0) {
+                    return $value;
+                }
+            }
+
+            return $fallback;
+        };
+        $nameValue = fn ($player) => ($player->Nick ?? null) ?: (($player->name ?? null) ?: ($player->Player ?? 'Тоглогч'));
         $avatarValue = function ($player) use ($avatars) {
             $storedAvatar = trim((string) ($player->Avatar ?? ''));
             if ($storedAvatar !== '') {
@@ -64,7 +72,7 @@
                         <th>#</th>
                         <th>Тоглогч</th>
                         @if ($source['type'] === 'public')
-                            <th>XP</th><th>Аллага</th><th class="rank-secondary">Үхэл</th><th class="rank-secondary">Толгой оносон</th><th class="rank-secondary">Ур чадвар</th><th class="rank-secondary">Байр</th>
+                            <th>XP</th><th>Аллага</th><th class="rank-secondary">Үхэл</th><th>K/D</th><th class="rank-secondary">Толгой оносон</th><th class="rank-secondary">HS%</th><th class="rank-secondary">Ур чадвар</th><th class="rank-secondary">Байр</th>
                         @else
                             <th>Хутганы аллага</th><th>Нийт аллага</th><th class="rank-secondary">Түгээмэл зэвсэг</th><th class="rank-secondary">Тоглосон хугацаа</th>
                         @endif
@@ -90,7 +98,7 @@
                                 @else
                                     <span class="rank-avatar">{{ strtoupper(substr($nameValue($player), 0, 1)) }}</span>
                                 @endif
-                                <strong>{{ $nameValue($player) }}</strong>
+                                <strong><a href="{{ route('ranks.player', [$category, $player->Player]) }}">{{ $nameValue($player) }}</a></strong>
                                 <details class="rank-mobile-details">
                                     <summary>Дэлгэрэнгүй</summary>
                                     @if ($source['type'] === 'public')
@@ -102,7 +110,7 @@
                                         </dl>
                                     @else
                                         <dl>
-                                            <div><dt>Түгээмэл зэвсэг</dt><dd>{{ $topWeapon ?: ($player->weapon ?: '—') }}</dd></div>
+                                            <div><dt>Түгээмэл зэвсэг</dt><dd>{{ $topWeapon ?: (($player->weapon ?? null) ?: '—') }}</dd></div>
                                             <div><dt>Тоглосон хугацаа</dt><dd>{{ number_format((int) $rankValue($player, 'Played Time', $rankValue($player, 'playtime'))) }} мин</dd></div>
                                         </dl>
                                     @endif
@@ -112,18 +120,20 @@
                                 <td class="rank-xp">{{ number_format((int) $rankValue($player, 'XP', $rankValue($player, 'points'))) }}</td>
                                 <td>{{ number_format((int) $rankValue($player, 'kills')) }}</td>
                                 <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'deaths')) }}</td>
+                                <td>{{ number_format((int) $rankValue($player, 'kills') / max(1, (int) $rankValue($player, 'deaths')), 2) }}</td>
                                 <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'headshots')) }}</td>
+                                <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'headshots') / max(1, (int) $rankValue($player, 'kills')) * 100, 1) }}%</td>
                                 <td class="rank-secondary">{{ $rankValue($player, 'Skill Range', $rankValue($player, 'points', '—')) }}</td>
                                 <td class="rank-secondary">{{ (int) $rankValue($player, 'Rank') > 0 ? $rankValue($player, 'Rank') : $position }}</td>
                             @else
                                 <td class="rank-xp">{{ number_format((int) $rankValue($player, 'Knife')) }}</td>
                                 <td>{{ number_format($weaponKills ?: (int) $rankValue($player, 'kills')) }}</td>
-                                <td class="rank-secondary">{{ $topWeapon ?: ($player->weapon ?: '—') }}</td>
+                                <td class="rank-secondary">{{ $topWeapon ?: (($player->weapon ?? null) ?: '—') }}</td>
                                 <td class="rank-secondary">{{ number_format((int) $rankValue($player, 'Played Time', $rankValue($player, 'playtime'))) }} мин</td>
                             @endif
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="empty">Чансааны мэдээлэл олдсонгүй.</td></tr>
+                        <tr><td colspan="10" class="empty">Чансааны мэдээлэл олдсонгүй.</td></tr>
                     @endforelse
                 </tbody>
             </table>
