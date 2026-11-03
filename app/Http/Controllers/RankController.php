@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -93,7 +94,7 @@ class RankController extends Controller
         ]);
     }
 
-    private function resolveAvatars(\Illuminate\Support\Collection $players): array
+    private function resolveAvatars(Collection $players): array
     {
         $avatars = [];
         $steamIds = [];
@@ -131,7 +132,7 @@ class RankController extends Controller
             });
 
             foreach ($profiles as $profile) {
-                if (!empty($profile['steamid']) && !empty($profile['avatarfull'])) {
+                if (! empty($profile['steamid']) && ! empty($profile['avatarfull'])) {
                     $avatars[$profile['steamid']] = $profile['avatarfull'];
                 }
             }
