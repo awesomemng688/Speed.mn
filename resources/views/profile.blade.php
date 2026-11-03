@@ -45,6 +45,44 @@
         </div>
     </div>
     <div class="panel profile-activity">
+        <div class="panel-heading"><div><p class="eyebrow">СҮҮЛИЙН 7 ХОНОГ</p><h3>Өдөр тутмын аллага</h3></div><small class="muted">Шинэчлэлт 15 минут тутам</small></div>
+        @if(count($recentActivity))
+            @php($maxDailyKills = max(1, max(array_column($recentActivity, 'kills'))))
+            <div class="profile-rank-history">
+                @foreach($recentActivity as $point)
+                    <div class="profile-rank-day"><strong>{{ $point['kills'] }}</strong><span style="height:{{ max(5, (int) round($point['kills'] / $maxDailyKills * 100)) }}%" title="{{ $point['total'] }} нийт аллага"></span><small>{{ \Illuminate\Support\Carbon::parse($point['date'])->format('m/d') }}</small></div>
+                @endforeach
+            </div>
+        @else
+            <p class="muted">Сүүлийн статистик цугларч байна. Өдрийн мэдээлэл харахын тулд rank sync-ийн эхний шинэчлэлтийг хүлээнэ үү.</p>
+        @endif
+    </div>
+    <div class="profile-dashboard-grid">
+        <div class="panel profile-combat">
+            <div class="panel-heading"><div><p class="eyebrow">PUBLIC 1</p><h3>Тоглолтын статистик</h3></div><span class="game-pill cs2">LIVE RANK</span></div>
+            @if($combat['has_data'])
+                <div class="profile-network-stats">
+                    <div><strong>{{ number_format($combat['kills']) }}</strong><small>АЛЛАГА</small></div>
+                    <div><strong>{{ number_format($combat['deaths']) }}</strong><small>ҮХЭЛ</small></div>
+                    <div><strong>{{ number_format($combat['kd'], 2) }}</strong><small>K/D</small></div>
+                    <div><strong>{{ number_format($combat['hs_percent'], 1) }}%</strong><small>HS</small></div>
+                    <div><strong>{{ number_format($combat['playtime_hours']) }}</strong><small>ЦАГ</small></div>
+                </div>
+                @if($combat['last_login'])<p class="muted">Сүүлд тоглосон: {{ $combat['last_login'] }}</p>@endif
+            @else
+                <p class="muted">Public 1-ийн Steam ID-тай таарсан статистик алга.</p>
+            @endif
+        </div>
+        <div class="panel profile-vip">
+            <div class="panel-heading"><div><p class="eyebrow">ГИШҮҮНЧЛЭЛ</p><h3>VIP эрх</h3></div></div>
+            @forelse($vip as $membership)
+                <p><strong>{{ $membership->plan }}</strong> · {{ $membership->expires_at?->format('Y-m-d') ?? 'Хугацаагүй' }}</p>
+            @empty
+                <p class="muted">Идэвхтэй VIP эрх байхгүй.</p>
+            @endforelse
+        </div>
+    </div>
+    <div class="panel profile-activity">
         <div class="panel-heading"><div><p class="eyebrow">ОДООГИЙН ИДЭВХ</p><h3>Серверүүд</h3></div><a class="text-link" href="{{ route('servers.index') }}">Бүгдийг харах →</a></div>
         <div class="profile-server-list">
             @forelse($servers as $server)
@@ -68,19 +106,28 @@
         </div>
     </div>
     <div class="panel profile-activity">
-        <div class="panel-heading"><div><p class="eyebrow">МЭДЭГДЭЛ</p><h3>Серверийн төлөв @if($unreadNotifications)<span class="profile-status">({{ $unreadNotifications }} уншаагүй)</span>@endif</h3></div></div>
+    <div class="panel-heading"><div><p class="eyebrow">МЭДЭГДЭЛ</p><h3>Мэдэгдлүүд @if($unreadNotifications)<span class="profile-status">({{ $unreadNotifications }} уншаагүй)</span>@endif</h3></div></div>
         <div class="profile-server-list">
             @forelse($notifications as $notification)
-                <div class="profile-server-row"><a class="profile-server-name" href="{{ route('servers.show', ['server' => $notification->data['server_id']]) }}"><strong>{{ $notification->data['server_name'] ?? 'Сервер' }} · {{ ($notification->data['status'] ?? '') === 'online' ? 'онлайн боллоо' : 'офлайн боллоо' }}</strong><small>{{ $notification->data['address'] ?? '' }} · {{ $notification->created_at?->diffForHumans() }}</small></a>@if(!$notification->read_at)<form method="POST" action="{{ route('notifications.read', $notification->id) }}">@csrf<button class="text-button" type="submit">Уншсан</button></form>@endif</div>
+                @php
+                    $data = $notification->data;
+                    $notificationTitle = $data['title'] ?? (($data['server_name'] ?? 'Сервер').' · '.(($data['status'] ?? '') === 'online' ? 'онлайн боллоо' : 'офлайн боллоо'));
+                    $notificationMessage = $data['message'] ?? (($data['address'] ?? '').' · '.$notification->created_at?->diffForHumans());
+                    $notificationUrl = $data['url'] ?? (isset($data['server_id']) ? route('servers.show', ['server' => $data['server_id']]) : route('profile'));
+                @endphp
+                <div class="profile-server-row"><a class="profile-server-name" href="{{ $notificationUrl }}"><strong>{{ $notificationTitle }}</strong><small>{{ $notificationMessage }} · {{ $notification->created_at?->diffForHumans() }}</small></a>@if(!$notification->read_at)<form method="POST" action="{{ route('notifications.read', $notification->id) }}">@csrf<button class="text-button" type="submit">Уншсан</button></form>@endif</div>
             @empty
                 <p class="muted">Серверийн төлөвийн мэдэгдэл алга.</p>
             @endforelse
         </div>
     </div>
-    <div class="profile-achievements">
-        <div><span>◈</span><strong>Steam баталгаажсан</strong><small>Бүртгэл холбогдсон</small></div>
-        <div><span>⌁</span><strong>Сүлжээний гишүүн</strong><small>{{ $user->created_at?->format('Y-m') ?? 'Шинэ' }}-ээс</small></div>
-        <div class="profile-achievement-locked"><span>✦</span><strong>Эхний тоглолт</strong><small>Тоглож нээгээрэй</small></div>
+    <div class="panel profile-activity">
+        <div class="panel-heading"><div><p class="eyebrow">MEDALS</p><h3>Амжилтууд</h3></div></div>
+        <div class="profile-achievements">
+            @foreach($achievements as $achievement)
+                <div class="{{ $achievement['unlocked'] ? '' : 'profile-achievement-locked' }}"><span>{{ $achievement['icon'] }}</span><strong>{{ $achievement['title'] }}</strong><small>{{ $achievement['unlocked'] ? 'Нээгдсэн' : $achievement['description'] }}</small></div>
+            @endforeach
+        </div>
     </div>
 </section>
 @endsection

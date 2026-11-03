@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Http\Controllers\Admin\TwoFactorController as AdminTwoFactorController;
 use App\Http\Controllers\Admin\DemoVideoController as AdminDemoVideoController;
 use App\Models\Server;
+use App\Models\ServerRating;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RankController;
 use App\Http\Controllers\SkinBridgeController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\ServerFavoriteController;
 use App\Http\Controllers\UserNotificationController;
 use App\Models\ServerStatus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
     $freshSince = ServerStatus::freshSince();
@@ -58,8 +60,19 @@ Route::get('/', function () {
         ->limit(3)
         ->get();
     $servers = $featuredForGame('cs2')->concat($featuredForGame('cs16'))->values();
+    $weeklyWinnerStats = Cache::remember('weekly-best-server', now()->addMinutes(15), fn () => ServerRating::query()
+        ->where('created_at', '>=', now()->subDays(7))
+        ->selectRaw('server_id, AVG(rating) AS average_rating, COUNT(*) AS rating_count')
+        ->groupBy('server_id')
+        ->havingRaw('COUNT(*) >= 3')
+        ->orderByDesc('average_rating')
+        ->orderByDesc('rating_count')
+        ->first());
+    $weeklyBest = $weeklyWinnerStats
+        ? Server::query()->where('enabled', true)->with('latestStatus')->find($weeklyWinnerStats->server_id)
+        : null;
 
-    return view('home', compact('servers', 'stats'));
+    return view('home', compact('servers', 'stats', 'weeklyBest', 'weeklyWinnerStats'));
 })->name('home');
 Route::get('/sitemap.xml', function () {
     $urls = collect([url('/'), route('servers.index'), route('servers.game', 'cs2'), route('servers.game', 'cs16'), url('/rank')])
@@ -74,6 +87,8 @@ Route::get('/sitemap.xml', function () {
 Route::get('/vip', fn () => view('vip'))->name('vip');
 Route::get('/news', [\App\Http\Controllers\PostController::class, 'index'])->name('news.index');
 Route::get('/news/{post}', [\App\Http\Controllers\PostController::class, 'show'])->name('news.show');
+Route::post('/news/{post}/register', [\App\Http\Controllers\TournamentRegistrationController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('tournaments.register');
+Route::post('/servers/{server}/rating', [\App\Http\Controllers\ServerRatingController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('servers.rating');
 Route::get('/servers', [ServerController::class, 'index'])->name('servers.index');
 Route::get('/servers/{game}', [ServerController::class, 'index'])->where('game', 'cs2|cs16')->name('servers.game');
 Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');

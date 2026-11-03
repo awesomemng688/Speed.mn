@@ -16,6 +16,14 @@ class PostController extends Controller
     {
         abort_unless($post->is_published && ($post->published_at === null || $post->published_at->isPast()), 404);
 
-        return view('news.show', ['post' => $post]);
+        $registrations = $post->type === 'tournament'
+            ? $post->registrations()->with('user')->latest()->get()
+            : collect();
+
+        return view('news.show', [
+            'post' => $post,
+            'registrations' => $registrations,
+            'registered' => auth()->check() && $registrations->contains('user_id', auth()->id()),
+        ]);
     }
 }

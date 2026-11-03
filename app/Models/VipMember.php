@@ -12,6 +12,7 @@ class VipMember extends Model
 
     public function isActive(): bool
     {
-        return $this->expires_at === null || $this->expires_at->endOfDay()->isFuture();
+        return $this->starts_at->startOfDay()->isPast()
+            && ($this->expires_at === null || $this->expires_at->endOfDay()->isFuture());
     }
 }

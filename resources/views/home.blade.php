@@ -276,6 +276,13 @@
                 </a>
             </section>
         @endif
+        @if($weeklyBest)
+            <section class="nx-weekly-best" aria-label="Долоо хоногийн шилдэг сервер">
+                <span class="nx-hot-tag">★ 7 ХОНОГИЙН ШИЛДЭГ СЕРВЕР</span>
+                <a href="{{ route('servers.show', $weeklyBest) }}"><strong>{{ $weeklyBest->name }}</strong></a>
+                <span>{{ number_format((float) $weeklyWinnerStats->average_rating, 1) }}/5 · {{ $weeklyWinnerStats->rating_count }} үнэлгээ</span>
+            </section>
+        @endif
 
         <section id="servers" class="shell nx-section">
             <div class="nx-head">

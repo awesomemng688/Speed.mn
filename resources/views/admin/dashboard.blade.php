@@ -4,11 +4,26 @@
 @php($maxPeak = max(1, collect($stats['hourly'])->max('peak') ?? 1))
 <section class="page-head"><div class="shell"><p class="eyebrow">ADMINISTRATION</p><div class="section-heading"><h1>Dashboard</h1></div><p class="muted">Сүүлийн 24 цагийн нэгтгэл.</p><x-admin-nav /></div></section>
 <section class="shell section admin-section">
+    <div class="adm-stats">
+        <a class="panel adm-dashboard-card" href="{{ route('admin.submissions.index') }}"><small class="muted">ШИНЭ ХҮСЭЛТ</small><strong>{{ $pendingSubmissions }}</strong><span>Шалгах →</span></a>
+        <a class="panel adm-dashboard-card" href="{{ route('admin.vip.index') }}"><small class="muted">14 ХОНОГТ ДУУСАХ VIP</small><strong>{{ $expiringVip }}</strong><span>VIP удирдах →</span></a>
+        <a class="panel adm-dashboard-card" href="{{ route('admin.servers.index') }}"><small class="muted">АНХААРАХ СЕРВЕР</small><strong>{{ $attentionServers->count() }}</strong><span>Серверүүд →</span></a>
+        <a class="panel adm-dashboard-card" href="{{ route('admin.failed-jobs.index') }}"><small class="muted">FAILED JOB</small><strong>{{ $failedJobs }}</strong><span>Алдааг харах →</span></a>
+    </div>
     <div class="admin-summary">
         <div class="panel"><small>ОРГИЛ ОНЛАЙН</small><strong>{{ $stats['peak'] }}</strong>@if($stats['peak_at'])<small>{{ $stats['peak_at']->format('m-d H:i') }} (УБ)</small>@endif</div>
         <div class="panel"><small>UPTIME</small><strong>{{ $stats['uptime'] === null ? '—' : number_format($stats['uptime'], 2).'%' }}</strong><small>{{ number_format($stats['checks']) }} шалгалт</small></div>
         <div class="panel"><small>УНАСАН СЕРВЕР</small><strong>{{ $stats['down'] }}/{{ $stats['servers'] }}</strong></div>
         <div class="panel"><small>ХЭРЭГЛЭГЧ</small><strong>{{ $users }}</strong><small>{{ $disabledServers }} идэвхгүй сервер</small></div>
+    </div>
+    <div class="panel">
+        <div class="panel-heading"><h2>Серверийн төлөв шалгах</h2><a class="text-link" href="{{ route('admin.servers.index') }}">Удирдах →</a></div>
+        @forelse($attentionServers->take(8) as $server)
+            @php($state = \App\Models\ServerStatus::stateOf($server->latestStatus))
+            <div class="adm-row"><div><strong>{{ $server->name }}</strong><small class="muted"> · {{ $server->address }} · {{ ['offline' => 'Офлайн', 'stale' => 'Мэдээлэл хуучирсан', 'unknown' => 'Статус алга'][$state] ?? $state }}</small></div><a class="button button-ghost button-small" href="{{ route('admin.servers.edit', $server) }}">Шалгах</a></div>
+        @empty
+            <p class="muted">Бүх идэвхтэй сервер хэвийн байна.</p>
+        @endforelse
     </div>
     <div class="panel">
         <div class="panel-heading"><h2>Нийт тоглогч (цаг тутмын оргил)</h2></div>

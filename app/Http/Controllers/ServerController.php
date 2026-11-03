@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Server;
 use App\Models\ServerStatus;
+use App\Models\ServerRating;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Carbon;
@@ -162,7 +163,13 @@ class ServerController extends Controller
         if ($request->user()) {
             $server->loadExists(['favoritedBy as is_favorited' => fn ($favorites) => $favorites->where('users.id', $request->user()->id)]);
         }
+        $rating = ServerRating::query()->where('server_id', $server->id);
+        $ratingSummary = (clone $rating)->selectRaw('AVG(rating) AS average, COUNT(*) AS count')->first();
+        $userRating = $request->user()
+            ? (clone $rating)->where('user_id', $request->user()->id)->first()
+            : null;
+        $ratingList = (clone $rating)->with('user:id,name')->whereNotNull('comment')->latest()->limit(5)->get();
 
-        return view('servers.show', compact('server', 'history', 'uptime', 'averagePlayers', 'peakPlayers', 'totalChecks', 'offlineHistory', 'period', 'periodDays', 'mapHistory'));
+        return view('servers.show', compact('server', 'history', 'uptime', 'averagePlayers', 'peakPlayers', 'totalChecks', 'offlineHistory', 'period', 'periodDays', 'mapHistory', 'ratingSummary', 'userRating', 'ratingList'));
     }
 }

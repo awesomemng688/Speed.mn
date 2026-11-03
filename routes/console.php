@@ -4,6 +4,9 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Jobs\PollServer;
 use App\Models\Server;
+use App\Models\Post;
+use App\Models\User;
+use App\Notifications\SiteActivityNotification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -97,6 +100,100 @@ Artisan::command('speedmn:deploy-smoke-record', function () {
     $this->info('Successful deploy smoke test recorded.');
 })->purpose('Record a successful post-deploy HTTP smoke test');
 
+Artisan::command('speedmn:tournament-reminders', function () {
+    $events = Post::query()->where('type', 'tournament')->where('is_published', true)
+        ->whereNull('tournament_reminder_sent_at')
+        ->whereBetween('event_at', [now(), now()->addMinutes(15)])
+        ->with('registrations.user')->get();
+
+    foreach ($events as $event) {
+        DB::transaction(function () use ($event): void {
+            foreach ($event->registrations as $registration) {
+                $registration->user?->notify(new SiteActivityNotification(
+                    'Тэмцээн удахгүй эхэлнэ',
+                    $event->title.' · '.($event->event_at?->timezone('Asia/Ulaanbaatar')->format('m-d H:i').' УБ' ?? ''),
+                    route('news.show', $event),
+                ));
+            }
+            $event->forceFill(['tournament_reminder_sent_at' => now()])->save();
+        });
+    }
+
+    $this->info("Sent reminders for {$events->count()} tournament(s).");
+})->purpose('Notify registered players 15 minutes before tournaments');
+
+Artisan::command('speedmn:rank-up-notifications', function () {
+    $users = User::query()->whereNotNull('steam_id')->get(['id', 'steam_id'])
+        ->filter(fn (User $user) => preg_match('/^\d{17}$/', (string) $user->steam_id));
+    if ($users->isEmpty()) {
+        $this->info('No Steam-linked users to check.');
+        return;
+    }
+
+    try {
+        $schema = \Illuminate\Support\Facades\Schema::connection('rank_public_1');
+        if (! $schema->hasTable('rank_system_new')) {
+            $this->warn('Public rank table is unavailable.');
+            return 1;
+        }
+        $columns = $schema->getColumnListing('rank_system_new');
+        if (! in_array('Steam ID', $columns, true) || ! in_array('Level', $columns, true)) {
+            $this->warn('Public rank table does not have the expected Steam ID and Level columns.');
+            return 1;
+        }
+
+        $userBySteam = collect();
+        $steamIdentifiers = [];
+        foreach ($users as $user) {
+            $account = max(0, (int) $user->steam_id - 76561197960265728);
+            $steam2 = 'STEAM_0:'.($account % 2).':'.intdiv($account, 2);
+            $userBySteam->put((string) $user->steam_id, $user);
+            $userBySteam->put($steam2, $user);
+            $steamIdentifiers[] = (string) $user->steam_id;
+            $steamIdentifiers[] = $steam2;
+        }
+        $rows = DB::connection('rank_public_1')->table('rank_system_new')
+            ->whereIn('Steam ID', $steamIdentifiers)
+            ->get(['Steam ID', 'Level', 'Nick', 'Kills', 'Deaths', 'Headshots', 'XP']);
+        foreach ($rows as $row) {
+            $user = $userBySteam->get((string) $row->{'Steam ID'});
+            $level = max(0, (int) $row->Level);
+            if (! $user || $level < 1) {
+                continue;
+            }
+            $snapshot = DB::table('rank_progress_snapshots')->where('user_id', $user->id)->where('source', 'public-1')->first();
+            if ($snapshot && $level > (int) $snapshot->level) {
+                $user->notify(new SiteActivityNotification(
+                    'Чансаа ахилаа!',
+                    ($row->Nick ?: $user->name).' · '.$snapshot->level.' → '.$level.'-р түвшин',
+                    route('ranks.index', 'public-1'),
+                ));
+            }
+            DB::table('rank_progress_snapshots')->updateOrInsert(
+                ['user_id' => $user->id, 'source' => 'public-1'],
+                ['level' => $level, 'updated_at' => now(), 'created_at' => $snapshot?->created_at ?? now()],
+            );
+            DB::table('rank_daily_snapshots')->updateOrInsert(
+                ['user_id' => $user->id, 'source' => 'public-1', 'snapshot_date' => now()->toDateString()],
+                [
+                    'kills' => max(0, (int) $row->Kills),
+                    'deaths' => max(0, (int) $row->Deaths),
+                    'headshots' => max(0, (int) $row->Headshots),
+                    'xp' => max(0, (int) $row->XP),
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ],
+            );
+        }
+    } catch (\Throwable $exception) {
+        Log::error('Rank-up notification scan failed.', ['error' => $exception->getMessage()]);
+        $this->error('Rank-up scan failed; details were logged.');
+        return 1;
+    }
+
+    $this->info("Checked {$rows->count()} public rank record(s).");
+})->purpose('Notify Steam-linked users when their public rank level increases');
+
 Schedule::command('speedmn:poll')->everyThirtySeconds()->withoutOverlapping();
 Schedule::command('speedmn:monitor')->everyMinute()->withoutOverlapping();
 Schedule::command('speedmn:audit-prune')->dailyAt('02:15')->withoutOverlapping();
@@ -104,3 +201,5 @@ Schedule::command('speedmn:backup')->dailyAt('03:00')->withoutOverlapping();
 Schedule::command('speedmn:status-prune')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('speedmn:discord-players')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('speedmn:daily-report')->dailyAt('09:00')->timezone('Asia/Ulaanbaatar')->withoutOverlapping();
+Schedule::command('speedmn:tournament-reminders')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('speedmn:rank-up-notifications')->everyFifteenMinutes()->withoutOverlapping();
