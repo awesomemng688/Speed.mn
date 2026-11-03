@@ -1,10 +1,10 @@
 <p align="center">
   <a href="https://speed.mn" target="_blank">
-    <img src="public/logo.png" width="220" alt="Speed.mn Logo">
+    <img src="https://speed.mn/img/hero/logo.jfif" width="260" alt="Speed.mn Gaming Network Logo" style="border-radius: 12px;">
   </a>
 </p>
 
-<h1 align="center">Speed.mn Web Platform</h1>
+<h1 align="center">Speed.mn Gaming Network</h1>
 
 <p align="center">
   <strong>Counter-Strike тоглоомын серверүүдийн нэгдсэн систем болон Speed.mn платформын албан ёсны веб аппликейшн</strong>
