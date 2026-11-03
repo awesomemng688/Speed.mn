@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SitemapTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_sitemap_is_valid_xml_with_home_url(): void
     {
         $response = $this->get('/sitemap.xml');
