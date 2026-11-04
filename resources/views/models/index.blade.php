@@ -31,14 +31,27 @@
             <div class="mdl-toolbar">
                 <label><input id="mdl-rotate" type="checkbox" checked> Автоматаар эргэх</label>
                 <label><input id="mdl-wire" type="checkbox"> Wireframe</label>
+                <label><input id="mdl-overlays" type="checkbox"> Hitbox / attachment</label>
                 <label>Дэвсгэр <input id="mdl-bg" type="color" value="#0b0f17"></label>
+                <label>Skin <select id="mdl-skin" aria-label="Skin family" disabled></select></label>
+                <label>Body <select id="mdl-body" aria-label="Body variant" disabled></select></label>
                 <select id="mdl-seq" aria-label="Animation"></select>
                 <button id="mdl-play" type="button" class="button button-ghost button-small">❚❚ Зогсоох</button>
                 <button id="mdl-fav" type="button" class="button button-ghost button-small" disabled>☆ Дуртайд нэмэх</button>
                 <a id="mdl-download" class="button button-ghost button-small" href="#" download hidden>Татах</a>
+                <button id="mdl-screenshot" type="button" class="button button-ghost button-small">PNG авах</button>
+                <button id="mdl-share" type="button" class="button button-ghost button-small">Холбоос хуваалцах</button>
+                <button id="mdl-compare-toggle" type="button" class="button button-ghost button-small">Харьцуулалт</button>
             </div>
             <p id="mdl-status" class="muted">Зүүн талаас model сонгоно уу.</p>
             <div id="mdl-info" class="mdl-info"></div>
+            <section id="mdl-compare" class="mdl-compare" hidden>
+                <label>Харьцуулах model
+                    <select id="mdl-compare-select" aria-label="Харьцуулах model"></select>
+                </label>
+                <div id="mdl-compare-stage" class="mdl-stage"></div>
+                <p id="mdl-compare-status" class="muted"></p>
+            </section>
         </div>
     </div>
     <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>

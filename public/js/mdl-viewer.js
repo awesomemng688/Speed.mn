@@ -60,8 +60,10 @@ export function parseMdl(buffer, textureBuffer = null) {
     const numBones = i32(140), boneIndex = i32(144);
     const numSeq = i32(164), seqIndex = i32(168);
     const numTex = i32(180);
-    const numSkinRef = i32(192), skinIndex = i32(200);
+    const numSkinRef = i32(192), numSkinFamilies = i32(196), skinIndex = i32(200);
+    const numHitboxes = i32(156), hitboxIndex = i32(160);
     const numBodyparts = i32(204), bodypartIndex = i32(208);
+    const numAttachments = i32(212), attachmentIndex = i32(216);
 
     const bones = [];
     for (let i = 0; i < numBones; i++) {
@@ -85,6 +87,7 @@ export function parseMdl(buffer, textureBuffer = null) {
             fps: f32(o + 32) || 30,
             frames: external ? 1 : Math.max(1, i32(o + 56)),
             animIndex: external ? 0 : i32(o + 124),
+            external,
         });
     }
 
@@ -118,6 +121,13 @@ export function parseMdl(buffer, textureBuffer = null) {
             const parent = bones[i].parent;
             world[i] = parent >= 0 && world[parent] ? world[parent].clone().multiply(m) : m;
         }
+        for (const item of hitboxes) {
+            if (world[item.bone]) item.object.matrix.copy(world[item.bone]).multiply(new THREE.Matrix4().makeTranslation(item.center.x, item.center.y, item.center.z));
+        }
+        for (const item of attachments) {
+            if (world[item.bone]) item.object.matrix.copy(world[item.bone]).multiply(new THREE.Matrix4().makeTranslation(item.local.x, item.local.y, item.local.z));
+        }
+        overlays.updateMatrixWorld(true);
         for (const mesh of meshes) {
             const { local, boneOf, geo } = mesh;
             const out = geo.attributes.position.array;
@@ -129,6 +139,7 @@ export function parseMdl(buffer, textureBuffer = null) {
                 out[v * 3 + 2] = x * e[2] + y * e[6] + z * e[10] + e[14];
             }
             geo.attributes.position.needsUpdate = true;
+            geo.computeVertexNormals();
         }
     };
 
@@ -139,70 +150,139 @@ export function parseMdl(buffer, textureBuffer = null) {
         externalTextures = true;
     }
 
-    const skinRef = [];
-    for (let i = 0; i < numSkinRef; i++) skinRef.push(i16(skinIndex + i * 2));
+    const skinRefs = [];
+    for (let i = 0; i < numSkinRef * numSkinFamilies; i++) skinRefs.push(i16(skinIndex + i * 2));
 
     const group = new THREE.Group();
     const meshes = [];
+    const bodyParts = [];
     let triangles = 0;
 
     for (let b = 0; b < numBodyparts; b++) {
         const bp = bodypartIndex + b * 76;
-        if (i32(bp + 64) < 1) continue;
-        const mo = i32(bp + 72);
-        const numMesh = i32(mo + 72), meshIndex = i32(mo + 76);
-        const vertInfo = i32(mo + 84), vertIdx = i32(mo + 88);
+        const variants = Math.max(1, i32(bp + 64)), base = Math.max(1, i32(bp + 68));
+        const modelIndex = i32(bp + 72), choices = [];
+        for (let variant = 0; variant < variants; variant++) {
+            const mo = modelIndex + variant * 112;
+            const numMesh = i32(mo + 72), meshIndex = i32(mo + 76);
+            const vertInfo = i32(mo + 84), vertIdx = i32(mo + 88);
+            const variantGroup = new THREE.Group();
+            variantGroup.visible = variant === 0;
 
-        for (let m = 0; m < numMesh; m++) {
-            const meshOff = meshIndex + m * 20;
-            const texture = textures[skinRef[i32(meshOff + 8)]] || null;
-            const sw = texture ? texture.w : 1, sh = texture ? texture.h : 1;
-            const local = [], boneOf = [], uv = [];
+            for (let m = 0; m < numMesh; m++) {
+                const meshOff = meshIndex + m * 20;
+                const textureIndex = i32(meshOff + 8);
+                const texture = textures[skinRefs[textureIndex]] || null;
+                const sw = texture ? texture.w : 1, sh = texture ? texture.h : 1;
+                const local = [], boneOf = [], uv = [];
+                const vertex = (v, s, t) => {
+                    const vo = vertIdx + v * 12;
+                    local.push(f32(vo), f32(vo + 4), f32(vo + 8));
+                    boneOf.push(u8[vertInfo + v]);
+                    uv.push(s / sw, t / sh);
+                };
 
-            const vertex = (v, s, t) => {
-                const vo = vertIdx + v * 12;
-                local.push(f32(vo), f32(vo + 4), f32(vo + 8));
-                boneOf.push(u8[vertInfo + v]);
-                uv.push(s / sw, t / sh);
-            };
-
-            let o = i32(meshOff + 4);
-            for (;;) {
-                let n = i16(o);
-                o += 2;
-                if (n === 0) break;
-                const fan = n < 0;
-                n = Math.abs(n);
-                const vs = [];
-                for (let k = 0; k < n; k++, o += 8) vs.push([i16(o), i16(o + 4), i16(o + 6)]);
-                for (let k = 0; k < n - 2; k++) {
-                    const tri = fan
-                        ? [vs[0], vs[k + 1], vs[k + 2]]
-                        : (k % 2 ? [vs[k + 1], vs[k], vs[k + 2]] : [vs[k], vs[k + 1], vs[k + 2]]);
-                    tri.forEach((t) => vertex(t[0], t[1], t[2]));
-                    triangles++;
+                let o = i32(meshOff + 4);
+                for (;;) {
+                    let n = i16(o);
+                    o += 2;
+                    if (n === 0) break;
+                    const fan = n < 0;
+                    n = Math.abs(n);
+                    const vs = [];
+                    for (let k = 0; k < n; k++, o += 8) vs.push([i16(o), i16(o + 4), i16(o + 6)]);
+                    for (let k = 0; k < n - 2; k++) {
+                        const tri = fan
+                            ? [vs[0], vs[k + 1], vs[k + 2]]
+                            : (k % 2 ? [vs[k + 1], vs[k], vs[k + 2]] : [vs[k], vs[k + 1], vs[k + 2]]);
+                        tri.forEach((t) => vertex(t[0], t[1], t[2]));
+                        triangles++;
+                    }
                 }
-            }
 
-            if (!boneOf.length) continue;
-            const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(boneOf.length * 3), 3));
-            geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-            const mat = new THREE.MeshBasicMaterial({
-                map: texture ? texture.tex : null,
-                color: texture ? 0xffffff : 0x8899aa,
-                side: THREE.DoubleSide,
-                transparent: !!(texture && texture.masked),
-                alphaTest: texture && texture.masked ? 0.5 : 0,
-            });
-            group.add(new THREE.Mesh(geo, mat));
-            meshes.push({ local: Float32Array.from(local), boneOf: Uint8Array.from(boneOf), geo });
+                if (!boneOf.length) continue;
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(boneOf.length * 3), 3));
+                geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+                const mat = new THREE.MeshStandardMaterial({
+                    map: texture ? texture.tex : null,
+                    color: texture ? 0xffffff : 0x8899aa,
+                    side: THREE.DoubleSide,
+                    transparent: !!(texture && texture.masked),
+                    alphaTest: texture && texture.masked ? 0.5 : 0,
+                    roughness: 0.82,
+                    metalness: 0.05,
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                variantGroup.add(mesh);
+                meshes.push({ local: Float32Array.from(local), boneOf: Uint8Array.from(boneOf), geo, material: mat, textureIndex });
+            }
+            group.add(variantGroup);
+            choices.push(variantGroup);
         }
+        bodyParts.push({ choices, base });
     }
+
+    const overlays = new THREE.Group();
+    overlays.visible = false;
+    group.add(overlays);
+    const hitboxes = [];
+    for (let i = 0; i < numHitboxes; i++) {
+        const o = hitboxIndex + i * 32, bone = i32(o);
+        const min = new THREE.Vector3(f32(o + 8), f32(o + 12), f32(o + 16));
+        const max = new THREE.Vector3(f32(o + 20), f32(o + 24), f32(o + 28));
+        const size = max.clone().sub(min), center = min.clone().add(max).multiplyScalar(0.5);
+        const box = new THREE.Mesh(
+            new THREE.BoxGeometry(Math.max(size.x, 0.01), Math.max(size.y, 0.01), Math.max(size.z, 0.01)),
+            new THREE.MeshBasicMaterial({ color: 0xff3454, wireframe: true }),
+        );
+        box.matrixAutoUpdate = false;
+        overlays.add(box);
+        hitboxes.push({ object: box, bone, center });
+    }
+
+    const attachments = [];
+    for (let i = 0; i < numAttachments; i++) {
+        const o = attachmentIndex + i * 56, bone = i32(o);
+        const local = new THREE.Vector3(f32(o + 8), f32(o + 12), f32(o + 16));
+        const marker = new THREE.Group();
+        marker.matrixAutoUpdate = false;
+        const dot = new THREE.Mesh(
+            new THREE.SphereGeometry(1.5, 8, 6),
+            new THREE.MeshBasicMaterial({ color: 0x35d7ff }),
+        );
+        marker.add(dot, new THREE.AxesHelper(8));
+        overlays.add(marker);
+        attachments.push({ object: marker, bone, local });
+    }
+
+    const applyBody = (partIndex, variant) => {
+        const part = bodyParts[partIndex];
+        if (!part) return;
+        const selected = Math.max(0, Math.min(part.choices.length - 1, variant));
+        part.choices.forEach((choice, i) => { choice.visible = i === selected; });
+    };
+    const applySkin = (family) => {
+        const selected = Math.max(0, Math.min(Math.max(0, numSkinFamilies - 1), family));
+        for (const mesh of meshes) {
+            const textureIndex = skinRefs[selected * numSkinRef + mesh.textureIndex];
+            const texture = textures[textureIndex];
+            mesh.material.map = texture ? texture.tex : null;
+            mesh.material.transparent = !!(texture && texture.masked);
+            mesh.material.alphaTest = texture && texture.masked ? 0.5 : 0;
+            mesh.material.needsUpdate = true;
+        }
+    };
 
     const info = {
         bones: numBones,
         sequences: numSeq,
+        skinFamilies: numSkinFamilies,
+        bodyParts: bodyParts.map((part) => part.choices.length),
+        hitboxes: numHitboxes,
+        attachments: numAttachments,
         textures: textures.length,
         externalTextures,
         meshes: meshes.length,
@@ -210,7 +290,7 @@ export function parseMdl(buffer, textureBuffer = null) {
         texList: textures.map((t) => t.w + '×' + t.h),
     };
 
-    return { group, info, seqs, pose };
+    return { group, info, seqs, pose, bodyParts, applyBody, applySkin, overlays };
 }
 
 function boot() {
@@ -219,15 +299,46 @@ function boot() {
     const $ = (id) => document.getElementById(id);
     const statusEl = $('mdl-status'), infoEl = $('mdl-info'), seqEl = $('mdl-seq');
     const favKey = 'speedmn.mdl.favs';
-    const favs = new Set(JSON.parse(localStorage.getItem(favKey) || '[]'));
+    const thumbKey = 'speedmn.mdl.thumbs';
+    const readStore = (key) => {
+        try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
+    };
+    const favs = new Set(Array.isArray(readStore(favKey)) ? readStore(favKey) : []);
     const saveFavs = () => localStorage.setItem(favKey, JSON.stringify([...favs]));
+    const thumbs = readStore(thumbKey);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     stage.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color($('mdl-bg').value);
     scene.add(new THREE.GridHelper(200, 20, 0x2a3550, 0x1a2234));
+    const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(2000, 2000),
+        new THREE.MeshStandardMaterial({ color: 0x101722, roughness: 1 }),
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
+    ground.receiveShadow = true;
+    scene.add(ground);
+    scene.add(new THREE.HemisphereLight(0xd8e5ff, 0x28303a, 2));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    keyLight.position.set(80, 120, 80);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(1024, 1024);
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 800;
+    keyLight.shadow.camera.left = -300;
+    keyLight.shadow.camera.right = 300;
+    keyLight.shadow.camera.top = 300;
+    keyLight.shadow.camera.bottom = -300;
+    keyLight.shadow.camera.updateProjectionMatrix();
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0x9abaff, 1.4);
+    fillLight.position.set(-80, 40, -60);
+    scene.add(fillLight);
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
     camera.position.set(60, 40, 80);
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -235,7 +346,8 @@ function boot() {
     controls.autoRotate = $('mdl-rotate').checked;
     controls.autoRotateSpeed = 2;
 
-    let model = null, root = null, seqNo = 0, playing = true, clock = 0, currentBtn = null, requestId = 0;
+    let model = null, root = null, seqNo = 0, playing = true, clock = 0, currentFrame = -1, currentBtn = null, requestId = 0;
+    let compare = null, compareRequestId = 0;
 
     const resize = () => {
         renderer.setSize(stage.clientWidth, stage.clientHeight);
@@ -245,15 +357,36 @@ function boot() {
     window.addEventListener('resize', resize);
     resize();
 
-    renderer.setAnimationLoop(() => {
-        const dt = Math.min(0.1, 0.016);
+    renderer.setAnimationLoop((time, delta) => {
+        const dt = Math.min(0.1, (delta || 16) / 1000);
         if (model && playing) {
             clock += dt;
             const seq = model.seqs[seqNo];
-            if (seq && seq.frames > 1) model.pose(seqNo, Math.floor(clock * seq.fps) % seq.frames);
+            if (seq && seq.frames > 1) {
+                const frame = Math.floor(clock * seq.fps) % seq.frames;
+                if (frame !== currentFrame) {
+                    model.pose(seqNo, frame);
+                    currentFrame = frame;
+                }
+            }
         }
         controls.update();
         renderer.render(scene, camera);
+        if (compare) {
+            if (compare.playing && compare.model) {
+                compare.clock += dt;
+                const seq = compare.model.seqs[compare.seqNo];
+                if (seq && seq.frames > 1) {
+                    const frame = Math.floor(compare.clock * seq.fps) % seq.frames;
+                    if (frame !== compare.currentFrame) {
+                        compare.model.pose(compare.seqNo, frame);
+                        compare.currentFrame = frame;
+                    }
+                }
+            }
+            compare.controls.update();
+            compare.renderer.render(compare.scene, compare.camera);
+        }
     });
 
     const dispose = (obj) => obj.traverse((o) => {
@@ -264,7 +397,43 @@ function boot() {
         }
     });
 
-    const applyWire = () => root?.traverse((o) => { if (o.material) o.material.wireframe = $('mdl-wire').checked; });
+    const applyWire = () => {
+        root?.traverse((o) => { if (o.material && !Array.isArray(o.material)) o.material.wireframe = $('mdl-wire').checked; });
+        if (compare?.root) compare.root.traverse((o) => { if (o.material && !Array.isArray(o.material)) o.material.wireframe = $('mdl-wire').checked; });
+    };
+
+    const saveThumbnail = (btn) => {
+        if (thumbs[btn.dataset.mdlId]) return;
+        try {
+            const canvas = renderer.domElement;
+            const image = canvas.toDataURL('image/webp', 0.45);
+            const img = document.createElement('img');
+            img.className = 'mdl-thumb';
+            img.alt = '';
+            img.loading = 'lazy';
+            img.src = image;
+            btn.prepend(img);
+            thumbs[btn.dataset.mdlId] = image;
+            const keys = Object.keys(thumbs);
+            if (keys.length > 80) delete thumbs[keys[0]];
+            localStorage.setItem(thumbKey, JSON.stringify(thumbs));
+        } catch {
+            // Browser storage quotas vary; the current model remains usable without a cached thumbnail.
+        }
+    };
+
+    const restoreThumbnails = () => {
+        for (const btn of document.querySelectorAll('[data-mdl-url]')) {
+            const image = thumbs[btn.dataset.mdlId];
+            if (!image) continue;
+            const img = document.createElement('img');
+            img.className = 'mdl-thumb';
+            img.alt = '';
+            img.loading = 'lazy';
+            img.src = image;
+            btn.prepend(img);
+        }
+    };
 
     const frameCamera = () => {
         root.position.set(0, 0, 0);
@@ -320,6 +489,7 @@ function boot() {
             seqEl.value = seqNo;
             clock = 0;
             parsed.pose(seqNo, 0);
+            currentFrame = 0;
             applyWire();
             const size = frameCamera();
 
@@ -332,6 +502,9 @@ function boot() {
                 ['Texture', i.textures + (i.textures ? ' (' + i.texList.join(', ') + ')' : '') + (i.externalTextures ? ' · T.mdl' : '')],
                 ['Mesh', i.meshes],
                 ['Sequence', i.sequences],
+                ['Hitbox / Attachment', i.hitboxes + ' / ' + i.attachments],
+                ['Skin family', i.skinFamilies],
+                ['Body хэсэг', i.bodyParts.length],
                 ['Хэмжээ', [size.x, size.z, size.y].map((n) => n.toFixed(1)).join(' × ')],
             ].forEach(([k, v]) => {
                 const row = document.createElement('div');
@@ -342,18 +515,170 @@ function boot() {
             });
 
             currentBtn = btn;
+            $('mdl-skin').innerHTML = '';
+            for (let family = 0; family < Math.max(1, i.skinFamilies); family++) {
+                const option = document.createElement('option');
+                option.value = family;
+                option.textContent = 'Skin ' + (family + 1);
+                $('mdl-skin').appendChild(option);
+            }
+            $('mdl-body').innerHTML = '';
+            parsed.bodyParts.forEach((part, partIndex) => {
+                if (part.choices.length < 2) return;
+                for (let variant = 0; variant < part.choices.length; variant++) {
+                    const option = document.createElement('option');
+                    option.value = partIndex + ':' + variant;
+                    option.textContent = 'Body ' + (partIndex + 1) + ' · ' + (variant + 1);
+                    $('mdl-body').appendChild(option);
+                }
+            });
+            $('mdl-skin').disabled = i.skinFamilies < 2;
+            $('mdl-body').disabled = $('mdl-body').options.length === 0;
+            parsed.applySkin(0);
+            parsed.applyBody(0, 0);
+            parsed.overlays.visible = $('mdl-overlays').checked;
             $('mdl-fav').textContent = favs.has(btn.dataset.mdlId) ? '★ Дуртайгаас хасах' : '☆ Дуртайд нэмэх';
             $('mdl-fav').disabled = false;
             $('mdl-download').href = url;
             $('mdl-download').hidden = false;
             statusEl.textContent = label;
             history.replaceState(null, '', '?m=' + encodeURIComponent(btn.dataset.mdlId));
+            renderer.render(scene, camera);
+            saveThumbnail(btn);
         } catch (e) {
             if (mine === requestId) statusEl.textContent = 'Алдаа: ' + e.message;
         }
     };
 
     const buttons = [...document.querySelectorAll('[data-mdl-url]')];
+    restoreThumbnails();
+
+    const loadCompare = async (btn) => {
+        if (!compare || !btn) return;
+        const mine = ++compareRequestId;
+        $('mdl-compare-status').textContent = 'Ачаалж байна: ' + btn.dataset.mdlLabel;
+        try {
+            const buf = await fetchBuffer(btn.dataset.mdlUrl);
+            let texBuf = null;
+            if (new DataView(buf).getInt32(180, true) === 0) {
+                texBuf = await fetchBuffer(btn.dataset.mdlUrl.replace(/\.mdl$/i, 'T.mdl')).catch(() => null);
+            }
+            if (mine !== compareRequestId) return;
+            const parsed = parseMdl(buf, texBuf);
+            if (compare.root) {
+                compare.scene.remove(compare.root);
+                dispose(compare.root);
+            }
+            compare.model = parsed;
+            compare.seqNo = Math.max(0, parsed.seqs.findIndex((s) => /idle/i.test(s.label)));
+            compare.clock = 0;
+            compare.currentFrame = -1;
+            compare.root = new THREE.Group();
+            compare.root.add(parsed.group);
+            compare.root.rotation.x = -Math.PI / 2;
+            compare.scene.add(compare.root);
+            parsed.pose(compare.seqNo, 0);
+            compare.currentFrame = 0;
+            compare.root.updateMatrixWorld(true);
+            const box = new THREE.Box3().setFromObject(compare.root);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            compare.root.position.sub(center);
+            compare.root.position.y += size.y / 2;
+            const distance = Math.max(size.x, size.y, size.z, 1) * 1.8;
+            compare.camera.position.set(distance, distance * 0.6, distance);
+            compare.controls.target.set(0, size.y / 2, 0);
+            compare.controls.update();
+            compare.scene.background = new THREE.Color($('mdl-bg').value);
+            $('mdl-compare-status').textContent = btn.dataset.mdlLabel;
+            compare.renderer.render(compare.scene, compare.camera);
+        } catch (e) {
+            if (mine === compareRequestId) $('mdl-compare-status').textContent = 'Алдаа: ' + e.message;
+        }
+    };
+
+    $('mdl-compare-toggle').addEventListener('click', () => {
+        const wrap = $('mdl-compare');
+        wrap.hidden = !wrap.hidden;
+        if (!wrap.hidden) {
+            if (!compare) {
+                const compareStage = $('mdl-compare-stage');
+                const compareRenderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+                compareRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                compareRenderer.shadowMap.enabled = true;
+                compareRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                compareStage.appendChild(compareRenderer.domElement);
+                const compareScene = new THREE.Scene();
+                compareScene.background = new THREE.Color($('mdl-bg').value);
+                compareScene.add(new THREE.GridHelper(200, 20, 0x2a3550, 0x1a2234));
+                const compareGround = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x101722, roughness: 1 }));
+                compareGround.rotation.x = -Math.PI / 2;
+                compareGround.position.y = -0.5;
+                compareGround.receiveShadow = true;
+                compareScene.add(compareGround, new THREE.HemisphereLight(0xd8e5ff, 0x28303a, 2));
+                const compareLight = new THREE.DirectionalLight(0xffffff, 3.2);
+                compareLight.position.set(80, 120, 80);
+                compareLight.castShadow = true;
+                compareLight.shadow.mapSize.set(1024, 1024);
+                compareScene.add(compareLight);
+                const compareCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+                const compareControls = new OrbitControls(compareCamera, compareRenderer.domElement);
+                compareControls.enableDamping = true;
+                compareControls.autoRotate = $('mdl-rotate').checked;
+                compareControls.autoRotateSpeed = 2;
+                compare = { renderer: compareRenderer, scene: compareScene, camera: compareCamera, controls: compareControls, root: null, model: null, seqNo: 0, clock: 0, currentFrame: -1, playing: true };
+                const resizeCompare = () => {
+                    if (compareStage.clientWidth === 0) return;
+                    compareRenderer.setSize(compareStage.clientWidth, compareStage.clientHeight);
+                    compareCamera.aspect = compareStage.clientWidth / compareStage.clientHeight;
+                    compareCamera.updateProjectionMatrix();
+                };
+                window.addEventListener('resize', resizeCompare);
+                resizeCompare();
+                const select = $('mdl-compare-select');
+                select.innerHTML = '';
+                buttons.forEach((btn) => {
+                    const option = document.createElement('option');
+                    option.value = btn.dataset.mdlId;
+                    option.textContent = btn.dataset.mdlLabel;
+                    select.appendChild(option);
+                });
+                select.addEventListener('change', () => loadCompare(buttons.find((btn) => btn.dataset.mdlId === select.value)));
+            }
+            const firstCompare = buttons.find((btn) => btn.dataset.mdlId !== currentBtn?.dataset.mdlId) || currentBtn;
+            $('mdl-compare-select').value = firstCompare?.dataset.mdlId || '';
+            loadCompare(firstCompare);
+        }
+        $('mdl-compare-toggle').textContent = wrap.hidden ? 'Харьцуулалт' : 'Харьцуулалтыг хаах';
+    });
+
+    $('mdl-screenshot').addEventListener('click', () => {
+        renderer.render(scene, camera);
+        renderer.domElement.toBlob((blob) => {
+            if (!blob) {
+                statusEl.textContent = 'PNG үүсгэж чадсангүй.';
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = (currentBtn?.dataset.mdlId || 'model').replace(/[^\w.-]+/g, '_') + '.png';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        }, 'image/png');
+    });
+    $('mdl-share').addEventListener('click', async () => {
+        const url = location.href;
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: currentBtn?.dataset.mdlLabel || 'Speed.mn model', url });
+            } else {
+                await navigator.clipboard.writeText(url);
+                statusEl.textContent = 'Model-ийн холбоосыг хууллаа. Discord-д paste хийнэ үү.';
+            }
+        } catch (e) {
+            if (e.name !== 'AbortError') statusEl.textContent = 'Хуваалцаж чадсангүй: ' + e.message;
+        }
+    });
     buttons.forEach((btn) => btn.addEventListener('click', () => {
         document.querySelectorAll('[data-mdl-url].is-active').forEach((b) => b.classList.remove('is-active'));
         btn.classList.add('is-active');
@@ -395,9 +720,23 @@ function boot() {
         if (category === 'fav') applyFilter();
     });
 
-    $('mdl-rotate').addEventListener('change', (e) => { controls.autoRotate = e.target.checked; });
+    $('mdl-rotate').addEventListener('change', (e) => {
+        controls.autoRotate = e.target.checked;
+        if (compare) compare.controls.autoRotate = e.target.checked;
+    });
     $('mdl-wire').addEventListener('change', applyWire);
-    $('mdl-bg').addEventListener('input', (e) => { scene.background = new THREE.Color(e.target.value); });
+    $('mdl-bg').addEventListener('input', (e) => {
+        scene.background = new THREE.Color(e.target.value);
+        if (compare) compare.scene.background = new THREE.Color(e.target.value);
+    });
+    $('mdl-skin').addEventListener('change', (e) => model?.applySkin(Number(e.target.value)));
+    $('mdl-body').addEventListener('change', (e) => {
+        const [part, variant] = e.target.value.split(':').map(Number);
+        model?.applyBody(part, variant);
+    });
+    $('mdl-overlays').addEventListener('change', (e) => {
+        if (model) model.overlays.visible = e.target.checked;
+    });
     $('mdl-play').addEventListener('click', (e) => {
         playing = !playing;
         e.target.textContent = playing ? '❚❚ Зогсоох' : '▶ Тоглуулах';
@@ -406,6 +745,7 @@ function boot() {
         seqNo = Number(seqEl.value);
         clock = 0;
         model?.pose(seqNo, 0);
+        currentFrame = 0;
     });
 
     const wanted = new URLSearchParams(location.search).get('m');
