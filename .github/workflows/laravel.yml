@@ -43,7 +43,20 @@ jobs:
       group: production-deploy
       cancel-in-progress: false
     steps:
+    - name: Check deploy configuration
+      id: config
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      run: |
+        if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_SSH_KEY" ]; then
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "::warning::Deploy secrets (DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY) are not configured; skipping deploy."
+        fi
     - name: Configure SSH
+      if: steps.config.outputs.enabled == 'true'
       env:
         DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -58,6 +71,7 @@ jobs:
           ssh-keyscan -H "$DEPLOY_HOST" > ~/.ssh/known_hosts
         fi
     - name: Run update.sh on server
+      if: steps.config.outputs.enabled == 'true'
       env:
         DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
