@@ -17,14 +17,13 @@ class ParseCs2Demo implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $connection = 'redis';
-
     public int $tries = 1;
 
     public int $timeout = 1860;
 
     public function __construct(public int $demoVideoId)
     {
+        $this->onConnection('redis');
         $this->onQueue('demo-parsing');
     }
 

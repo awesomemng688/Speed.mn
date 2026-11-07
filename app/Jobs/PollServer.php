@@ -20,9 +20,10 @@ class PollServer implements ShouldQueue
 {
     use Queueable;
 
-    public $connection = 'redis';
-
-    public function __construct(public int $serverId) {}
+    public function __construct(public int $serverId)
+    {
+        $this->onConnection('redis');
+    }
 
     public function handle(ServerQueryService $query): void
     {

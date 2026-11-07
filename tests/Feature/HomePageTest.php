@@ -7,6 +7,7 @@ use App\Models\ServerRating;
 use App\Models\ServerStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class HomePageTest extends TestCase
@@ -68,6 +69,7 @@ class HomePageTest extends TestCase
     {
         $server = $this->createServer('Cached Server', '198.51.100.50');
         $this->createStatus($server, 5, 20);
+        Cache::forget('home-stats');
 
         // First request
         $this->get('/')->assertOk();

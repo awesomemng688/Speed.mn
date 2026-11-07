@@ -21,8 +21,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
-    $stats = Cache::remember('home-stats', 30, function () {
-        $freshSince = ServerStatus::freshSince();
+    $freshSince = ServerStatus::freshSince();
+    $stats = Cache::remember('home-stats', 30, function () use ($freshSince) {
         $latestStatusIds = ServerStatus::query()
             ->select('server_id')
             ->selectRaw('MAX(id) AS latest_id')

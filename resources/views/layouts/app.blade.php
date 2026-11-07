@@ -28,6 +28,8 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <script>try{var t=localStorage.getItem('speedmn-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
     @vite(['resources/css/main.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/navigation-fix.css') }}?v=1">
+    <script defer src="{{ asset('js/speed.js') }}"></script>
 </head>
 <body class="@yield('body_class')">
 @php
