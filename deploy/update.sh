@@ -139,6 +139,12 @@ sudo -u www-data "$COMPOSER_BIN" install \
     --optimize-autoloader \
     --no-interaction
 
+# NPM & Build frontend assets
+if [[ -f "$release_dir/package.json" ]]; then
+    echo "🔨 Building frontend assets..."
+    (cd "$release_dir" && npm ci && npm run build)
+fi
+
 "$PHP_BIN" "$CURRENT_LINK/artisan" down --render="errors::503"
 maintenance_enabled=1
 "$PHP_BIN" "$release_dir/artisan" migrate --force
