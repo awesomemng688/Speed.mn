@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+@layer utilities {
+    /* Container */
+    .shell {
+        width: min(var(--container-max), calc(100% - var(--container-padding)));
+        margin: auto;
+    }
+
+    /* Grid */
+    .grid {
+        display: grid;
+    }
+
+    .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    @media (max-width: 900px) {
+        .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+        .sm\:grid-cols-1 { grid-template-columns: 1fr; }
+    }
+
+    /* Flex */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 4px; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .gap-6 { gap: 24px; }
+
+    /* Spacing */
+    .p-0 { padding: 0; }
+    .p-2 { padding: 8px; }
+    .p-4 { padding: 16px; }
+    .p-6 { padding: 24px; }
+
+    .px-4 { padding-left: 16px; padding-right: 16px; }
+    .py-2 { padding-top: 8px; padding-bottom: 8px; }
+    .py-4 { padding-top: 16px; padding-bottom: 16px; }
+
+    .m-0 { margin: 0; }
+    .mt-4 { margin-top: 16px; }
+    .mt-6 { margin-top: 24px; }
+    .mt-8 { margin-top: 32px; }
+    .mb-4 { margin-bottom: 16px; }
+    .mb-6 { margin-bottom: 24px; }
+    .ml-auto { margin-left: auto; }
+
+    /* Typography */
+    .text-xs { font-size: var(--text-xs); }
+    .text-sm { font-size: var(--text-sm); }
+    .text-base { font-size: var(--text-base); }
+    .text-lg { font-size: var(--text-lg); }
+    .text-xl { font-size: var(--text-xl); }
+    .text-2xl { font-size: var(--text-2xl); }
+    .text-3xl { font-size: var(--text-3xl); }
+
+    .font-sans { font-family: var(--font-sans); }
+    .font-display { font-family: var(--font-display); }
+    .font-mono { font-family: var(--font-mono); }
+
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-extrabold { font-weight: 800; }
+
+    .text-primary { color: var(--color-blue); }
+    .text-muted { color: var(--color-muted); }
+    .text-online { color: var(--color-online); }
+    .text-offline { color: var(--color-offline); }
+    .text-red { color: var(--color-red); }
+    .text-white { color: #fff; }
+
+    .uppercase { text-transform: uppercase; }
+    .tracking-wide { letter-spacing: 0.02em; }
+    .tracking-wider { letter-spacing: 0.04em; }
+    .tracking-tight { letter-spacing: -0.02em; }
+
+    .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Borders */
+    .rounded { border-radius: var(--radius-md); }
+    .rounded-lg { border-radius: var(--radius-lg); }
+    .rounded-xl { border-radius: var(--radius-xl); }
+    .rounded-full { border-radius: var(--radius-full); }
+
+    .border { border: 1px solid var(--color-line); }
+    .border-t { border-top: 1px solid var(--color-line); }
+    .border-b { border-bottom: 1px solid var(--color-line); }
+
+    /* Background */
+    .bg-panel { background: var(--color-panel); }
+    .bg-card { background: var(--gradient-card); }
+
+    /* Shadows */
+    .shadow { box-shadow: var(--shadow-md); }
+    .shadow-lg { box-shadow: var(--shadow-lg); }
+    .shadow-glow { box-shadow: var(--shadow-glow); }
+
+    /* Transitions */
+    .transition { transition: all var(--transition-base); }
+    .transition-fast { transition: all var(--transition-fast); }
+
+    /* Display */
+    .hidden { display: none !important; }
+    .block { display: block; }
+    .inline-flex { display: inline-flex; }
+
+    /* Position */
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .fixed { position: fixed; }
+    .sticky { position: sticky; }
+
+    .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+
+    /* Z-index */
+    .z-dropdown { z-index: var(--z-dropdown); }
+    .z-sticky { z-index: var(--z-sticky); }
+    .z-modal { z-index: var(--z-modal); }
+
+    /* Overflow */
+    .overflow-hidden { overflow: hidden; }
+    .overflow-auto { overflow: auto; }
+    .overflow-x-auto { overflow-x: auto; }
+
+    /* Width / Height */
+    .w-full { width: 100%; }
+    .h-full { height: 100%; }
+    .min-h-screen { min-height: 100vh; }
+
+    /* Opacity */
+    .opacity-0 { opacity: 0; }
+    .opacity-50 { opacity: 0.5; }
+    .opacity-100 { opacity: 1; }
+
+    /* Cursor */
+    .cursor-pointer { cursor: pointer; }
+    .cursor-crosshair { cursor: crosshair; }
+
+    /* Animations */
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Focus visible */
+    .focus-visible:focus-visible {
+        outline: 2px solid var(--color-blue);
+        outline-offset: 3px;
+    }
+
+    /* Mobile tabbar */
+    .mobile-tabbar {
+        display: none;
+    }
+
+    @media (max-width: 760px) {
+        .mobile-tabbar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: var(--z-sticky);
+            padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+            background: rgba(11, 14, 21, 0.95);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .mobile-tabbar a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 0;
+            font-size: var(--text-xs);
+            font-weight: 700;
+            color: var(--color-muted);
+            border-radius: var(--radius-md);
+        }
+
+        .mobile-tabbar a span {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .mobile-tabbar a.is-active {
+            color: var(--color-text);
+            background: rgba(201, 243, 106, 0.12);
+        }
+
+        body {
+            padding-bottom: 72px;
+        }
+    }
+}

@@ -1,0 +1,199 @@
+/* ==========================================================================
+   Forms Component
+   ========================================================================== */
+
+@layer components {
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .form-field {
+        display: grid;
+        gap: 7px;
+    }
+
+    .form-field label {
+        color: var(--color-muted);
+        font-size: var(--text-xs);
+        letter-spacing: 0.5px;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        min-height: 44px;
+        padding: 11px 12px;
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-sm);
+        background: #0b0f17;
+        color: var(--color-text);
+        font: inherit;
+        font-size: var(--text-sm);
+        outline: none;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+        border-color: var(--color-blue);
+        box-shadow: 0 0 0 3px rgba(201, 243, 106, 0.15);
+    }
+
+    html[data-theme="light"] .form-field input,
+    html[data-theme="light"] .form-field select,
+    html[data-theme="light"] .form-field textarea {
+        background: #fff;
+        border-color: var(--color-line);
+    }
+
+    .form-field input:focus,
+    .form-field select:focus {
+        box-shadow: 0 0 0 3px rgba(78, 141, 255, 0.15);
+    }
+
+    .form-field.checkbox {
+        flex-direction: row;
+        align-items: center;
+        margin-top: 24px;
+        color: var(--color-text);
+        font-size: var(--text-sm);
+    }
+
+    .form-field.checkbox input {
+        width: auto;
+        min-height: auto;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid var(--color-line);
+        margin-top: 28px;
+        padding-top: 22px;
+    }
+
+    /* Search box */
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 0 12px;
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-sm);
+        background: #0e121a;
+        color: var(--color-muted);
+    }
+
+    .search-box:focus-within {
+        border-color: var(--color-blue);
+        box-shadow: 0 0 0 3px rgba(201, 243, 106, 0.15);
+    }
+
+    .search-box input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--color-text);
+        font: inherit;
+        padding: 12px 0;
+    }
+
+    /* Filter fields */
+    .filter-field {
+        display: grid;
+        gap: 5px;
+        color: var(--color-muted);
+        font-size: var(--text-xs);
+    }
+
+    .filter-field input,
+    .filter-field select {
+        width: 100%;
+        min-height: 44px;
+        padding: 9px 10px;
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-sm);
+        background: #0e121a;
+        color: var(--color-text);
+        font: inherit;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .filter-field input:focus,
+    .filter-field select:focus {
+        border-color: var(--color-blue);
+        box-shadow: 0 0 0 3px rgba(201, 243, 106, 0.15);
+    }
+
+    /* Server filters */
+    .server-filters {
+        display: grid;
+        grid-template-columns: minmax(200px, 1.5fr) repeat(4, minmax(115px, 1fr)) auto;
+        align-items: end;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(145deg, #151d17, #0c130f);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.03);
+        margin-bottom: 14px;
+    }
+
+    .server-filters .search-box,
+    .server-filters .filter-field input,
+    .server-filters .filter-field select {
+        border-color: rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-sm);
+        background: #080e18;
+    }
+
+    .server-filters .search-box:focus-within,
+    .server-filters .filter-field input:focus,
+    .server-filters .filter-field select:focus {
+        border-color: var(--color-blue);
+        box-shadow: 0 0 0 3px rgba(201, 243, 106, 0.15);
+    }
+
+    .server-filters .btn {
+        min-height: 46px;
+    }
+
+    @media (max-width: 900px) {
+        .server-filters {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .server-filters .search-box,
+        .server-filters > .btn {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .server-filters {
+            grid-template-columns: 1fr;
+            padding: 12px;
+        }
+
+        .server-filters .search-box,
+        .server-filters > .btn {
+            grid-column: auto;
+        }
+
+        .server-filters > .btn {
+            width: 100%;
+        }
+    }
+}

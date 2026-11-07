@@ -21,28 +21,30 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
-    $freshSince = ServerStatus::freshSince();
-    $latestStatusIds = ServerStatus::query()
-        ->select('server_id')
-        ->selectRaw('MAX(id) AS latest_id')
-        ->groupBy('server_id');
-    $totals = DB::table('servers')
-        ->leftJoinSub($latestStatusIds, 'latest_status_ids', fn ($join) => $join->on('latest_status_ids.server_id', '=', 'servers.id'))
-        ->leftJoin('server_statuses AS latest_statuses', 'latest_statuses.id', '=', 'latest_status_ids.latest_id')
-        ->where('servers.enabled', true)
-        ->selectRaw('COUNT(servers.id) AS servers')
-        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.created_at >= ? AND latest_statuses.online = 1 THEN 1 ELSE 0 END), 0) AS online', [$freshSince])
-        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.created_at >= ? AND latest_statuses.online = 1 THEN latest_statuses.players ELSE 0 END), 0) AS players', [$freshSince])
-        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NOT NULL AND latest_statuses.created_at < ? THEN 1 ELSE 0 END), 0) AS stale', [$freshSince])
-        ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NULL THEN 1 ELSE 0 END), 0) AS unknown')
-        ->first();
-    $stats = [
-        'servers' => (int) $totals->servers,
-        'online' => (int) $totals->online,
-        'players' => (int) $totals->players,
-        'stale' => (int) $totals->stale,
-        'unknown' => (int) $totals->unknown,
-    ];
+    $stats = Cache::remember('home-stats', 30, function () {
+        $freshSince = ServerStatus::freshSince();
+        $latestStatusIds = ServerStatus::query()
+            ->select('server_id')
+            ->selectRaw('MAX(id) AS latest_id')
+            ->groupBy('server_id');
+        $totals = DB::table('servers')
+            ->leftJoinSub($latestStatusIds, 'latest_status_ids', fn ($join) => $join->on('latest_status_ids.server_id', '=', 'servers.id'))
+            ->leftJoin('server_statuses AS latest_statuses', 'latest_statuses.id', '=', 'latest_status_ids.latest_id')
+            ->where('servers.enabled', true)
+            ->selectRaw('COUNT(servers.id) AS servers')
+            ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.created_at >= ? AND latest_statuses.online = 1 THEN 1 ELSE 0 END), 0) AS online', [$freshSince])
+            ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.created_at >= ? AND latest_statuses.online = 1 THEN latest_statuses.players ELSE 0 END), 0) AS players', [$freshSince])
+            ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NOT NULL AND latest_statuses.created_at < ? THEN 1 ELSE 0 END), 0) AS stale', [$freshSince])
+            ->selectRaw('COALESCE(SUM(CASE WHEN latest_statuses.id IS NULL THEN 1 ELSE 0 END), 0) AS unknown')
+            ->first();
+        return [
+            'servers' => (int) $totals->servers,
+            'online' => (int) $totals->online,
+            'players' => (int) $totals->players,
+            'stale' => (int) $totals->stale,
+            'unknown' => (int) $totals->unknown,
+        ];
+    });
 
     $featuredForGame = static fn (string $game) => Server::query()
         ->where('enabled', true)

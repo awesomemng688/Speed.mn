@@ -7,6 +7,7 @@ use App\Models\ServerStatus;
 use App\Models\User;
 use App\Notifications\ServerStatusChanged;
 use App\Services\ServerQueryService;
+use App\Events\ServerStatusUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
@@ -18,6 +19,8 @@ use Throwable;
 class PollServer implements ShouldQueue
 {
     use Queueable;
+
+    public $connection = 'redis';
 
     public function __construct(public int $serverId) {}
 
@@ -36,12 +39,15 @@ class PollServer implements ShouldQueue
         $result['max_players'] ??= $server->max_players;
         $recentStatuses = $server->statuses()->orderByDesc('id')->limit(3)->get();
 
-        ServerStatus::create(array_merge(
+        $status = ServerStatus::create(array_merge(
             ['server_id' => $server->id, 'created_at' => $polledAt],
             $result,
         ));
 
         $newStatus = (bool) ($result['online'] ?? false);
+
+        // Broadcast real-time update
+        broadcast(new ServerStatusUpdated($server, $status, $newStatus));
         $confirmedOffline = ! $querySucceeded
             && ! $newStatus
             && isset($recentStatuses[0], $recentStatuses[1])

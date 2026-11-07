@@ -27,28 +27,7 @@
     <title>@yield('title', 'Speed.mn Gaming Network')</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <script>try{var t=localStorage.getItem('speedmn-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
-    <link rel="stylesheet" href="{{ asset('css/speed.css').'?v=home-account-1' }}">
-    <link rel="stylesheet" href="{{ asset('css/esports.css').'?v='.filemtime(public_path('css/esports.css')) }}">
-    <style>
-        .server-filters{display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(4,minmax(115px,1fr)) auto;align-items:end;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px;background:#11151e;margin-bottom:14px}
-        .favorite-form{margin-top:10px}.favorite-button{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:#171d28;color:var(--text);font:inherit;text-decoration:none;cursor:pointer}.favorite-button[aria-pressed="true"]{color:#ffd17d;border-color:#ffd17d88}.detail-favorite{margin-top:12px}.profile-server-row form{margin:0}.favorite-remove{width:40px;height:40px;border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--text);font-size:22px;cursor:pointer}
-        .server-filters .search-box{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:7px;background:#0e121a}
-        .server-filters .search-box input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit}
-        .filter-field{display:grid;gap:5px;color:var(--muted);font-size:11px}
-        .filter-field input,.filter-field select{width:100%;min-height:44px;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#0e121a;color:var(--text);font:inherit}
-        .server-filters .button,.card-actions .button{min-height:44px}
-        .server-card-cover img[hidden],.server-card-cover-fallback[hidden]{display:none!important}
-        .server-card-overlay .status.stale{color:#ffd17d;border-color:#ffd17d55;background:#211a0dcc}
-        .updated-at{display:block;margin-top:11px;color:#aeb9cb;font-size:11px}
-        .updated-at time{font-variant-numeric:tabular-nums}
-        .status.stale{color:#ffd17d}.status.stale i{background:#ffd17d}
-        :where(a,button,input,select):focus-visible{outline:2px solid #ffd17d;outline-offset:3px}
-        .nav-links a,.tabs a,.menu-toggle{min-height:44px}
-        .detail-title .card-actions{align-items:center}
-        @media(max-width:900px){.server-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.server-filters .search-box,.server-filters>.button{grid-column:1/-1}}
-        @media(max-width:640px){.server-filters{grid-template-columns:1fr;padding:12px}.server-filters .search-box,.server-filters>.button{grid-column:auto}.server-filters>.button{width:100%}.toolbar{flex-wrap:wrap}.detail-title{align-items:flex-start;flex-direction:column}.detail-title>.card-actions{width:100%}.detail-title>.card-actions .button{flex:1}.card-actions{flex-wrap:wrap;gap:8px}.card-actions .button{flex:1}.server-card-body{padding:16px}.server-card-body>p{overflow-wrap:anywhere}.hero-account-actions a,.hero-account-login{min-height:44px;display:inline-flex;align-items:center}.live-notice{align-items:flex-start;flex-wrap:wrap}.live-notice small{width:100%;margin-left:0}.rank-table-wrap{max-width:100%}}
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-    </style>
+    @vite(['resources/css/main.css', 'resources/js/app.js'])
 </head>
 <body class="@yield('body_class')">
 @php
@@ -88,7 +67,7 @@
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Харанхуй / цайвар загвар солих">◐</button>
         @auth
             @if(auth()->user()->is_admin)
-                <a class="button button-small button-ghost" href="{{ route('admin.servers.index') }}">Admin</a>
+                <a class="btn btn-ghost btn-sm" href="{{ route('admin.servers.index') }}">Admin</a>
             @endif
             <div class="account-menu">
                 <button class="account-trigger" type="button" aria-expanded="false" aria-controls="account-dropdown">
@@ -108,20 +87,52 @@
                 </div>
             </div>
         @else
-            <a class="button button-small button-ghost" href="{{ route('steam.login', ['redirect' => url()->current()]) }}">Steam-ээр нэвтрэх</a>
+            <a class="btn btn-ghost btn-sm" href="{{ route('steam.login', ['redirect' => url()->current()]) }}">Steam-ээр нэвтрэх</a>
         @endauth
     </div>
 </header>
-<main>@if(session('error'))<div class="shell admin-alert error" role="alert">{{ session('error') }}</div>@endif @if(session('status'))<div class="shell admin-alert success" role="status">{{ session('status') }}</div>@endif @yield('content')</main>
-<footer id="community"><div class="shell footer"><div><a class="brand footer-brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"></a><p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p><div class="social-links"><a href="{{ $discordUrl }}" target="_blank" rel="noreferrer">Discord ↗</a><a href="https://steamcommunity.com/" target="_blank" rel="noreferrer">Steam нийгэмлэг ↗</a><a href="mailto:contact@speed.mn">Админтай холбогдох</a></div></div><div><strong>ЦЭС</strong><a href="{{ route('servers.index') }}">Бүх сервер</a><a href="{{ route('models.index') }}">Model үзэх</a><a href="{{ route('servers.game', 'cs2') }}">CS2 сервер</a><a href="{{ route('servers.game', 'cs16') }}">CS 1.6 сервер</a><a href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}">Зэвсгийн skin</a><a href="{{ route('ranks.index') }}">Тоглогчдын чансаа</a><a href="#community">Серверийн дүрэм</a></div></div><div class="shell copyright">© {{ date('Y') }} Speed.mn тоглоомын сүлжээ</div></footer>
+<main>
+    @if(session('error'))
+        <div class="shell admin-alert error" role="alert">{{ session('error') }}</div>
+    @endif
+    @if(session('status'))
+        <div class="shell admin-alert success" role="status">{{ session('status') }}</div>
+    @endif
+    @yield('content')
+</main>
+<footer id="community">
+    <div class="shell footer">
+        <div>
+            <a class="brand footer-brand" href="{{ url('/') }}"><img src="{{ asset('img/hero/logo.jfif') }}" alt="Speed.mn"></a>
+            <p>Монголын CS2 болон CS 1.6 серверийн нэгдсэн сүлжээ.</p>
+            <div class="social-links">
+                <a href="{{ $discordUrl }}" target="_blank" rel="noreferrer">Discord ↗</a>
+                <a href="https://steamcommunity.com/" target="_blank" rel="noreferrer">Steam нийгэмлэг ↗</a>
+                <a href="mailto:contact@speed.mn">Админтай холбогдох</a>
+            </div>
+        </div>
+        <div>
+            <strong>ЦЭС</strong>
+            <a href="{{ route('servers.index') }}">Бүх сервер</a>
+            <a href="{{ route('models.index') }}">Model үзэх</a>
+            <a href="{{ route('servers.game', 'cs2') }}">CS2 сервер</a>
+            <a href="{{ route('servers.game', 'cs16') }}">CS 1.6 сервер</a>
+            <a href="{{ auth()->check() ? route('skins.bridge') : route('steam.login', ['redirect' => '/skins/bridge']) }}">Зэвсгийн skin</a>
+            <a href="{{ route('ranks.index') }}">Тоглогчдын чансаа</a>
+            <a href="#community">Серверийн дүрэм</a>
+        </div>
+    </div>
+    <div class="shell copyright">© {{ date('Y') }} Speed.mn тоглоомын сүлжээ</div>
+</footer>
 <nav class="mobile-tabbar" aria-label="Үндсэн цэс">
     <a class="{{ request()->routeIs('home') || request()->is('/') ? 'is-active' : '' }}" href="{{ url('/') }}"><span aria-hidden="true">⌂</span>Нүүр</a>
     <a class="{{ request()->routeIs('servers.*') ? 'is-active' : '' }}" href="{{ route('servers.index') }}"><span aria-hidden="true">▦</span>Сервер</a>
     <a class="{{ request()->routeIs('ranks.index') ? 'is-active' : '' }}" href="{{ route('ranks.index') }}"><span aria-hidden="true">♜</span>Чансаа</a>
     <a href="{{ $discordUrl }}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌁</span>Discord</a>
 </nav>
-<script src="{{ asset('js/speed.js').'?v='.filemtime(public_path('js/speed.js')) }}" defer></script>
 <script>document.getElementById('theme-toggle').addEventListener('click',function(){var r=document.documentElement,l=r.getAttribute('data-theme')==='light';if(l){r.removeAttribute('data-theme');}else{r.setAttribute('data-theme','light');}try{localStorage.setItem('speedmn-theme',l?'dark':'light');}catch(e){}});</script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
+@vite(['resources/js/app.js'])
+@stack('scripts')
 </body>
 </html>

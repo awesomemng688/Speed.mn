@@ -1,11 +1,11 @@
 {
-  "resources/css/app.css": {
-    "file": "assets/app-DEsqKiwq.css",
-    "src": "resources/css/app.css",
+  "resources/css/main.css": {
+    "file": "assets/main-9_mmIfLa.css",
+    "src": "resources/css/main.css",
     "isEntry": true,
-    "name": "app",
+    "name": "main",
     "names": [
-      "app.css"
+      "main.css"
     ]
   },
   "resources/js/admin-totp-setup.js": {
@@ -15,7 +15,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DMsN-rLE.js",
+    "file": "assets/app-BjZ2Et9I.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

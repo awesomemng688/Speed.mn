@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\ServerStatus;
+use App\Observers\ServerStatusObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        ServerStatus::observe(ServerStatusObserver::class);
     }
 }

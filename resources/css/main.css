@@ -1,0 +1,24 @@
+/* ==========================================================================
+   Main CSS Entry Point
+   ========================================================================== */
+
+/* Layer order: base < components < utilities */
+@layer base, components, utilities;
+
+/* Import design tokens first (no layer) */
+@import './_variables.css';
+
+/* Base layer */
+@import './_base.css';
+
+/* Components */
+@import './components/_buttons.css';
+@import './components/_cards.css';
+@import './components/_nav.css';
+@import './components/_forms.css';
+@import './components/_hero.css';
+@import './components/_sections.css';
+@import './components/_footer.css';
+
+/* Utilities (highest priority) */
+@import './utilities/_utilities.css';

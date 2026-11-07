@@ -1,0 +1,122 @@
+/* ==========================================================================
+   CSS Custom Properties (Design Tokens)
+   ========================================================================== */
+
+/* Base theme (dark) */
+:root {
+    /* Colors */
+    --color-bg: #080b09;
+    --color-panel: #101612;
+    --color-line: #28342b;
+    --color-text: #f4f6f1;
+    --color-muted: #a0aa9f;
+    --color-red: #ff7658;
+    --color-blue: #c9f36a;
+    --color-purple: #efa968;
+
+    /* Semantic colors */
+    --color-online: #c9f36a;
+    --color-offline: #ff7658;
+    --color-stale: #ffad6b;
+    --color-unknown: #9aa59a;
+
+    /* Gradients */
+    --gradient-accent: linear-gradient(135deg, #c9f36a, #efa968);
+    --gradient-primary: linear-gradient(120deg, #d8f78a, #b4e252);
+    --gradient-hero: radial-gradient(ellipse at 75% 48%, #c9f36a20, transparent 35%),
+                     linear-gradient(90deg, #080b09f5 0%, #080b09df 46%, #080b0982 100%),
+                     linear-gradient(0deg, #080b09 0%, transparent 34%);
+    --gradient-card: linear-gradient(145deg, #151e16, #0d130f);
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+
+    /* Typography */
+    --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+    --font-display: Rajdhani, Inter, ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, Consolas, monospace;
+
+    /* Font sizes */
+    --text-xs: 0.75rem;    /* 12px */
+    --text-sm: 0.875rem;   /* 14px */
+    --text-base: 1rem;     /* 16px */
+    --text-lg: 1.125rem;   /* 18px */
+    --text-xl: 1.25rem;    /* 20px */
+    --text-2xl: 1.5rem;    /* 24px */
+    --text-3xl: 1.875rem;  /* 30px */
+    --text-4xl: 2.25rem;   /* 36px */
+    --text-5xl: 3rem;      /* 48px */
+    --text-6xl: 3.75rem;   /* 60px */
+
+    /* Border radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+    --shadow-glow: 0 0 20px rgba(201, 243, 106, 0.15);
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 300ms ease;
+
+    /* Z-index */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal: 300;
+    --z-toast: 400;
+    --z-tooltip: 500;
+
+    /* Container */
+    --container-max: 1200px;
+    --container-padding: 24px;
+
+    /* Header */
+    --header-height: 74px;
+}
+
+/* Light theme */
+html[data-theme="light"] {
+    --color-bg: #f3f4f7;
+    --color-panel: #ffffff;
+    --color-line: #d8dce4;
+    --color-text: #14161c;
+    --color-muted: #566074;
+    --color-red: #e01530;
+    --color-blue: #4e8dff;
+    --color-purple: #ad75ff;
+
+    --color-online: #4e8dff;
+    --color-offline: #ff425b;
+    --color-stale: #ffb15c;
+    --color-unknown: #9097a5;
+
+    --gradient-accent: linear-gradient(135deg, #4e8dff, #ad75ff);
+    --gradient-primary: linear-gradient(120deg, #68a4ff, #b49aff);
+    --gradient-hero: linear-gradient(180deg, #f3f4f7cc, #f3f4f7);
+    --gradient-card: linear-gradient(145deg, #ffffff, #f3f4f7);
+
+    --shadow-glow: 0 0 20px rgba(78, 141, 255, 0.15);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-fast: 0ms;
+        --transition-base: 0ms;
+        --transition-slow: 0ms;
+    }
+}

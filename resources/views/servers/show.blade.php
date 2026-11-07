@@ -5,6 +5,9 @@
     $isOnline = $statusState === 'online';
 @endphp
 @section('title', $server->name.' — Speed.mn серверийн төлөв')
+@push('scripts')
+    <script>document.body.dataset.serverId = '{{ $server->id }}';</script>
+@endpush
 @section('description', $server->name.' серверийн бодит цагийн төлөв, тоглогчдын тоо, газрын зураг болон холболтын мэдээлэл.')
 @section('jsonld')
 {!! json_encode(['@'.'context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [

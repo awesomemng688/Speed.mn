@@ -17,6 +17,8 @@ class ParseCs2Demo implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $connection = 'redis';
+
     public int $tries = 1;
 
     public int $timeout = 1860;

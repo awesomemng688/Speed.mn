@@ -5,6 +5,9 @@
 @section('og_description', 'Монголын CS2 болон CS 1.6 серверүүдийг хайж, газрын зураг болон тоглогчдын тоогоор шүүнэ үү.')
 @section('body_class', $game === 'cs2' ? 'servers-page cs2-page' : ($game === 'cs16' ? 'servers-page cs16-page' : 'servers-page'))
 @section('content')
+@push('scripts')
+    <script>document.body.dataset.serverId = '';</script>
+@endpush
 <section class="page-head"><div class="shell"><p class="eyebrow">SPEED.MN СҮЛЖЭЭ</p><h1>{{ $game ? ($game === 'cs2' ? 'CS2 серверүүд' : 'CS 1.6 серверүүд') : 'Бүх сервер' }}</h1><p class="muted">Серверийн төлөв, тоглогчдын тоо шинэчлэгдсэн мэдээллээр харагдана.</p><div class="tabs"><a class="{{ !$game ? 'active' : '' }}" href="{{ route('servers.index') }}">Бүгд</a><a class="{{ $game === 'cs2' ? 'active' : '' }}" href="{{ route('servers.game', 'cs2') }}">CS2</a><a class="{{ $game === 'cs16' ? 'active' : '' }}" href="{{ route('servers.game', 'cs16') }}">CS 1.6</a></div></div></section>
 @php
     $categoryLabels = ['public-1' => 'Public 1', 'public-2' => 'Public 2', 'knife-1' => 'Knife 1', 'knife-2' => 'Knife 2'];
